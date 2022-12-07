@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const pool = require("./db");
+const dayjs = require("dayjs");
 
 //middleware
 app.use(cors());
@@ -22,15 +23,65 @@ app.get("/chartList", async(req, res) => {
 
 //get weekly chart
 
-app.get("/chart/:cid/:cdate", async(req, res) => {
+app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
 //app.get("/chart", async(req, res) => {
     try {
         const chartId = req.params.cid;
+        const chartType = req.params.ctype;
+        const chartTime = req.params.ctf;
         const chartDate = req.params.cdate;
+        const startDate = dayjs(chartDate);
         console.log(req.params);
-       // const chart = await pool.query("SELECT get_weekly_chart(1, '2022-11-05')");
-        const chart = await pool.query("SELECT get_weekly_chart($1, $2)", [chartId, chartDate]);
-        res.json(chart.rows);
+        if (chartType === 'Song') {
+            if (chartTime === 'Week') {
+                const chart = await pool.query("SELECT get_weekly_song_chart($1, $2)", [chartId, chartDate]);
+                res.json(chart.rows);
+            }
+            else if (chartTime === 'Month') {
+                const endDate = dayjs(startDate).endOf('month');
+                res.status(422).send("Future use - Monthly chart");
+                //res.json(chart.rows);
+            }
+            else if (chartTime === 'Year') {
+                const endDate = dayjs(startDate).endOf('year');
+                const chart = await pool.query("SELECT get_yearly_song_chart($1, $2, $3)", [chartId, startDate, endDate]);
+                res.json(chart.rows);
+            }
+            else if (chartTime === 'Decade') {
+                res.status(422).send("Future use - Decade chart");
+                //res.json(chart.rows);
+            }
+            else {
+                res.status(422).send("Invalid chart timeframe.  Chart timeframe must be Week, Month, Year, or Decade.");
+            }
+        }
+        else if (chartType === 'Album') {
+            if (chartTime === 'Week') {
+                const chart = await pool.query("SELECT get_weekly_album_chart($1, $2)", [chartId, chartDate]);
+                res.json(chart.rows);
+            }
+            else if (chartTime === 'Month') {
+                const endDate = dayjs(startDate).endOf('month');
+                res.status(422).send("Future use - Monthly chart");
+                //res.json(chart.rows);
+            }
+            else if (chartTime === 'Year') {
+                const endDate = dayjs(startDate).endOf('year');
+                res.status(422).send("Future use - Yearly chart");
+                //res.json(chart.rows);
+            }
+            else if (chartTime === 'Decade') {
+                res.status(422).send("Future use - Decade chart");
+                //res.json(chart.rows);
+            }
+            else {
+                res.status(422).send("Invalid chart timeframe.  Chart timeframe must be Week, Month, Year, or Decade.");
+            }
+        }
+        else {
+            res.status(422).send("Invalid chart type.  Chart type must be Song or Album.");
+        }
+
     } catch (err) {
         console.error(err.message);
     }
