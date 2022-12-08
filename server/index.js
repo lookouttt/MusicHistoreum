@@ -21,7 +21,7 @@ app.get("/chartList", async(req, res) => {
     }
 });
 
-//get weekly chart
+//get a specific chart for a given range
 
 app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
 //app.get("/chart", async(req, res) => {
@@ -39,17 +39,19 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
             }
             else if (chartTime === 'Month') {
                 const endDate = dayjs(startDate).endOf('month');
-                res.status(422).send("Future use - Monthly chart");
-                //res.json(chart.rows);
+                const chart = await pool.query("SELECT get_range_song_chart($1, $2, $3)", [chartId, startDate, endDate]);
+                res.json(chart.rows);
             }
             else if (chartTime === 'Year') {
                 const endDate = dayjs(startDate).endOf('year');
-                const chart = await pool.query("SELECT get_yearly_song_chart($1, $2, $3)", [chartId, startDate, endDate]);
+                const chart = await pool.query("SELECT get_range_song_chart($1, $2, $3)", [chartId, startDate, endDate]);
                 res.json(chart.rows);
             }
             else if (chartTime === 'Decade') {
-                res.status(422).send("Future use - Decade chart");
-                //res.json(chart.rows);
+                const endOfYear = dayjs(startDate).endOf('year');
+                const endDate = dayjs(endOfYear).add(9,'year');
+                const chart = await pool.query("SELECT get_range_song_chart($1, $2, $3)", [chartId, startDate, endDate]);
+                res.json(chart.rows);
             }
             else {
                 res.status(422).send("Invalid chart timeframe.  Chart timeframe must be Week, Month, Year, or Decade.");
@@ -62,17 +64,19 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
             }
             else if (chartTime === 'Month') {
                 const endDate = dayjs(startDate).endOf('month');
-                res.status(422).send("Future use - Monthly chart");
-                //res.json(chart.rows);
+                const chart = await pool.query("SELECT get_range_album_chart($1, $2, $3)", [chartId, startDate, endDate]);
+                res.json(chart.rows);
             }
             else if (chartTime === 'Year') {
                 const endDate = dayjs(startDate).endOf('year');
-                res.status(422).send("Future use - Yearly chart");
-                //res.json(chart.rows);
+                const chart = await pool.query("SELECT get_range_album_chart($1, $2, $3)", [chartId, startDate, endDate]);
+                res.json(chart.rows);
             }
             else if (chartTime === 'Decade') {
-                res.status(422).send("Future use - Decade chart");
-                //res.json(chart.rows);
+                const endOfYear = dayjs(startDate).endOf('year');
+                const endDate = dayjs(endOfYear).add(9,'year');
+                const chart = await pool.query("SELECT get_range_album_chart($1, $2, $3)", [chartId, startDate, endDate]);
+                res.json(chart.rows);
             }
             else {
                 res.status(422).send("Invalid chart timeframe.  Chart timeframe must be Week, Month, Year, or Decade.");
