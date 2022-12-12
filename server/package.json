@@ -1,6 +1,6 @@
 {
-  "name": "Musictopedia Server",
-  "version": "1.0.0",
+  "name": "musictopedia_server",
+  "version": "0.1.0",
   "description": "Back-end for the Musictopedia project.",
   "main": "index.js",
   "scripts": {
