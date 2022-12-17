@@ -1,20 +1,68 @@
 
 body {
-    font-family: 'Noto Sans', sans-serif;
+    font-family: 'Source Serif', source-sans;
     color: black;
 }
 
 h1,
 h2,
 h3 {
-    font-family: 'Noto Sans', sans-serif;
+    font-family: 'Source Serif Bold', source-sans;
     color: black;
 }
 
+#topNav {
+    background-color: black;
+    min-height: 3rem;
+}
+
+#bottomNav {
+    background-color: #8F8F8C;
+    min-height: 3rem;
+}
+
+#mainTitle {
+    background-color: white;
+    color: black;
+    text-align: center;
+    min-height: 4rem;
+    display: inline-block;
+}
+
+.hero {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url(./app/assets/img/vinyl-1595847.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    filter: brightness(60%);
+}
+.hero-content {
+    position: relative;
+    color: white;
+}
+
+#hero-title {
+    position: relative;
+    display:block;
+    width:auto;
+    color: white;
+}
+/*
 h1,
 h2 {
     font-weight:  900;
-    font-style: italic bold;
+    font-style: bold;
 }
 
 .row-content {
@@ -36,26 +84,26 @@ h2 {
 }
 
 .navbar-brand img {
-    /*width: 100%;
-    height: 100%;*/
+    width: 100%;
+    height: 100%;
     margin-right: 2rem;
-    /*max-width: 4rem;*/
+    max-width: 4rem;
 }
 
 .topNav {
     background-color: black;
-    /*background-color: #61777F;
-    /*background-image: linear-gradient(to right, #5637dd, #3046c5, #510e5a);
-    margin-bottom: 2rem;*/
+    background-color: #61777F;
+    background-image: linear-gradient(to right, #5637dd, #3046c5, #510e5a);
+    margin-bottom: 2rem;
     min-height: 3rem;
 }
 
 .navbar-dark {
     background-color: white;
     color: black;
-    /*background-color: #C8C8C8;
-    /*background-image: linear-gradient(to right, #5637dd, #3046c5, #510e5a);
-    margin-bottom: 2rem;*/
+    background-color: #C8C8C8;
+   *background-image: linear-gradient(to right, #5637dd, #3046c5, #510e5a);
+    margin-bottom: 2rem;
     min-height: 8rem;
 }
 
@@ -84,7 +132,7 @@ h2 {
 .hero-content {
     position: relative;
 }
-/*
+
 .hero-image {
     background-image: './app/assets/img/vinyl-1595847.jpg';
     height: 100%;

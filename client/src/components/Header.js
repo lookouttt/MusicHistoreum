@@ -1,55 +1,82 @@
-//import { useState } from 'react';
+import { useState } from 'react';
 import {
     Navbar, 
     NavbarBrand,
-//    Collapse,
-//    NavbarToggler,
-//    Nav,
-//    NavItem
+    Collapse,
+    NavbarToggler,
+    Nav,
+    NavItem,
+    Container,
+    Row,
+    Col
 } from 'reactstrap';
-//import { NavLink } from 'react-router-dom';
-//import MtpLogo from '../app/assets/img/logo-no-background.png';
+import { NavLink } from 'react-router-dom';
 
 const Header = () => {
-    //const [menuOpen, setMenuOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     return (
-        <>
-            <Navbar sticky='top' expand='md' className='topNav'>
-            </Navbar>
-            <Navbar sticky='top' expand='md'>
-                <NavbarBrand  className='ms-5' href='/'>
-                    {/*<img src={MtpLogo} alt='musictopedia logo' className='float-start mtpLogo'/>*/}
-                    <h1 className='mt-1'>MUSICTOPEDIA</h1>
-                </NavbarBrand>
-                {/*
-                <NavbarToggler onClick={() => setMenuOpen(!menuOpen)} />
-                <Collapse isOpen={menuOpen} navbar>
-                    <Nav className='ms-auto' navbar>
-                        <NavItem>
-                            <NavLink className='nav-link' to='/'>
-                                <i className='fa fa-home-fa-lg' /> Home
-                            </NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink className='nav-link' to='/directory'>
-                                <i className='fa fa-list fa-lg' /> Directory
-                            </NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink className='nav-link' to='/about'>
-                                <i className='fa fa-info fa-lg' /> About
-                            </NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink className='nav-link' to='/contact'>
-                                <i className='fa fa-address-card fa-lg' /> Contact
-                            </NavLink>
-                        </NavItem>
-                    </Nav>
-                </Collapse>*/}
-            </Navbar>
-        </>
+        <Container fluid sticky>
+            <Row>
+                <Col>
+                    <Navbar dark expand='md' id='topNav'>
+                        <Nav className='ms-auto' navbar>
+                            <NavItem>
+                                <NavLink className='nav-link' to='/'>
+                                    Home
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink className='nav-link' to='/'>
+                                    Contact
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink className='nav-link' to='/'>
+                                    Search
+                                </NavLink>
+                            </NavItem>
+                        </Nav>
+                    </Navbar>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <div expand='md' id='mainTitle'>
+                        <h1>Music Historium</h1>
+
+                    </div>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <Navbar expand='md' id='bottomNav'>
+                        <Nav className='ms-auto' navbar>
+                            <NavItem>
+                                <NavLink className='nav-link' to='/'>
+                                    Charts
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink className='nav-link' to='/'>
+                                    Artists
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink className='nav-link' to='/'>
+                                    Future Features
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink className='nav-link' to='/'>
+                                    About the Site
+                                </NavLink>
+                            </NavItem>
+                        </Nav>
+                    </Navbar>
+                </Col>
+            </Row>
+        </Container>
     )
 }
 

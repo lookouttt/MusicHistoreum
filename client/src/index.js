@@ -7,9 +7,8 @@ import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-social/bootstrap-social.css';
 import 'font-awesome/css/font-awesome.css';
-import 'typeface-lobster';
-import 'typeface-open-sans';
-import './index.css';
+//import 'typeface-lobster';
+//import 'typeface-open-sans';
 import './index.css';
 
 const container = document.getElementById('root');

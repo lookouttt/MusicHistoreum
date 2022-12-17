@@ -1,32 +1,26 @@
 //import heroImage from '../app/assets/img/vinyl-1595847.jpg';
+import { Row, Col } from "reactstrap";
 
 const Hero = () => {
     return (
-        <section class='hero'>
-            <div class="hero-content">
-                <h1 class="hero-title">
-                    This is a test
-                </h1>
-            </div>
-        </section>
+        <Row>
+            <Col>
+                <section class='hero' >
+                    <div>
+                        <h1 id="hero-title" class='mx-auto'>
+                            Welcome to Musictopedia
+                        </h1>
+                        <p class="hero-content">
+                        Lorem ipsum dolor sit amet, illum definitiones no quo, maluisset concludaturque et eum, altera fabulas ut quo. 
+                        Atqui causae gloriatur ius te, id agam omnis evertitur eum. Affert laboramus repudiandae nec et. 
+                        Inciderint efficiantur his ad. Eum no molestiae voluptatibus.
+                        </p>
+                    </div>
+                </section>
+            </Col>
+        </Row>
+
     );
 }
-/*
-const Hero = () => {
-    const heroStyle = {
-        backgroundImage: `url(${heroImage})`,
-        height: '50vh',
-        /*filter: brightness(50%),
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-    };
-    return (
-        <div style={heroStyle}>
-            <div className='hero-text'>
-                <h1>This is a test</h1>
-            </div>
-        </div>
-    );
-};
-*/
+
 export default Hero;

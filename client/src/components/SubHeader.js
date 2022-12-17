@@ -18,7 +18,7 @@ const SubHeader = ({current, detail}) => {
                         {current}
                     </BreadcrumbItem>
                 </Breadcrumb>
-                <h2>{current}</h2>
+                {/*<h2>{current}</h2>*/}
                 <hr/>
             </Col>
         </Row>

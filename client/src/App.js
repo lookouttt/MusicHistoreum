@@ -1,24 +1,20 @@
 import { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
-import Hero from './components/Hero';
+import HomePage from './pages/HomePage';
+import getTestResponse from '../src/services/TestService';
 import './App.css';
+
 
 function App() {
     useEffect(() => {
-        fetch("http://localhost:5000/chart/1/Song/Week/1989-11-11")
-        .then((response) => response.json())
-        .then((actualData) => console.log(actualData))
-        .catch((err) => {
-            console.log(err.message);
-        });
+        getTestResponse();
     }, []);
     return (
         <div className="App">
             <Header />
-            <Hero />
             <Routes>
-                <Route path='/' />
+                <Route path='/' element={<HomePage />}/>
             </Routes>
         </div>
     );
