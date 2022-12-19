@@ -42,7 +42,7 @@ const Header = () => {
             </Row>
             <Row>
                 <Col>
-                    <div expand='md' id='mainTitle'>
+                    <div class='d-flex justify-content-center' expand='md' id='mainTitle'>
                         <h1>Music Historium</h1>
 
                     </div>
@@ -53,7 +53,7 @@ const Header = () => {
                     <Navbar expand='md' id='bottomNav'>
                         <Nav className='ms-auto' navbar>
                             <NavItem>
-                                <NavLink className='nav-link' to='/'>
+                                <NavLink className='nav-link' to='/Chart'>
                                     Charts
                                 </NavLink>
                             </NavItem>

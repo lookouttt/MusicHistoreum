@@ -3,11 +3,11 @@ import { Row, Col } from "reactstrap";
 
 const Hero = () => {
     return (
-        <Row>
+        <Row className="justify-content-md-center">
             <Col>
                 <section class='hero' >
                     <div>
-                        <h1 id="hero-title" class='mx-auto'>
+                        <h1 id="hero-title">
                             Welcome to Musictopedia
                         </h1>
                         <p class="hero-content">
