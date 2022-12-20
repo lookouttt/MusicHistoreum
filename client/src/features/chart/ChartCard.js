@@ -3,6 +3,7 @@ import Table from '../../components/Table';
 import ChartColumns from '../../app/shared/WEEK_SONG_COLUMNS';
 import { Card, CardBody, CardHeader } from "reactstrap";
 import getTestResponse from '../../services/TestService';
+import ChartStyles from "./ChartStyles";
 
 function ChartCard(chart) {
 
@@ -28,7 +29,9 @@ function ChartCard(chart) {
                 This is a test
             </CardHeader>
             <CardBody>
-                <Table columns={columns} data={data} />
+                <ChartStyles>
+                    <Table columns={columns} data={data} />
+                </ChartStyles>
             </CardBody>
         </Card>
         </>

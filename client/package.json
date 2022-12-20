@@ -23,6 +23,7 @@
     "redux-logger": "^3.0.6",
     "source-sans": "^3.46.0",
     "source-serif": "^4.4.0",
+    "styled-components": "^5.3.6",
     "typeface-lobster": "^1.1.13",
     "typeface-noto-sans": "^1.1.13",
     "typeface-open-sans": "^1.1.13",

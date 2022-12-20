@@ -43,7 +43,7 @@ const Header = () => {
             <Row>
                 <Col>
                     <div class='d-flex justify-content-center' expand='md' id='mainTitle'>
-                        <h1>Music Historium</h1>
+                        <h1>Music Historeum</h1>
 
                     </div>
                 </Col>
