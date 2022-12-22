@@ -8,7 +8,7 @@ const Hero = () => {
                 <section class='hero' >
                     <div>
                         <h1 id="hero-title">
-                            Welcome to Musictopedia
+                            Welcome to Music Historeum
                         </h1>
                         <p class="hero-content">
                         Lorem ipsum dolor sit amet, illum definitiones no quo, maluisset concludaturque et eum, altera fabulas ut quo. 
