@@ -1,7 +1,7 @@
 {
-  "name": "musictopedia_client",
+  "name": "music_historeum_client",
   "version": "0.1.0",
-  "description": "Front-end for the Musictopedia project.",
+  "description": "Front-end for the Music Historeum project.",
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.1",

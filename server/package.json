@@ -1,7 +1,7 @@
 {
-  "name": "musictopedia_server",
+  "name": "music_historeum_server",
   "version": "0.1.0",
-  "description": "Back-end for the Musictopedia project.",
+  "description": "Back-end for the Music Historeum project.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
