@@ -5,7 +5,7 @@ import { Card, CardBody, CardHeader } from "reactstrap";
 import getTestResponse from '../../services/TestService';
 import ChartStyles from "./ChartStyles";
 
-function ChartCard(chart) {
+function ChartCard({chart}) {
 
     const columns = useMemo(
         () => ChartColumns, []
@@ -15,7 +15,7 @@ function ChartCard(chart) {
 
     useEffect(() => { 
         const fetchData = async () => {
-            const chartData = await getTestResponse();
+            const chartData = await getTestResponse({chart});
             setData(chartData);
         }
 
