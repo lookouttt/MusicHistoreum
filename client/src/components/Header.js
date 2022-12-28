@@ -23,12 +23,21 @@ import { NavLink } from 'react-router-dom';
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [dropdownOpen, setdropdownOpen] = useState(false);
-    const [accordionOpen, setAccordionOpen] = useState(false);
-    const accordionToggle = (id) => {
-      if (accordionOpen === id) {
-        setAccordionOpen();
+    const [mainOpen, setMainOpen] = useState(false);
+    const mainToggle = (id) => {
+      if (mainOpen === id) {
+        setMainOpen();
       } else {
-        setAccordionOpen(id);
+        setMainOpen(id);
+      }
+    };
+
+    const [songsOpen, setSongsOpen] = useState(false);
+    const songsToggle = (id) => {
+      if (songsOpen === id) {
+        setSongsOpen();
+      } else {
+        setSongsOpen(id);
       }
     };
 
@@ -77,18 +86,18 @@ const Header = () => {
                                         Charts
                                     </DropdownToggle>
                                     <DropdownMenu>
-                                        <Accordion open={accordionOpen} toggle={accordionToggle}>
+                                        <Accordion flush open={mainOpen} toggle={mainToggle}>
                                             <AccordionItem>
                                                 <AccordionHeader targetId='1'>
                                                     Songs
                                                 </AccordionHeader>
                                                 <AccordionBody accordionId='1'>
-                                                    <Accordion open={accordionOpen} toggle={accordionToggle}>
+                                                    <Accordion flush open={songsOpen} toggle={songsToggle}>
                                                         <AccordionItem>
-                                                            <AccordionHeader targetId='3'>
+                                                            <AccordionHeader targetId='1'>
                                                                 Chart 1
                                                             </AccordionHeader>
-                                                            <AccordionBody accordionId='3'>
+                                                            <AccordionBody accordionId='1'>
                                                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
                                                                 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
                                                                 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris 
@@ -96,10 +105,10 @@ const Header = () => {
                                                             </AccordionBody>
                                                         </AccordionItem>
                                                         <AccordionItem>
-                                                            <AccordionHeader targetId='4'>
-                                                               Chart 2
+                                                            <AccordionHeader targetId='2'>
+                                                                Chart 2
                                                             </AccordionHeader>
-                                                            <AccordionBody accordionId='4'>
+                                                            <AccordionBody accordionId='2'>
                                                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
                                                                 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
                                                                 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris 
