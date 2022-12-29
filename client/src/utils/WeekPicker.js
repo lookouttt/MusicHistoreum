@@ -17,30 +17,23 @@ const Styles = styled.div`
   }
 `;
 
-export default function MyDatePicker() {
-    const [startDate, setStartDate] = useState(new Date());
+const WeekPicker = () => {
+    const [startDate, setStartDate] = useState(null);
+    const isSaturday = (date) => {
+      const day = getDay(date);
+      return day === 6;
+    };
     return (
         <Styles>
-            <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+            <DatePicker
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                filterDate={isSaturday}
+                placeholderText="Select a chart date"
+            />
         </Styles>
 
     );
   };
 
-// const WeekPicker = () => {
-//     const [startDate, setStartDate] = useState(null);
-//     const isSaturday = (date) => {
-//       const day = getDay(date);
-//       return day === 6;
-//     };
-//     return (
-//       <DatePicker
-//         selected={startDate}
-//         onChange={(date) => setStartDate(date)}
-//         filterDate={isSaturday}
-//         placeholderText="Select a chart date"
-//       />
-//     );
-//   };
-
-//   export default WeekPicker;
+  export default WeekPicker;

@@ -36,7 +36,7 @@ const TimeFrameMenu = (({bWeekly}) => {
                         {timeframe.tf}
                     </AccordionHeader>
                     <AccordionBody accordionId={String(index++)}>
-                        {/*<MyDatePicker />*/}
+                        {timeframe.picker}
                     </AccordionBody>
                 </AccordionItem> 
             )

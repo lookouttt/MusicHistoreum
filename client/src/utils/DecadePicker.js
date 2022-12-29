@@ -1,6 +1,21 @@
-import { useState } from 'react';
-import { DatePicker } from 'react-datepicker';
+import React, { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import styled from "styled-components";
 import { getYear } from 'date-fns';
+
+const Styles = styled.div`
+  .react-datepicker-wrapper,
+  .react-datepicker__input-container,
+  .react-datepicker__input-container input {
+    width: 175px;
+  }
+
+  .react-datepicker__close-icon::before,
+  .react-datepicker__close-icon::after {
+    background-color: grey;
+  }
+`;
 
 const DecadePicker = () => {
     const [startDate, setStartDate] = useState(null);
@@ -9,13 +24,16 @@ const DecadePicker = () => {
       return year%10 === 0;
     };
     return (
-      <DatePicker
-        selected={startDate}
-        onChange={(date) => setStartDate(date)}
-        showYearPicker
-        dateFormat="yyyy"
-        filterDate={isDecade}
-      />
+        <Styles>
+            <DatePicker
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                showYearPicker
+                dateFormat="yyyy"
+                filterDate={isDecade}
+            />
+        </Styles>
+
     );
   };
 
