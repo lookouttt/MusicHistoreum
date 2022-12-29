@@ -19,18 +19,20 @@ const Styles = styled.div`
 
 const DecadePicker = () => {
     const [startDate, setStartDate] = useState(null);
-    const isDecade = (date) => {
-      const year = getYear(date);
-      return year%10 === 0;
-    };
+    const onChange = (date) => {
+        const year = getYear(date);
+        const newYear = parseInt(year/10);
+        const decade = newYear*10;
+        setStartDate(new Date(decade, 0, 1));
+    }
+
     return (
         <Styles>
             <DatePicker
                 selected={startDate}
-                onChange={(date) => setStartDate(date)}
+                onChange = {onChange}
                 showYearPicker
                 dateFormat="yyyy"
-                filterDate={isDecade}
             />
         </Styles>
 
