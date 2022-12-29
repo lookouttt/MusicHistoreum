@@ -19,7 +19,7 @@ const Hero = () => {
                 </section>
             </Col>
         </Row>
-
+        
     );
 }
 
