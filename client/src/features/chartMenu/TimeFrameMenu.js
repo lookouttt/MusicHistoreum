@@ -6,10 +6,11 @@ import YearPicker from '../../utils/YearPicker';
 import DecadePicker from '../../utils/DecadePicker';
 
 const TimeFrameMenu = (({bWeekly}) => {
-    let index = 1;
+    let index;
     let timeframes = [];
 
     if (bWeekly) {
+        index = 1;
         timeframes = [
             {tf: "Weekly", picker: <><WeekPicker/></>},
             {tf: "Monthly", picker: <><MonthPicker/></>},
@@ -17,6 +18,7 @@ const TimeFrameMenu = (({bWeekly}) => {
             {tf: "Decade", picker: <><DecadePicker/></>}
         ];
     } else {
+        index = 2;
         timeframes = [
             {tf: "Monthly", picker: <><MonthPicker/></>},
             {tf: "Yearly", picker: <><YearPicker/></>},
@@ -40,5 +42,6 @@ const TimeFrameMenu = (({bWeekly}) => {
         })
     );
 });
+
 
 export default TimeFrameMenu;

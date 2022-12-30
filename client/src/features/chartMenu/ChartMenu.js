@@ -1,16 +1,21 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Accordion, AccordionBody, AccordionItem, AccordionHeader } from 'reactstrap';
 import SingleChartMenu from './SingleChartMenu';
+import { updatePendingType, updatePendingId } from '../chart/chartsSlice';
 
 const ChartMenu = () => {
-    const [mainOpen, setMainOpen] = useState(false);
+    const [mainOpen, setMainOpen] = useState(null);
+    const dispatch = useDispatch();
 
     const mainToggle = (id) => {
       if (mainOpen === id) {
-        setMainOpen();
+        setMainOpen(null);
       } else {
         setMainOpen(id);
+        dispatch(updatePendingType(id));
       }
+      console.log('mainOpen: ',id);
     };
 
     const [songsOpen, setSongsOpen] = useState(false);
@@ -19,7 +24,9 @@ const ChartMenu = () => {
         setSongsOpen();
       } else {
         setSongsOpen(id);
+        dispatch(updatePendingId(id));
       }
+      console.log('songsOpen: ', id);
     };
 
     const [albumsOpen, setAlbumsOpen] = useState(false);
@@ -28,7 +35,9 @@ const ChartMenu = () => {
         setAlbumsOpen();
       } else {
         setAlbumsOpen(id);
+        dispatch(updatePendingId(id));
       }
+      console.log('albumsOpen: ', id);
     };
 
     return(
