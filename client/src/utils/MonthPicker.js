@@ -26,6 +26,7 @@ const MonthPicker = () => {
                 dateFormat="MM/yyyy"
                 showMonthYearPicker
                 showFullMonthYearPicker
+                placeholderText="Select a month"
             />
         </Styles>
 

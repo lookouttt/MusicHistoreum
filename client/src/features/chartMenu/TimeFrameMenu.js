@@ -4,13 +4,10 @@ import WeekPicker from '../../utils/WeekPicker';
 import MonthPicker from '../../utils/MonthPicker';
 import YearPicker from '../../utils/YearPicker';
 import DecadePicker from '../../utils/DecadePicker';
-import MyDatePicker from '../../utils/WeekPicker';
-import { getDay } from 'date-fns';
 
 const TimeFrameMenu = (({bWeekly}) => {
     let index = 1;
     let timeframes = [];
-    const [startDate, setStartDate] = useState(new Date());
 
     if (bWeekly) {
         timeframes = [

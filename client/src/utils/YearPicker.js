@@ -25,6 +25,7 @@ const YearPicker = () => {
                 onChange={(date) => setStartDate(date)}
                 showYearPicker
                 dateFormat="yyyy"
+                placeholderText="Select a year"
             />
         </Styles>
 

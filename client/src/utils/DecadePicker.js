@@ -33,6 +33,7 @@ const DecadePicker = () => {
                 onChange = {onChange}
                 showYearPicker
                 dateFormat="yyyy"
+                placeholderText="Select year in desired decade"
             />
         </Styles>
 
