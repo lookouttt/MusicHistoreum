@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { AccordionBody, AccordionItem, AccordionHeader } from 'reactstrap';
 import WeekPicker from '../../utils/WeekPicker';
 import MonthPicker from '../../utils/MonthPicker';

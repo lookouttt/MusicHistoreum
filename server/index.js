@@ -35,22 +35,26 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
             if (chartTime === 'Week') {
                 const chart = await pool.query(`SELECT get_weekly_${chartType}_chart($1, $2)`, [chartId, chartDate]);
                 res.json(chart.rows);
+                console.log(chart.rows);
             }
             else if (chartTime === 'Month') {
                 const endDate = dayjs(startDate).endOf('month');
                 const chart = await pool.query(`SELECT get_range_${chartType}_chart($1, $2, $3)`, [chartId, startDate, endDate]);
                 res.json(chart.rows);
+                console.log(chart.rows);
             }
             else if (chartTime === 'Year') {
                 const endDate = dayjs(startDate).endOf('year');
                 const chart = await pool.query(`SELECT get_range_${chartType}_chart($1, $2, $3)`, [chartId, startDate, endDate]);
                 res.json(chart.rows);
+                console.log(chart.rows);
             }
             else if (chartTime === 'Decade') {
                 const endOfYear = dayjs(startDate).endOf('year');
                 const endDate = dayjs(endOfYear).add(9,'year');
                 const chart = await pool.query(`SELECT get_range_${chartType}_chart($1, $2, $3)`, [chartId, startDate, endDate]);
                 res.json(chart.rows);
+                console.log(chart.rows);
             }
             else {
                 res.status(422).send("Invalid chart timeframe.  Chart timeframe must be Week, Month, Year, or Decade.");

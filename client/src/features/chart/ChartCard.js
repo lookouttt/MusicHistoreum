@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Table from '../../components/Table';
-import ChartColumns from '../../app/shared/WEEK_SONG_COLUMNS';
+import ChartColumns from "./ChartColumns";
 import { Card, CardBody, CardHeader } from "reactstrap";
 import getTestResponse from '../../services/TestService';
 import ChartStyles from "./ChartStyles";
@@ -8,7 +8,7 @@ import ChartStyles from "./ChartStyles";
 function ChartCard({chart}) {
 
     const columns = useMemo(
-        () => ChartColumns, []
+        () => ChartColumns(chart), [chart]
     );
 
     const [data, setData] = useState([]);
@@ -16,11 +16,12 @@ function ChartCard({chart}) {
     useEffect(() => { 
         const fetchData = async () => {
             const chartData = await getTestResponse({chart});
+            console.log(chartData);
             setData(chartData);
         }
 
         fetchData();
-    }, []);
+    }, [chart]);
 
     return data && (
         <>

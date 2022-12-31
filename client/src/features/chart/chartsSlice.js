@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, current } from '@reduxjs/toolkit';
+
 
 const initialState = {
     currentChart: {
@@ -14,6 +15,7 @@ const initialState = {
         chartDate: "1989-11-25"
     }  
 };
+
 
 const chartsSlice = createSlice({
     name: 'charts',
@@ -67,9 +69,10 @@ const chartsSlice = createSlice({
             console.log('pending date: ', state.pendingChart);
         },
         updateCurrentChart: (state) => {
-            console.log('current before: ', state.currentChart);
+            console.log('current before: ', current(state.currentChart));
             state.currentChart = state.pendingChart;
-            console.log('current after: ', state.currentChart);
+            console.log('current after: ', current(state.currentChart));
+
         }
     }
 });

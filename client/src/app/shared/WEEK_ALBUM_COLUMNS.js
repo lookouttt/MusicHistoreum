@@ -1,4 +1,4 @@
-export const WEEK_ALBUM_COLUMNS = [
+const WEEK_ALBUM_COLUMNS = [
     {
         Header: 'Rank',
         accessor: 'album_rank',
@@ -12,3 +12,5 @@ export const WEEK_ALBUM_COLUMNS = [
         accessor: 'artist_name',
     },
 ];
+
+export default WEEK_ALBUM_COLUMNS;

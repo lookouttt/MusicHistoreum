@@ -1,4 +1,4 @@
-export const RANGE_ALBUM_COLUMNS = [
+const RANGE_ALBUM_COLUMNS = [
     {
         Header: 'ID',
         accessor: 'album_id',
@@ -32,3 +32,5 @@ export const RANGE_ALBUM_COLUMNS = [
         accessor: 'weeks',
     },
 ];
+
+export default RANGE_ALBUM_COLUMNS;
