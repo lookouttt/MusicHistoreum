@@ -1,5 +1,9 @@
 const RANGE_SONG_COLUMNS = [
     {
+        Header: 'Rank',
+        accessor: 'song_rank'
+    },
+    {
         Header: 'ID',
         accessor: 'song_id',
     },
