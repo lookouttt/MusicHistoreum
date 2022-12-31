@@ -30,13 +30,11 @@ const WeekPicker = () => {
     };
 
     const onChange = (date) => {
-        console.log('WeekPicker Before: ', date)
-        const chartDate = format(date, "yyyy-MM-dd");
-        console.log('Do I get here 1');
         setStartDate(date);
-        console.log('Do I get here 2');
+        const chartDate = format(date, "yyyy-MM-dd");
+        console.log('WeekPicker Before: ', chartDate)
         dispatch(updatePendingDate(chartDate));
-        console.log('WeekPicker After: ', date);
+        console.log('WeekPicker After: ', chartDate);
         dispatch(updateCurrentChart());
         navigate('/Chart');
     }

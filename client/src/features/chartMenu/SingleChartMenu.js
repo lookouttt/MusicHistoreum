@@ -17,7 +17,6 @@ const SingleChartMenu = (({chartType}) => {
         setChartOpen(id);
         dispatch(updatePendingTimeframe(id));
       }
-      console.log('chartOpen: ',id);
     };
 
 

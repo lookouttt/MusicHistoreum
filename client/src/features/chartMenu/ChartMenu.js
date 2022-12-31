@@ -15,7 +15,6 @@ const ChartMenu = () => {
         setMainOpen(id);
         dispatch(updatePendingType(id));
       }
-      console.log('mainOpen: ',id);
     };
 
     const [songsOpen, setSongsOpen] = useState(false);
@@ -26,7 +25,6 @@ const ChartMenu = () => {
         setSongsOpen(id);
         dispatch(updatePendingId(id));
       }
-      console.log('songsOpen: ', id);
     };
 
     const [albumsOpen, setAlbumsOpen] = useState(false);
@@ -37,7 +35,6 @@ const ChartMenu = () => {
         setAlbumsOpen(id);
         dispatch(updatePendingId(id));
       }
-      console.log('albumsOpen: ', id);
     };
 
     return(
