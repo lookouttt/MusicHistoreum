@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import Table from '../../components/Table';
 import ChartColumns from "./ChartColumns";
 import { Card, CardBody, CardHeader } from "reactstrap";
-import getTestResponse from '../../services/TestService';
+import fetchChartData from '../../services/fetchChartData';
 import ChartStyles from "./ChartStyles";
 
 function ChartCard({chart}) {
@@ -15,7 +15,7 @@ function ChartCard({chart}) {
 
     useEffect(() => { 
         const fetchData = async () => {
-            const chartData = await getTestResponse({chart});
+            const chartData = await fetchChartData({chart});
             console.log(chartData);
             setData(chartData);
         }

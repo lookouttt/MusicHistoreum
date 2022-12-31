@@ -1,4 +1,4 @@
-async function getTestResponse({chart}) {
+async function fetchChartData({chart}) {
     const { chartId, chartType, chartTimeframe, chartDate } = chart;
     const response = await fetch(`http://localhost:5000/chart/${chartId}/${chartType}/${chartTimeframe}/${chartDate}`);
     const data = await response.json();
@@ -20,4 +20,4 @@ async function getTestResponse({chart}) {
     }
 }
 
-export default getTestResponse;
+export default fetchChartData;
