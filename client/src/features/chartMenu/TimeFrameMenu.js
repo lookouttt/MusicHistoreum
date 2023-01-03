@@ -4,24 +4,24 @@ import MonthPicker from '../../utils/MonthPicker';
 import YearPicker from '../../utils/YearPicker';
 import DecadePicker from '../../utils/DecadePicker';
 
-const TimeFrameMenu = (({bWeekly}) => {
+const TimeFrameMenu = (({bWeekly, firstDate, lastDate}) => {
     let index;
     let timeframes = [];
 
     if (bWeekly) {
         index = 1;
         timeframes = [
-            {tf: "Weekly", picker: <><WeekPicker/></>},
-            {tf: "Monthly", picker: <><MonthPicker/></>},
-            {tf: "Yearly", picker: <><YearPicker/></>},
-            {tf: "Decade", picker: <><DecadePicker/></>}
+            {tf: "Weekly", picker: <><WeekPicker firstDate={firstDate} lastDate={lastDate}/></>},
+            {tf: "Monthly", picker: <><MonthPicker firstDate={firstDate} lastDate={lastDate}/></>},
+            {tf: "Yearly", picker: <><YearPicker firstDate={firstDate} lastDate={lastDate}/></>},
+            {tf: "Decade", picker: <><DecadePicker firstDate={firstDate} lastDate={lastDate}/></>}
         ];
     } else {
         index = 2;
         timeframes = [
-            {tf: "Monthly", picker: <><MonthPicker/></>},
-            {tf: "Yearly", picker: <><YearPicker/></>},
-            {tf: "Decade", picker: <><DecadePicker/></>}
+            {tf: "Monthly", picker: <><MonthPicker firstDate={firstDate} lastDate={lastDate}/></>},
+            {tf: "Yearly", picker: <><YearPicker firstDate={firstDate} lastDate={lastDate}/></>},
+            {tf: "Decade", picker: <><DecadePicker firstDate={firstDate} lastDate={lastDate}/></>}
         ];
     }
 

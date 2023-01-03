@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import styled from "styled-components";
-import { getDay, format, parseISO } from 'date-fns';
+import { addDays, getDay, format, parseISO } from 'date-fns';
 import { updateCurrentChart, updatePendingDate } from '../features/chart/chartsSlice';
 
 const Styles = styled.div`
@@ -20,7 +20,9 @@ const Styles = styled.div`
   }
 `;
 
-const WeekPicker = () => {
+const WeekPicker = (dates) => {
+    const { firstDate, lastDate } = dates;
+    //const [startDate, setStartDate] = useState(lastDate);
     const [startDate, setStartDate] = useState(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -44,6 +46,8 @@ const WeekPicker = () => {
             <DatePicker
                 selected={startDate}
                 onChange={onChange}
+                minDate={new Date(firstDate)}
+                maxDate={addDays(new Date(lastDate),1)}
                 filterDate={isSaturday}
                 placeholderText="Select a chart date"
             />

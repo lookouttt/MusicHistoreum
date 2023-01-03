@@ -10,6 +10,7 @@ const SingleChartMenu = (({chartType}) => {
     const [chartOpen, setChartOpen] = useState(false);
     const dispatch = useDispatch();
 
+
     const chartToggle = (id) => {
       if (chartOpen === id) {
         setChartOpen();
@@ -22,6 +23,7 @@ const SingleChartMenu = (({chartType}) => {
 
     return (
         chartList.map((chart) => {
+            const bWeekly = (parseInt(chart.ChartId) <= 2) ? true : false;
 
             return (
                 <AccordionItem>
@@ -30,7 +32,7 @@ const SingleChartMenu = (({chartType}) => {
                     </AccordionHeader>
                     <AccordionBody accordionId={String(chart.ChartId)}>
                         <Accordion flush open={chartOpen} toggle={chartToggle}>
-                            <TimeFrameMenu bWeekly={true}/>
+                            <TimeFrameMenu bWeekly={bWeekly} firstDate={chart.FirstDate} lastDate={chart.LastDate}/>
                         </Accordion>
                     </AccordionBody>
                 </AccordionItem>

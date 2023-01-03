@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import styled from "styled-components";
-import { getYear, format } from 'date-fns';
+import { addDays, getYear, format } from 'date-fns';
 import { updateCurrentChart, updatePendingDate } from '../features/chart/chartsSlice';
 
 const Styles = styled.div`
@@ -20,7 +20,8 @@ const Styles = styled.div`
   }
 `;
 
-const DecadePicker = () => {
+const DecadePicker = (dates) => {
+    const { firstDate, lastDate } = dates;
     const [startDate, setStartDate] = useState(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -43,6 +44,8 @@ const DecadePicker = () => {
             <DatePicker
                 selected={startDate}
                 onChange = {onChange}
+                minDate={new Date(firstDate)}
+                maxDate={addDays(new Date(lastDate),1)}
                 showYearPicker
                 dateFormat="yyyy"
                 placeholderText="Select year in desired decade"
