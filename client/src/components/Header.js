@@ -64,7 +64,7 @@ const Header = () => {
                     <Navbar expand='md' id='bottomNav'>
                         <Nav className='mx-auto' navbar justify>
                             <NavItem>
-                                <Dropdown nav
+                                <Dropdown nav 
                                     isOpen={dropdownOpen}
                                     toggle={() => setdropdownOpen(!dropdownOpen)}>
                                     <DropdownToggle nav caret id='bottomNavItems'>
@@ -76,17 +76,17 @@ const Header = () => {
                                 </Dropdown>
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/Chart' id='bottomNavItems'>
+                                <NavLink className='nav-link' to='/Artist' id='bottomNavItems'>
                                     Artists
                                 </NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/' id='bottomNavItems'>
+                                <NavLink className='nav-link' to='/Features' id='bottomNavItems'>
                                     Future Features
                                 </NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/' id='bottomNavItems'>
+                                <NavLink className='nav-link' to='/About' id='bottomNavItems'>
                                     About the Site
                                 </NavLink>
                             </NavItem>

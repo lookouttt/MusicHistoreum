@@ -1,10 +1,12 @@
 import { Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
-import HomePage from './pages/HomePage';
-
 import './App.css';
-import WeeklyChartPage from './pages/WeeklyChartPage';
 
+import HomePage from './pages/HomePage';
+import ChartPage from './pages/ChartPage';
+import ArtistPage from './pages/ArtistPage';
+import FeaturesPage from './pages/FeaturesPage';
+import AboutPage from './pages/AboutPage';
 
 function App() {
     console.log('This is the beginning');
@@ -13,7 +15,10 @@ function App() {
             <Header />
             <Routes>
                 <Route path='/' element={<HomePage />}/>
-                <Route path='/Chart' element={<WeeklyChartPage />}/>
+                <Route path='/Chart' element={<ChartPage />}/>
+                <Route path='/Artist' element={<ArtistPage />}/>
+                <Route path='/Features' element={<FeaturesPage />}/>
+                <Route path='/About' element={<AboutPage />}/>
             </Routes>
         </div>
     );

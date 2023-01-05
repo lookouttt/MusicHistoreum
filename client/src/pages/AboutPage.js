@@ -1,12 +1,11 @@
 import { Container } from "reactstrap";
-import Hero from '../components/Hero';
 
-const HomePage = () => {
+const AboutPage = () => {
     return (
         <Container fluid>
-            <Hero />
+            <p>This will be the About Page</p>
         </Container>
     );
 };
 
-export default HomePage;
+export default AboutPage;
