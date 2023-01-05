@@ -1,5 +1,6 @@
 //import heroImage from '../app/assets/img/vinyl-1595847.jpg';
 import { Row, Col } from "reactstrap";
+import './Hero.css';
 
 const Hero = () => {
     return (

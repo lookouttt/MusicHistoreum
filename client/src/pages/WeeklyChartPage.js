@@ -10,7 +10,7 @@ const WeeklyChartPage = () => {
 
     return (
         <Container>
-            <SubHeader current='Weekly Chart' />
+            {/* <SubHeader current='Weekly Chart' /> */}
             <ChartCard chart={currentChart} />
         </Container>
     );

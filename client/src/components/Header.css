@@ -1,0 +1,31 @@
+#topNav {
+    background-color: #4A4A4A;
+    min-height: 3rem;
+    width: 100%
+}
+
+#bottomNav {
+    background-color: #5D8FB5;
+    min-height: 2rem;
+}
+
+#bottomNavItems {
+    color: white;
+    padding: 2px 125px;
+    margin: 2px;
+    border: 1px solid #3471a0;
+    border-radius: 5px;
+}
+
+#bottomNavItems:hover {
+    color:rgb(114, 229, 233);
+}
+
+#mainTitle {
+    background-color: white;
+    color: black;
+    text-align: center;
+    min-height: 4rem;
+    margin-top: 1rem;
+    display: inline-block;
+}

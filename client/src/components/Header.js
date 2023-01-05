@@ -20,6 +20,7 @@ import {
 } from 'reactstrap';
 import { NavLink } from 'react-router-dom';
 import ChartMenu from '../features/chartMenu/ChartMenu';
+import './Header.css';
 
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -61,34 +62,31 @@ const Header = () => {
             <Row>
                 <Col>
                     <Navbar expand='md' id='bottomNav'>
-                        <Nav className='ms-auto' navbar>
+                        <Nav className='mx-auto' navbar justify>
                             <NavItem>
                                 <Dropdown nav
                                     isOpen={dropdownOpen}
                                     toggle={() => setdropdownOpen(!dropdownOpen)}>
-                                    <DropdownToggle nav caret>
+                                    <DropdownToggle nav caret id='bottomNavItems'>
                                         Charts
                                     </DropdownToggle>
                                     <DropdownMenu>
                                         <ChartMenu />
                                     </DropdownMenu>
                                 </Dropdown>
-                                {/* <NavLink className='nav-link' to='/Chart'>
-                                    Charts
-                                </NavLink> */}
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/Chart'>
+                                <NavLink className='nav-link' to='/Chart' id='bottomNavItems'>
                                     Artists
                                 </NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/'>
+                                <NavLink className='nav-link' to='/' id='bottomNavItems'>
                                     Future Features
                                 </NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/'>
+                                <NavLink className='nav-link' to='/' id='bottomNavItems'>
                                     About the Site
                                 </NavLink>
                             </NavItem>

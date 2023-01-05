@@ -5,7 +5,7 @@ import Hero from '../components/Hero';
 const HomePage = () => {
     return (
         <Container fluid>
-            <SubHeader current='Home' />
+            {/* <SubHeader current='Home' /> */}
             <Hero />
         </Container>
     );
