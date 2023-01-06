@@ -6,6 +6,7 @@ import { Card, CardBody, CardHeader } from "reactstrap";
 import fetchChartData from '../../services/fetchChartData';
 import ChartStyles from "./ChartStyles";
 import { selectChartsMenu } from "../chartMenu/chartsMenusSlice";
+import './ChartCard.css'
 
 function ChartCard({chart}) {
 
@@ -31,7 +32,7 @@ function ChartCard({chart}) {
 
     return data && (
         <>
-        <Card>
+        <Card className='chartCard'>
             <CardHeader>
                 <h1>{chartTitle}</h1>
             </CardHeader>

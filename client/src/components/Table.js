@@ -22,7 +22,7 @@ export default function Table({ columns, data }) {
   } = useTable({
     columns,
     data,
-    initialState: { pageIndex: 2 },
+    initialState: { pageIndex: 0, pageSize: 20 },
     },
     usePagination
   );

@@ -8,7 +8,8 @@ const ChartStyles= styled.div`
         border: 1px solid black;
         maxHeight: 30rem;
         overflow: auto;
-
+        margin-left: auto;
+        margin-right: auto;
         tr {
             :last-child {
                 td {
@@ -32,6 +33,11 @@ const ChartStyles= styled.div`
             border-right: 0;
             }
         }
+    }
+    .pagination {
+        padding-top: 1rem;
+        display: flex;
+        justify-content: center;
     }
 `
 
