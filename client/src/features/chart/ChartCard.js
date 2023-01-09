@@ -6,7 +6,9 @@ import { Card, CardBody, CardHeader } from "reactstrap";
 import fetchChartData from '../../services/fetchChartData';
 import ChartStyles from "./ChartStyles";
 import { selectChartsMenu } from "../chartMenu/chartsMenusSlice";
+import { format } from 'date-fns';
 import './ChartCard.css'
+const dayjs = require("dayjs");
 
 function ChartCard({chart}) {
 
@@ -19,10 +21,24 @@ function ChartCard({chart}) {
     const chartList = useSelector(selectChartsMenu(chartType));
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
     
-    const chartTitle = currentChart.ChartTitle;
-    // const chartTitle = () => {
-    //     return("This is a test");
-    // };
+    const chartTitle = () => {
+        let formattedDate;
+        switch (chartTimeframe) {
+            case 'Week':
+                formattedDate = format(new Date(dayjs(chartDate)), 'MMMM do, yyyy')
+                return(`${currentChart.ChartTitle} for ${chartTimeframe} of ${formattedDate}`);
+            case 'Month':
+                formattedDate = format(new Date(dayjs(chartDate)), 'MMMM  yyyy')
+                return(`${currentChart.ChartTitle} of ${formattedDate}`);
+            case 'Year':
+                formattedDate = format(new Date(dayjs(chartDate)), 'yyyy')
+                return(`${currentChart.ChartTitle} of ${formattedDate}`);
+            case 'Decade':
+                formattedDate = format(new Date(dayjs(chartDate)), 'yyyy')
+                return(`${currentChart.ChartTitle} of the ${formattedDate}s`);
+        }
+
+    };
 
     useEffect(() => { 
         const fetchData = async () => {
@@ -39,8 +55,7 @@ function ChartCard({chart}) {
         <>
         <Card className='chartCard'>
             <CardHeader className='chartHeader'>
-                {/* <h1>{chartTitle}</h1> */}
-                <h1>{chartTitle} for {chartTimeframe} of {chartDate}</h1>
+                <h1>{chartTitle()}</h1>
             </CardHeader>
             <CardBody>
                 <ChartStyles>
