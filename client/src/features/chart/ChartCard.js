@@ -13,11 +13,16 @@ function ChartCard({chart}) {
     const columns = useMemo(
         () => ChartColumns(chart), [chart]
     );
-    const { chartType, chartId } = chart;
+
+    const { chartType, chartId, chartTimeframe, chartDate } = chart;
     const [data, setData] = useState([]);
     const chartList = useSelector(selectChartsMenu(chartType));
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
+    
     const chartTitle = currentChart.ChartTitle;
+    // const chartTitle = () => {
+    //     return("This is a test");
+    // };
 
     useEffect(() => { 
         const fetchData = async () => {
@@ -33,8 +38,9 @@ function ChartCard({chart}) {
     return data && (
         <>
         <Card className='chartCard'>
-            <CardHeader>
-                <h1>{chartTitle}</h1>
+            <CardHeader className='chartHeader'>
+                {/* <h1>{chartTitle}</h1> */}
+                <h1>{chartTitle} for {chartTimeframe} of {chartDate}</h1>
             </CardHeader>
             <CardBody>
                 <ChartStyles>
