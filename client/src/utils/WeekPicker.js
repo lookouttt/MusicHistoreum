@@ -50,6 +50,9 @@ const WeekPicker = (dates) => {
                 maxDate={addDays(new Date(lastDate),1)}
                 filterDate={isSaturday}
                 placeholderText="Select a chart date"
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode='select'
             />
         </Styles>
 
