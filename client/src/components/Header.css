@@ -9,6 +9,10 @@
     min-height: 2rem;
 }
 
+#mainDropdown {
+    padding: 0rem 0.5rem;
+}
+
 #bottomNavItems {
     color: white;
     padding: 2px 125px;

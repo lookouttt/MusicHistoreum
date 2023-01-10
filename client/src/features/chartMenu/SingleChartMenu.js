@@ -4,6 +4,7 @@ import { Accordion, AccordionBody, AccordionItem, AccordionHeader } from 'reacts
 import { selectChartsMenu } from './chartsMenusSlice';
 import TimeFrameMenu from './TimeFrameMenu';
 import { updatePendingTimeframe } from '../chart/chartsSlice';
+import './SingleChartMenu.css';
 
 const SingleChartMenu = (({chartType}) => {
     const chartList = useSelector(selectChartsMenu(chartType));
@@ -27,10 +28,10 @@ const SingleChartMenu = (({chartType}) => {
 
             return (
                 <AccordionItem>
-                    <AccordionHeader targetId={String(chart.ChartId)}>
+                    <AccordionHeader targetId={String(chart.ChartId)} className='chartHeader'>
                         {chart.ChartTitle}
                     </AccordionHeader>
-                    <AccordionBody accordionId={String(chart.ChartId)}>
+                    <AccordionBody accordionId={String(chart.ChartId)} className='chartBody'>
                         <Accordion flush open={chartOpen} toggle={chartToggle}>
                             <TimeFrameMenu bWeekly={bWeekly} firstDate={chart.FirstDate} lastDate={chart.LastDate}/>
                         </Accordion>

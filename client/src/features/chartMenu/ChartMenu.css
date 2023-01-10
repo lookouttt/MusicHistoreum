@@ -1,0 +1,8 @@
+#songHeader .accordion-button, #albumHeader .accordion-button {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+#songBody .accordion-body, #albumBody .accordion-body {
+    padding: 0.5rem 0.5rem;
+}

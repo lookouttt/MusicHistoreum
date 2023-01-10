@@ -64,13 +64,13 @@ const Header = () => {
                     <Navbar expand='md' id='bottomNav'>
                         <Nav className='mx-auto' navbar justify>
                             <NavItem>
-                                <Dropdown nav 
+                                <Dropdown nav
                                     isOpen={dropdownOpen}
                                     toggle={() => setdropdownOpen(!dropdownOpen)}>
                                     <DropdownToggle nav caret id='bottomNavItems'>
                                         Charts
                                     </DropdownToggle>
-                                    <DropdownMenu>
+                                    <DropdownMenu  id='mainDropdown'>
                                         <ChartMenu />
                                     </DropdownMenu>
                                 </Dropdown>

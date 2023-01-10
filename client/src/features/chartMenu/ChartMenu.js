@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { Accordion, AccordionBody, AccordionItem, AccordionHeader } from 'reactstrap';
 import SingleChartMenu from './SingleChartMenu';
 import { updatePendingType, updatePendingId } from '../chart/chartsSlice';
+import './ChartMenu.css';
 
 const ChartMenu = () => {
     const [mainOpen, setMainOpen] = useState(null);
@@ -40,21 +41,21 @@ const ChartMenu = () => {
     return(
         <Accordion flush open={mainOpen} toggle={mainToggle}>
             <AccordionItem>
-                <AccordionHeader targetId='1'>
+                <AccordionHeader targetId='1' id='songHeader'>
                     Song
                 </AccordionHeader>
-                <AccordionBody accordionId='1'>
-                    <Accordion flush open={songsOpen} toggle={songsToggle}>
+                <AccordionBody accordionId='1' id='songBody'>
+                    <Accordion flush open={songsOpen} toggle={songsToggle} id='songAccordion'>
                         <SingleChartMenu chartType='Song'/>
                     </Accordion>
                 </AccordionBody>
             </AccordionItem>
             <AccordionItem>
-                <AccordionHeader targetId='2'>
+                <AccordionHeader targetId='2' id='albumHeader'>
                     Album
                 </AccordionHeader>
-                <AccordionBody accordionId='2'>
-                    <Accordion flush open={albumsOpen} toggle={albumsToggle}>
+                <AccordionBody accordionId='2' id='albumBody'>
+                    <Accordion flush open={albumsOpen} toggle={albumsToggle} id='albumAccordion'>
                         <SingleChartMenu chartType='Album'/>
                     </Accordion>
                 </AccordionBody>

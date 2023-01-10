@@ -3,6 +3,7 @@ import WeekPicker from '../../utils/WeekPicker';
 import MonthPicker from '../../utils/MonthPicker';
 import YearPicker from '../../utils/YearPicker';
 import DecadePicker from '../../utils/DecadePicker';
+import './TimeFrameMenu.css';
 
 const TimeFrameMenu = (({bWeekly, firstDate, lastDate}) => {
     let index;
@@ -30,10 +31,10 @@ const TimeFrameMenu = (({bWeekly, firstDate, lastDate}) => {
 
             return (
                 <AccordionItem>
-                    <AccordionHeader targetId={String(index)}>
+                    <AccordionHeader targetId={String(index)} className='timeframeHeader'>
                         {timeframe.tf}
                     </AccordionHeader>
-                    <AccordionBody accordionId={String(index++)}>
+                    <AccordionBody accordionId={String(index++)} className='timeframeBody'>
                         {timeframe.picker}
                     </AccordionBody>
                 </AccordionItem> 

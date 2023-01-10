@@ -1,0 +1,8 @@
+.timeframeHeader .accordion-button {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.timeframeBody .accordion-body {
+    padding: 0rem 0.5rem;
+}
