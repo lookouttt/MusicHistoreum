@@ -7,7 +7,8 @@ import fetchChartData from '../../services/fetchChartData';
 import ChartStyles from "./ChartStyles";
 import { selectChartsMenu } from "../chartMenu/chartsMenusSlice";
 import { format } from 'date-fns';
-import './ChartCard.css'
+import ChartNav from './ChartNav';
+import './ChartCard.css';
 const dayjs = require("dayjs");
 
 function ChartCard({chart}) {
@@ -36,6 +37,8 @@ function ChartCard({chart}) {
             case 'Decade':
                 formattedDate = format(new Date(dayjs(chartDate)), 'yyyy')
                 return(`${currentChart.ChartTitle} of the ${formattedDate}s`);
+            default:
+                break;
         }
 
     };
@@ -58,6 +61,7 @@ function ChartCard({chart}) {
                 <h1>{chartTitle()}</h1>
             </CardHeader>
             <CardBody>
+                <ChartNav chart={chart}/>
                 <ChartStyles>
                     <Table columns={columns} data={data} />
                 </ChartStyles>

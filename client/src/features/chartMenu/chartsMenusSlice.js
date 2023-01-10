@@ -23,7 +23,7 @@ export const selectChartsMenu = (chartType) => (state) => {
 
 export const selectSpecificChart = (chartType, id) => state => {
     if (chartType === 'Song')
-        return state.chartsMenu.songChartsArray.find((chart) => chart.chartId === parseInt(id));
+        return state.chartsMenu.songChartsArray.find((chart) => chart.ChartId === parseInt(id));
     else
-        return state.chartsMenu.albumChartsArray.find((chart) => chart.chartId === parseInt(id));
+        return state.chartsMenu.albumChartsArray.find((chart) => chart.ChartId === parseInt(id));
 }
