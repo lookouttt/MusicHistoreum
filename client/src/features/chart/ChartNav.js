@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Button } from "reactstrap";
+import { Button, Container, Row, Col } from "reactstrap";
 import { selectSpecificChart } from "../chartMenu/chartsMenusSlice";
 import WeekPicker from '../../utils/WeekPicker';
 import MonthPicker from '../../utils/MonthPicker';
@@ -29,11 +29,19 @@ const ChartNav = ({chart}) => {
     }
 
     return (
-        <div>
-            <Button>Prev</Button>
-            {picker}
-            <Button>Next</Button>
-        </div>
+        <Container className='chartNavCont'>
+            <Row className="row-cols-lg-auto g-3">
+                <Col>
+                    <Button>Prev</Button>
+                </Col>
+                <Col>
+                    {picker}
+                </Col>
+                <Col>
+                    <Button>Next</Button>
+                </Col>
+            </Row>
+        </Container>
     );
 };
 

@@ -5,3 +5,8 @@
 .chartHeader {
     text-align: center;
 }
+
+.chartNavCont {
+    display: flex;
+    justify-content: center;
+}
