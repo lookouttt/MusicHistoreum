@@ -22,6 +22,16 @@ const ChartStyles= styled.div`
             background-color: #8F9AA5;
         }
 
+        tr:nth-child(odd) {
+            background-color: white;
+        }
+
+        th {
+            background-color: #5D8FB5;
+            color: white;
+            text-align: center;
+        }
+
         th,
         td {
             margin: 0;

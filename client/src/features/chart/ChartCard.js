@@ -60,7 +60,7 @@ function ChartCard({chart}) {
             <CardHeader className='chartHeader'>
                 <h1>{chartTitle()}</h1>
             </CardHeader>
-            <CardBody>
+            <CardBody className='chartBody'>
                 <ChartNav chart={chart}/>
                 <ChartStyles>
                     <Table columns={columns} data={data} />

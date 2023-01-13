@@ -10,3 +10,7 @@
     display: flex;
     justify-content: center;
 }
+
+.chartBody {
+    background-image: linear-gradient(to bottom right, #8dc3ec, #8bb5d4, #8dabc0);
+}

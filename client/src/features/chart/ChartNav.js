@@ -32,13 +32,13 @@ const ChartNav = ({chart}) => {
         <Container className='chartNavCont'>
             <Row className="row-cols-lg-auto g-3">
                 <Col>
-                    <Button>Prev</Button>
+                    <Button color='primary' size='sm'>Prev</Button>
                 </Col>
                 <Col>
                     {picker}
                 </Col>
                 <Col>
-                    <Button>Next</Button>
+                    <Button color='primary' size='sm'>Next</Button>
                 </Col>
             </Row>
         </Container>
