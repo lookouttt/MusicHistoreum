@@ -31,10 +31,10 @@ const TimeFrameMenu = (({bWeekly, firstDate, lastDate}) => {
 
             return (
                 <AccordionItem>
-                    <AccordionHeader targetId={String(index)} className='timeframeHeader'>
+                    <AccordionHeader targetId={String(index)} className='timeframeMenuHeader'>
                         {timeframe.tf}
                     </AccordionHeader>
-                    <AccordionBody accordionId={String(index++)} className='timeframeBody'>
+                    <AccordionBody accordionId={String(index++)} className='timeframeMenuBody'>
                         {timeframe.picker}
                     </AccordionBody>
                 </AccordionItem> 

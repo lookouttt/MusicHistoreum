@@ -28,10 +28,10 @@ const SingleChartMenu = (({chartType}) => {
 
             return (
                 <AccordionItem>
-                    <AccordionHeader targetId={String(chart.ChartId)} className='chartHeader'>
+                    <AccordionHeader targetId={String(chart.ChartId)} className='chartMenuHeader'>
                         {chart.ChartTitle}
                     </AccordionHeader>
-                    <AccordionBody accordionId={String(chart.ChartId)} className='chartBody'>
+                    <AccordionBody accordionId={String(chart.ChartId)} className='chartMenuBody'>
                         <Accordion flush open={chartOpen} toggle={chartToggle}>
                             <TimeFrameMenu bWeekly={bWeekly} firstDate={chart.FirstDate} lastDate={chart.LastDate}/>
                         </Accordion>

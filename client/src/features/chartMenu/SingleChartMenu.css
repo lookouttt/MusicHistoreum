@@ -1,8 +1,8 @@
-.chartHeader .accordion-button {
+.chartMenuHeader > .accordion-button {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
 }
 
-.chartBody .accordion-body {
+.chartMenuBody > .accordion-body {
     padding: 0rem 0.5rem;
 }
