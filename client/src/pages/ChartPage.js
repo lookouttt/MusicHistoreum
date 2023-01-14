@@ -2,8 +2,7 @@ import { useSelector } from 'react-redux';
 import { Container, Row, Col } from "reactstrap";
 import ChartCard from "../features/chart/ChartCard";
 import { selectCurrentChart } from "../features/chart/chartsSlice";
-//import Hero from '../components/Hero';
-import '../components/Hero.css';
+import '../App.css';
 
 
 const ChartPage = () => {
@@ -13,7 +12,7 @@ const ChartPage = () => {
         <Container fluid>
             <Row className="justify-content-md-center">
                 <Col>
-                    <section class='hero' >
+                    <section class='mh-background' data-urlType='ChartPage'>
                         <Container>
                             <Row>
                                 <Col>

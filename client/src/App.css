@@ -16,3 +16,57 @@ div.container-fluid {
     padding-left: 0;
     padding-right: 0;
 }
+
+.mh-background {
+    position: relative;
+    min-width: 100vw;
+    min-height: 100vh;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+[data-urlType='ChartPage']::before {
+    background-image: url(./app/assets/img/vinyl-1595847.jpg);
+}
+
+[data-urlType='HomePage']::before {
+    background-image: url(./app/assets/img/vinyl-1894855_960_720.jpg);
+}
+
+[data-urlType='ArtistPage']::before {
+    background-image: url(./app/assets/img/concert-316464.jpg);
+}
+
+[data-urlType='FeaturesPage']::before {
+    background-image: url(./app/assets/img/rock.jpg);
+}
+
+[data-urlType='AboutPage']::before {
+    background-image: url(./app/assets/img/pop.jpg);
+}
+
+.mh-background::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    filter: brightness(50%);
+}
+
+#landing-content {
+    position: relative;
+    color: white;
+}
+
+#landing-title {
+    position: relative;
+    display:block;
+    width:auto;
+    color: white;
+}

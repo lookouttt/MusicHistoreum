@@ -1,19 +1,15 @@
 import { useState } from 'react';
 import {
     Navbar, 
-    NavbarBrand,
-    Collapse,
-    NavbarToggler,
+    // NavbarBrand,
+    // Collapse,
+    // NavbarToggler,
     Nav,
     NavItem,
     Dropdown,
-    DropdownItem,
+    // DropdownItem,
     DropdownToggle,
     DropdownMenu,
-    Accordion,
-    AccordionBody,
-    AccordionItem,
-    AccordionHeader,
     Container,
     Row,
     Col
@@ -21,9 +17,10 @@ import {
 import { NavLink } from 'react-router-dom';
 import ChartMenu from '../features/chartMenu/ChartMenu';
 import './Header.css';
+import ContactForm from '../features/contact/ContactForm';
 
 const Header = () => {
-    const [menuOpen, setMenuOpen] = useState(false);
+    // const [menuOpen, setMenuOpen] = useState(false);
     const [dropdownOpen, setdropdownOpen] = useState(false);
 
     return (
@@ -33,21 +30,22 @@ const Header = () => {
                     <Navbar dark expand='md' id='topNav'>
                         <Nav className='ms-auto' navbar>
                             <NavItem>
-                                <NavLink className='nav-link' to='/'>
+                                <NavLink className='nav-link fa fa-home' to='/'>
                                     Home
                                 </NavLink>
                             </NavItem>
-                            <NavItem>
-                                <NavLink className='nav-link' to='/'>
+                            {/* <NavItem>
+                                <NavLink className='nav-link' to='/Contact'>
                                     Contact
                                 </NavLink>
-                            </NavItem>
-                            <NavItem>
+                            </NavItem> */}
+                            {/* <NavItem>
                                 <NavLink className='nav-link' to='/'>
                                     Search
                                 </NavLink>
-                            </NavItem>
+                            </NavItem> */}
                         </Nav>
+                        <ContactForm />
                     </Navbar>
                 </Col>
             </Row>
