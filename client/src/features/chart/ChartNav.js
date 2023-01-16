@@ -29,23 +29,23 @@ const ChartNav = ({chart}) => {
     switch (chartTimeframe) {
         case 'Week':
             picker = <><WeekPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
-            nextDate = dayjs(chartDate).add(1,'week');
-            prevDate = dayjs(chartDate).subtract(1,'week');
+            nextDate = dayjs(chartDate).add(1,'week').format('YYYY-MM-DD');
+            prevDate = dayjs(chartDate).subtract(1,'week').format('YYYY-MM-DD');
             break;
         case 'Month':
             picker = <><MonthPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
-            nextDate = dayjs(chartDate).add(1,'month');
-            prevDate = dayjs(chartDate).subtract(1,'month');
+            nextDate = dayjs(chartDate).add(1,'month').format('YYYY-MM-DD');
+            prevDate = dayjs(chartDate).subtract(1,'month').format('YYYY-MM-DD');
             break;
         case 'Year':
             picker = <><YearPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
-            nextDate = dayjs(chartDate).add(1,'year');
-            prevDate = dayjs(chartDate).subtract(1,'year');
+            nextDate = dayjs(chartDate).add(1,'year').format('YYYY-MM-DD');
+            prevDate = dayjs(chartDate).subtract(1,'year').format('YYYY-MM-DD');
             break;
         case 'Decade':
             picker = <><DecadePicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
-            nextDate = dayjs(chartDate).add(10,'year');
-            prevDate = dayjs(chartDate).subtract(10,'year');
+            nextDate = dayjs(chartDate).add(10,'year').format('YYYY-MM-DD');
+            prevDate = dayjs(chartDate).subtract(10,'year').format('YYYY-MM-DD');
             break;
         default:
             break;     
