@@ -5,7 +5,7 @@ const AboutPage = () => {
         <Container fluid>
             <Row className="justify-content-md-center">
                 <Col>
-                    <section class='mh-background' data-urlType='AboutPage'>
+                    <section className='mh-background' data-urltype='AboutPage'>
                         <div>
                             <h1 id="landing-title">
                                 Welcome to the About Page

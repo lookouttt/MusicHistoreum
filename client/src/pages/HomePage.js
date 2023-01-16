@@ -6,7 +6,7 @@ const HomePage = () => {
         <Container fluid>
             <Row className="justify-content-md-center">
                 <Col>
-                    <section class='mh-background' data-urlType='HomePage'>
+                    <section className='mh-background' data-urltype='HomePage'>
                         <div>
                             <h1 id="landing-title">
                                 Welcome to Music Historeum

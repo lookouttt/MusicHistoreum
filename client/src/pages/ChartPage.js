@@ -12,7 +12,7 @@ const ChartPage = () => {
         <Container fluid>
             <Row className="justify-content-md-center">
                 <Col>
-                    <section class='mh-background' data-urlType='ChartPage'>
+                    <section className='mh-background' data-urltype='ChartPage'>
                         <Container>
                             <Row>
                                 <Col>
