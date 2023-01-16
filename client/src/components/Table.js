@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { usePagination, useTable } from "react-table";
 
 export default function Table({ columns, data, hiddenColumns = [] }) {
@@ -29,7 +29,7 @@ export default function Table({ columns, data, hiddenColumns = [] }) {
     usePagination
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (JSON.stringify(prevHiddenColumns) != JSON.stringify(hiddenColumns)) {
       prevHiddenColumns = hiddenColumns;
       setHiddenColumns(hiddenColumns);
