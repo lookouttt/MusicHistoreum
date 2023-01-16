@@ -30,11 +30,11 @@ export default function Table({ columns, data, hiddenColumns = [] }) {
   );
 
   useEffect(() => {
-    if (JSON.stringify(prevHiddenColumns) != JSON.stringify(hiddenColumns)) {
+    if (JSON.stringify(prevHiddenColumns) !== JSON.stringify(hiddenColumns)) {
       prevHiddenColumns = hiddenColumns;
       setHiddenColumns(hiddenColumns);
     }
-});
+}, [hiddenColumns]);
    
   /* 
     Render the UI for your table
