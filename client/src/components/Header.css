@@ -13,7 +13,7 @@
     padding: 0rem 0.5rem;
 }
 
-#bottomNavItems {
+#bottomNavItems1, #bottomNavItems2, #bottomNavItems3, #bottomNavItems4  {
     color: white;
     padding: 2px 125px;
     margin: 2px;
@@ -21,7 +21,7 @@
     border-radius: 5px;
 }
 
-#bottomNavItems:hover {
+#bottomNavItems1:hover, #bottomNavItems2:hover, #bottomNavItems3:hover, #bottomNavItems4:hover {
     color:rgb(114, 229, 233);
 }
 

@@ -24,7 +24,7 @@ const Header = () => {
     const [dropdownOpen, setdropdownOpen] = useState(false);
 
     return (
-        <Container fluid sticky>
+        <Container fluid>
             <Row>
                 <Col>
                     <Navbar dark expand='md' id='topNav'>
@@ -51,7 +51,7 @@ const Header = () => {
             </Row>
             <Row>
                 <Col>
-                    <div class='d-flex justify-content-center' expand='md' id='mainTitle'>
+                    <div className='d-flex justify-content-center' expand='md' id='mainTitle'>
                         <h1>Music Historeum</h1>
 
                     </div>
@@ -60,12 +60,12 @@ const Header = () => {
             <Row>
                 <Col>
                     <Navbar expand='md' id='bottomNav'>
-                        <Nav className='mx-auto' navbar justify>
+                        <Nav className='mx-auto' navbar justify='true'>
                             <NavItem>
                                 <Dropdown nav
                                     isOpen={dropdownOpen}
                                     toggle={() => setdropdownOpen(!dropdownOpen)}>
-                                    <DropdownToggle nav caret id='bottomNavItems'>
+                                    <DropdownToggle nav caret id='bottomNavItems1'>
                                         Charts
                                     </DropdownToggle>
                                     <DropdownMenu  id='mainDropdown'>
@@ -74,17 +74,17 @@ const Header = () => {
                                 </Dropdown>
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/Artist' id='bottomNavItems'>
+                                <NavLink className='nav-link' to='/Artist' id='bottomNavItems2'>
                                     Artists
                                 </NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/Features' id='bottomNavItems'>
+                                <NavLink className='nav-link' to='/Features' id='bottomNavItems3'>
                                     Future Features
                                 </NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink className='nav-link' to='/About' id='bottomNavItems'>
+                                <NavLink className='nav-link' to='/About' id='bottomNavItems4'>
                                     About the Site
                                 </NavLink>
                             </NavItem>

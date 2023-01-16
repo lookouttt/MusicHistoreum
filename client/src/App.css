@@ -25,23 +25,23 @@ div.container-fluid {
     padding-right: 0;
 }
 
-[data-urlType='ChartPage']::before {
+[data-urltype='ChartPage']::before {
     background-image: url(./app/assets/img/vinyl-1595847.jpg);
 }
 
-[data-urlType='HomePage']::before {
+[data-urltype='HomePage']::before {
     background-image: url(./app/assets/img/vinyl-1894855_960_720.jpg);
 }
 
-[data-urlType='ArtistPage']::before {
+[data-urltype='ArtistPage']::before {
     background-image: url(./app/assets/img/concert-316464.jpg);
 }
 
-[data-urlType='FeaturesPage']::before {
+[data-urltype='FeaturesPage']::before {
     background-image: url(./app/assets/img/rock.jpg);
 }
 
-[data-urlType='AboutPage']::before {
+[data-urltype='AboutPage']::before {
     background-image: url(./app/assets/img/pop.jpg);
 }
 
