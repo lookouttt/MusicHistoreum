@@ -4,6 +4,10 @@ const WEEK_SONG_COLUMNS = [
         accessor: 'song_rank',
     },
     {
+        Header: 'ID',
+        accessor: 'song_id',
+    },
+    {
         Header: 'Song',
         accessor: 'song_title',
     },

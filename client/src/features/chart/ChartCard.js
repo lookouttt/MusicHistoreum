@@ -21,21 +21,26 @@ function ChartCard({chart}) {
     const [data, setData] = useState([]);
     const chartList = useSelector(selectChartsMenu(chartType));
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
+    let hiddenColumns;
     
     const chartTitle = () => {
         let formattedDate;
         switch (chartTimeframe) {
             case 'Week':
-                formattedDate = format(new Date(dayjs(chartDate)), 'MMMM do, yyyy')
+                formattedDate = format(new Date(dayjs(chartDate)), 'MMMM do, yyyy');
+                 hiddenColumns = ['song_id', 'album_id'];
                 return(`${currentChart.ChartTitle} for ${chartTimeframe} of ${formattedDate}`);
             case 'Month':
-                formattedDate = format(new Date(dayjs(chartDate)), 'MMMM  yyyy')
+                formattedDate = format(new Date(dayjs(chartDate)), 'MMMM  yyyy');
+                hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points', 'peak', 'weeks'];
                 return(`${currentChart.ChartTitle} of ${formattedDate}`);
             case 'Year':
-                formattedDate = format(new Date(dayjs(chartDate)), 'yyyy')
+                formattedDate = format(new Date(dayjs(chartDate)), 'yyyy');
+                hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points'];
                 return(`${currentChart.ChartTitle} of ${formattedDate}`);
             case 'Decade':
-                formattedDate = format(new Date(dayjs(chartDate)), 'yyyy')
+                formattedDate = format(new Date(dayjs(chartDate)), 'yyyy');
+                hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points'];
                 return(`${currentChart.ChartTitle} of the ${formattedDate}s`);
             default:
                 break;
@@ -63,7 +68,7 @@ function ChartCard({chart}) {
             <CardBody className='chartBody'>
                 <ChartNav chart={chart}/>
                 <ChartStyles>
-                    <Table columns={columns} data={data} />
+                    <Table columns={columns} data={data} hiddenColumns={hiddenColumns}/>
                 </ChartStyles>
             </CardBody>
         </Card>

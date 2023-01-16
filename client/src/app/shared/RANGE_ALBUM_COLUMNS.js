@@ -3,10 +3,10 @@ const RANGE_ALBUM_COLUMNS = [
         Header: 'Rank',
         accessor: 'album_rank'
     },
-    // {
-    //     Header: 'ID',
-    //     accessor: 'album_id',
-    // },
+    {
+        Header: 'ID',
+        accessor: 'album_id',
+    },
     {
         Header: 'Song',
         accessor: 'album_title',
@@ -19,18 +19,18 @@ const RANGE_ALBUM_COLUMNS = [
         Header: 'Peak',
         accessor: 'peak',
     },
-    // {
-    //     Header: 'First Week',
-    //     accessor: 'first_date',
-    // },
-    // {
-    //     Header: 'Last Week',
-    //     accessor: 'last_date',
-    // },
-    // {
-    //     Header: 'Points',
-    //     accessor: 'points',
-    // },
+    {
+        Header: 'First Week',
+        accessor: 'first_date',
+    },
+    {
+        Header: 'Last Week',
+        accessor: 'last_date',
+    },
+    {
+        Header: 'Points',
+        accessor: 'points',
+    },
     {
         Header: 'Weeks On Chart',
         accessor: 'weeks',
