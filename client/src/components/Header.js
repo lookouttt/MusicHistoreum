@@ -61,18 +61,16 @@ const Header = () => {
                 <Col>
                     <Navbar expand='md' id='bottomNav'>
                         <Nav className='mx-auto' navbar justify='true'>
-                            <NavItem>
-                                <Dropdown nav
-                                    isOpen={dropdownOpen}
-                                    toggle={() => setdropdownOpen(!dropdownOpen)}>
-                                    <DropdownToggle nav caret id='bottomNavItems1'>
-                                        Charts
-                                    </DropdownToggle>
-                                    <DropdownMenu  id='mainDropdown'>
-                                        <ChartMenu />
-                                    </DropdownMenu>
-                                </Dropdown>
-                            </NavItem>
+                            <Dropdown nav
+                                isOpen={dropdownOpen}
+                                toggle={() => setdropdownOpen(!dropdownOpen)}>
+                                <DropdownToggle nav caret id='bottomNavItems1'>
+                                    Charts
+                                </DropdownToggle>
+                                <DropdownMenu  id='mainDropdown'>
+                                    <ChartMenu />
+                                </DropdownMenu>
+                            </Dropdown>
                             <NavItem>
                                 <NavLink className='nav-link' to='/Artist' id='bottomNavItems2'>
                                     Artists
