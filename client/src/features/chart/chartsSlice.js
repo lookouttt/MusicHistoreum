@@ -1,4 +1,5 @@
 import { createSlice, current } from '@reduxjs/toolkit';
+import { useState } from 'react';
 
 
 const initialState = {
@@ -13,9 +14,11 @@ const initialState = {
         chartType: "Song",
         chartTimeframe: "Week",
         chartDate: "1989-11-25"
-    }  
+    },
+    chartStatus: {
+        updateChart: false  
+    }
 };
-
 
 const chartsSlice = createSlice({
     name: 'charts',
@@ -72,15 +75,32 @@ const chartsSlice = createSlice({
             console.log('current before: ', current(state.currentChart));
             state.currentChart = state.pendingChart;
             console.log('current after: ', current(state.currentChart));
-
+            const newStatus = {
+                updateChart: true
+            };
+            state.chartStatus = newStatus;
+            console.log('UCC reset state: ', state.chartStatus);
+        },
+        updateChartStatus: (state) => {
+            const newStatus = {
+                updateChart: false
+            };
+            state.chartStatus = newStatus;
+            console.log('UCS reset state: ', state.chartStatus);
         }
     }
 });
 
+
+
 export const chartsReducer = chartsSlice.reducer;
 
-export const { updatePendingId, updatePendingType, updatePendingTimeframe, updatePendingDate, updateCurrentChart } = chartsSlice.actions;
+export const { updatePendingId, updatePendingType, updatePendingTimeframe, updatePendingDate, updateCurrentChart, updateChartStatus } = chartsSlice.actions;
 
 export const selectCurrentChart = (state) => {
     return state.charts.currentChart;
+}
+
+export const getUpdateChartState = (state) => {
+    return state.charts.chartStatus.updateChart;
 }
