@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Row, Col } from "reactstrap";
@@ -15,11 +15,25 @@ const ChartNav = ({chart}) => {
     const navigate = useNavigate();
     const { chartType, chartId, chartTimeframe, chartDate } = chart;
     const thisChart = useSelector(selectSpecificChart(chartType, chartId));
+    const [prevBtnDisabled, setPrevBtnDisabled] = useState(false);
+    const [nextBtnDisabled, setNextBtnDisabled] = useState(false);
 
     const getNewChart = (chartDate) => {
          dispatch(updatePendingDate(chartDate));
          dispatch(updateCurrentChart());
          navigate('/Chart');
+    }
+
+    const checkButtons = (newDate) => {
+        if (newDate === thisChart.LastDate)
+            setNextBtnDisabled(true);
+        else 
+            setNextBtnDisabled(false);
+
+        if (newDate === thisChart.FirstDate)
+            setPrevBtnDisabled(true);
+        else
+            setPrevBtnDisabled(false);
     }
 
     let picker;
@@ -51,17 +65,21 @@ const ChartNav = ({chart}) => {
             break;     
     }
 
+    useEffect(() => { 
+        checkButtons(chartDate);
+    }, [chart]);
+
     return (
         <Container className='chartNavCont'>
             <Row className="row-cols-lg-auto g-3">
                 <Col>
-                    <Button color='primary' size='sm' onClick={() => getNewChart(prevDate)} >Prev</Button>
+                    <Button disabled={prevBtnDisabled} color='primary' size='sm' onClick={() => { getNewChart(prevDate); checkButtons(prevDate)}} >Prev</Button>
                 </Col>
                 <Col>
                     {picker}
                 </Col>
                 <Col>
-                    <Button color='primary' size='sm' onClick={() => getNewChart(nextDate)} >Next</Button>
+                    <Button disabled={nextBtnDisabled} color='primary' size='sm' onClick={() => { getNewChart(nextDate); checkButtons(nextDate)}} >Next</Button>
                 </Col>
             </Row>
         </Container>
