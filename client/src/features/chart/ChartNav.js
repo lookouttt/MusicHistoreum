@@ -21,8 +21,7 @@ const ChartNav = ({chart}) => {
     const [endOfChart, setEndOfChart] = useState(false);
     const [prevDate, setPrevDate] = useState(null);
     const [nextDate, setNextDate] = useState(null);
-
-    let picker = <><WeekPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
+    const [picker, setPicker] = useState(<><WeekPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>);
 
     const getNewChart = (bPrevButton) => {
         console.log('bPrevButton = ', bPrevButton);
@@ -37,22 +36,22 @@ const ChartNav = ({chart}) => {
         console.log('Start of checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
         switch (chartTimeframe) {
             case 'Week':
-                picker = <><WeekPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
+                setPicker(<><WeekPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>);
                 setNextDate(dayjs(chartDate).add(1,'week').format('YYYY-MM-DD'));
                 setPrevDate(dayjs(chartDate).subtract(1,'week').format('YYYY-MM-DD'));
                 break;
             case 'Month':
-                picker = <><MonthPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
+                setPicker(<><MonthPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>);
                 setNextDate(dayjs(chartDate).add(1,'month').format('YYYY-MM-DD'));
                 setPrevDate(dayjs(chartDate).subtract(1,'month').format('YYYY-MM-DD'));
                 break;
             case 'Year':
-                picker = <><YearPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
+                setPicker(<><YearPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>);
                 setNextDate(dayjs(chartDate).add(1,'year').format('YYYY-MM-DD'));
                 setPrevDate(dayjs(chartDate).subtract(1,'year').format('YYYY-MM-DD'));
                 break;
             case 'Decade':
-                picker = <><DecadePicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>;
+                setPicker(<><DecadePicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>);
                 setNextDate(dayjs(chartDate).add(10,'year').format('YYYY-MM-DD'));
                 setPrevDate(dayjs(chartDate).subtract(10,'year').format('YYYY-MM-DD'));
                 break;

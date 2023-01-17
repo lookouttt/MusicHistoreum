@@ -27,11 +27,13 @@ const DecadePicker = (dates) => {
     const navigate = useNavigate();
 
     const onChange = (date) => {
+        console.log('Check date: ', date);
         const year = getYear(date);
         const newYear = parseInt(year/10);
         const decade = newYear*10;
-        setStartDate(new Date(decade, 0, 1));
-        const chartDate = format(startDate, "yyyy-MM-dd");
+        const newDate = new Date(decade, 0, 1);
+        setStartDate(newDate);
+        const chartDate = format(newDate, "yyyy-MM-dd");
         console.log('WeekPicker Before: ', chartDate);
         dispatch(updatePendingDate(chartDate));
         console.log('WeekPicker After: ', chartDate);
