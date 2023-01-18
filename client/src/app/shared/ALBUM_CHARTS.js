@@ -2,7 +2,7 @@ export const ALBUM_CHARTS = [
     {
         ChartId: 2,
         ChartName: "billboard-200",
-        ChartTitle: "Billboard 200",
+        ChartTitle: "Top Albums",
         FirstDate: "1963-08-17",
         LastDate: "2023-01-07",
     },

@@ -1,4 +1,4 @@
-import { Container, Row, Col } from "reactstrap";
+import { Container, Row, Col, Card, CardHeader, CardBody, List } from "reactstrap";
 
 const FeaturesPage = () => {
     return (
@@ -6,16 +6,40 @@ const FeaturesPage = () => {
             <Row className="justify-content-md-center">
                 <Col>
                     <section className='mh-background' data-urltype='FeaturesPage'>
-                        <div>
-                            <h1 id="landing-title">
-                                Welcome to the Features Page
-                            </h1>
-                            <p id="landing-content">
-                            Lorem ipsum dolor sit amet, illum definitiones no quo, maluisset concludaturque et eum, altera fabulas ut quo. 
-                            Atqui causae gloriatur ius te, id agam omnis evertitur eum. Affert laboramus repudiandae nec et. 
-                            Inciderint efficiantur his ad. Eum no molestiae voluptatibus.
-                            </p>
-                        </div>
+                        <Container>
+                            <Row>
+                                <Col>
+                                    <Card id='features-card'>
+                                        <CardHeader>
+                                            <h1 id="features-title">
+                                                Future Features
+                                            </h1>
+                                        </CardHeader>
+                                        <CardBody id='features-content'>
+                                            <h3>This growing list includes the following:</h3>
+                                            <List>
+                                                <li>
+                                                    Add search and filtering capability for charts
+                                                </li>
+                                                <li>
+                                                    Include additional information for songs, albums, and artists
+                                                </li>
+                                                <li>
+                                                    Allow users to login and create/store custom charts
+                                                </li>
+                                                <li>
+                                                    Allow users to listen to songs and/or create playlists to use with 
+                                                    their local music library or online streaming services
+                                                </li>
+                                                <li>
+                                                    Add a blog with interesting facts about chart history.
+                                                </li>
+                                            </List>
+                                        </CardBody>
+                                    </Card>
+                                </Col>
+                            </Row>
+                        </Container>
                     </section>
                 </Col>
             </Row>

@@ -59,14 +59,27 @@ div.container-fluid {
     filter: brightness(50%);
 }
 
-#landing-content {
+#about-content, #features-content {
     position: relative;
     color: white;
 }
 
-#landing-title {
+#features-content > h3 {
+    color: white;
+    margin-bottom: 20px;
+}
+#features-content > ul > li {
+    margin-bottom: 12px;
+}
+
+#about-title, #features-title {
     position: relative;
     display:block;
     width:auto;
     color: white;
+}
+
+#about-card, #features-card {
+    margin-top: 20px;
+    background: rgba(255,255,255,0.2);
 }
