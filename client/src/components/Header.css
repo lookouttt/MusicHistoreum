@@ -33,3 +33,7 @@
     margin-top: 1rem;
     display: inline-block;
 }
+
+span {
+    padding-right: 20px;
+}

@@ -5,6 +5,10 @@ body {
     color: black;
 }
 
+.modal-open {
+    padding-right: 0px !important;
+}
+
 h1,
 h2,
 h3 {
