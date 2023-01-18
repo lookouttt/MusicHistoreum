@@ -38,6 +38,8 @@ const DecadePicker = (dates) => {
         dispatch(updatePendingDate(chartDate));
         console.log('WeekPicker After: ', chartDate);
         dispatch(updateCurrentChart());
+        document.getElementById('root')
+            .dispatchEvent(new MouseEvent('click', {shiftKey: true}));
         navigate('/Chart');
     }
 

@@ -29,10 +29,12 @@ const YearPicker = (dates) => {
     const onChange = (date) => {
         setStartDate(date);
         const chartDate = format(date, "yyyy-MM-dd");
-        console.log('WeekPicker Before: ', chartDate)
+        console.log('WeekPicker Before: ', chartDate);
         dispatch(updatePendingDate(chartDate));
         console.log('WeekPicker After: ', chartDate);
         dispatch(updateCurrentChart());
+        document.getElementById('root')
+            .dispatchEvent(new MouseEvent('click', {shiftKey: true}));
         navigate('/Chart');
     }
 
