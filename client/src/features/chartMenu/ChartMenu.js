@@ -18,20 +18,20 @@ const ChartMenu = () => {
       }
     };
 
-    const [songsOpen, setSongsOpen] = useState(false);
+    const [songsOpen, setSongsOpen] = useState(null);
     const songsToggle = (id) => {
       if (songsOpen === id) {
-        setSongsOpen();
+        setSongsOpen(null);
       } else {
         setSongsOpen(id);
         dispatch(updatePendingId(id));
       }
     };
 
-    const [albumsOpen, setAlbumsOpen] = useState(false);
+    const [albumsOpen, setAlbumsOpen] = useState(null);
     const albumsToggle = (id) => {
       if (albumsOpen === id) {
-        setAlbumsOpen();
+        setAlbumsOpen(null);
       } else {
         setAlbumsOpen(id);
         dispatch(updatePendingId(id));

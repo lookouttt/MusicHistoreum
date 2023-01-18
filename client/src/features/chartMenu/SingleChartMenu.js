@@ -8,13 +8,13 @@ import './SingleChartMenu.css';
 
 const SingleChartMenu = (({chartType}) => {
     const chartList = useSelector(selectChartsMenu(chartType));
-    const [chartOpen, setChartOpen] = useState(false);
+    const [chartOpen, setChartOpen] = useState(null);
     const dispatch = useDispatch();
 
 
     const chartToggle = (id) => {
       if (chartOpen === id) {
-        setChartOpen();
+        setChartOpen(null);
       } else {
         setChartOpen(id);
         dispatch(updatePendingTimeframe(id));
