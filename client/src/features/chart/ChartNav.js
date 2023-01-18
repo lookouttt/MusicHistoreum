@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Row, Col } from "reactstrap";
@@ -8,7 +8,6 @@ import MonthPicker from '../../utils/MonthPicker';
 import YearPicker from '../../utils/YearPicker';
 import DecadePicker from '../../utils/DecadePicker';
 import { updateCurrentChart, updatePendingDate, updateChartStatus, getUpdateChartState } from '../chart/chartsSlice';
-import _default from "react-redux/es/components/connect";
 const dayjs = require("dayjs");
 
 const ChartNav = ({chart}) => {
