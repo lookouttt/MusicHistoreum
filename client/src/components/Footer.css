@@ -1,0 +1,19 @@
+.site-footer {
+    background-color: #4A4A4A;
+    padding-top: 10px;
+    min-height: 3rem;
+    width: 100%;
+    color: rgba(255, 255, 255, .55);
+}
+
+#footer-links a:link {
+    text-decoration: none;
+}
+
+#footer-links a {
+    color: rgba(255, 255, 255, .55);
+}
+
+#footer-links a:hover {
+    color: rgba(255, 255, 255, .85);
+}

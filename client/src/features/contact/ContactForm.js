@@ -24,11 +24,11 @@ const ContactForm = () => {
 
     return (
         <>
-            <span className='navbar-text ml-auto'>
-                <Button color='light' onClick={() => setModalOpen(true)}
+            <span className='navbar-text ml-auto px-4'>
+                <a href='#' style={{ textDecoration: 'none' }} onClick={() => setModalOpen(true)}
                 >
                     <i className='fa fa-comment' /> Contact
-                </Button>
+                </a>
             </span>
             <Modal isOpen={modalOpen}>
                 <ModalHeader toggle={() => setModalOpen(false)}>

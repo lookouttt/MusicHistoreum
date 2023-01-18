@@ -30,7 +30,7 @@ const Header = () => {
                     <Navbar dark expand='md' id='topNav'>
                         <Nav className='ms-auto' navbar>
                             <NavItem>
-                                <NavLink className='nav-link fa fa-home' to='/'>
+                                <NavLink className='nav-link fa fa-home p-3' to='/'>
                                     Home
                                 </NavLink>
                             </NavItem>
