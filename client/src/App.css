@@ -63,7 +63,7 @@ div.container-fluid {
     filter: brightness(50%);
 }
 
-#about-content, #features-content {
+#about-content, #features-content, #home-content {
     position: relative;
     color: white;
 }
@@ -76,14 +76,25 @@ div.container-fluid {
     margin-bottom: 12px;
 }
 
-#about-title, #features-title {
+#about-title, #features-title, #home-title {
     position: relative;
     display:block;
     width:auto;
     color: white;
 }
 
-#about-card, #features-card {
+#about-card, #features-card, #home-card {
     margin-top: 20px;
+}
+
+#features-card {
     background: rgba(255,255,255,0.2);
+}
+
+#about-card {
+    background: rgba(134, 103, 103, 0.3);
+}
+
+#home-card {
+    background: rgba(143, 119, 119, 0.3);
 }
