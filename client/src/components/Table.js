@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { usePagination, useTable } from "react-table";
+import { useNavigate } from 'react-router-dom';
 
 export default function Table({ columns, data, hiddenColumns = [] }) {
     let prevHiddenColumns = [];
@@ -36,6 +37,14 @@ export default function Table({ columns, data, hiddenColumns = [] }) {
     }
 }, [hiddenColumns]);
    
+    const navigate = useNavigate();
+    const checkCellValue = (cell) =>{
+        if (cell.column.id == 'artist_name') {
+            console.log('This is the artist cell');
+            console.log(cell.value);
+            navigate('/Artist');
+        }
+    }
   /* 
     Render the UI for your table
     - react-table doesn't have UI, it's headless. We just need to put the react-table props from the Hooks, and it will do its magic automatically
@@ -58,7 +67,7 @@ export default function Table({ columns, data, hiddenColumns = [] }) {
             return (
                 <tr {...row.getRowProps()}>
                 {row.cells.map(cell => {
-                    return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+                    return <td onClick={() => checkCellValue(cell)} {...cell.getCellProps()}>{cell.render("Cell")}</td>;
                 })}
                 </tr>
             );
