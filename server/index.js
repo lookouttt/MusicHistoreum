@@ -21,6 +21,20 @@ app.get("/chartList", async(req, res) => {
     }
 });
 
+//get artist chart history
+
+app.get("/artist/:artist_to_find", async(req, res) => {
+    try {
+        const artistName = req.params.artist_to_find;
+        console.log(artistName);
+        console.log(req.params);
+        const artist = await pool.query(`SELECT get_songs_by_artist($1)`, [artistName]);
+        res.json(artist.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
 //get a specific chart for a given range
 
 app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {

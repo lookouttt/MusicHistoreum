@@ -1,0 +1,12 @@
+.artistCard {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.artistHeader {
+    text-align: center;
+}
+
+.artistBody {
+    background-image: linear-gradient(to bottom right, #8dc3ec, #8dabc0, #8596a1);
+}

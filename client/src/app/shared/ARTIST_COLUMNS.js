@@ -1,19 +1,15 @@
-const RANGE_ALBUM_COLUMNS = [
-    {
-        Header: 'Rank',
-        accessor: 'album_rank'
-    },
+const ARTIST_COLUMNS = [
     {
         Header: 'ID',
-        accessor: 'album_id',
+        accessor: 'song_id',
     },
     {
-        Header: 'Album',
-        accessor: 'album_title',
+        Header: 'Song',
+        accessor: 'song_title',
     },
     {
         Header: 'Artist',
-        accessor: 'artist',
+        accessor: 'artist_name',
     },
     {
         Header: 'Peak',
@@ -28,13 +24,13 @@ const RANGE_ALBUM_COLUMNS = [
         accessor: 'last_date',
     },
     {
-        Header: 'Points',
-        accessor: 'points',
-    },
-    {
         Header: 'Weeks On Chart',
         accessor: 'weeks',
     },
+    {
+        Header: 'Weeks at Peak',
+        accessor: 'peak_weeks',
+    }
 ];
 
-export default RANGE_ALBUM_COLUMNS;
+export default ARTIST_COLUMNS;
