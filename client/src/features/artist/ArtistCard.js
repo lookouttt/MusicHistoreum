@@ -30,12 +30,16 @@ function ArtistCard(artist) {
             console.log('Pre Fetch Data:', artist.artist);
             const artistData = await fetchArtistData(artist.artist);
             console.log('Post Fetch Data: ', artistData);
-            const tempItems = artistData.map(({ song_title, peak, first_date, weeks, peak_weeks }) => {
+            const tempItems = artistData.map(({ song_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
                 const formattedDate = format(new Date(dayjs(first_date)), 'MMMM yyyy');
+                const weeksText = (weeks > 1) ? 'weeks' : 'week';
+                const peakText = (peak_weeks > 1) ? 'weeks' : 'week';
+
                 return {
                     title: formattedDate,
                     cardTitle: song_title,
-                    cardDetailedText: `This song spent ${weeks} weeks on the chart, peaking at number ${peak} for ${peak_weeks} weeks.`
+                    cardSubtitle: artist_name,
+                    cardDetailedText: `Debuted and spent ${weeks} ${weeksText} on the chart, peaking at number ${peak} for ${peak_weeks} ${peakText}.`
                 }
             });
             setData(artistData);
@@ -60,7 +64,7 @@ function ArtistCard(artist) {
             </CardBody>
         </Card> */}
         <div style={{ width: "600px", height: "700px" }}>
-            <Chrono items={items} mode="VERTICAL" cardHeight={"10px"}     theme={{
+            <Chrono items={items} mode="VERTICAL" cardHeight={"10px"} theme={{
       primary: '#5D8FB5',
       secondary: '#4A4A4A',
       cardBgColor: '#a57038',
