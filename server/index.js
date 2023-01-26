@@ -23,12 +23,16 @@ app.get("/chartList", async(req, res) => {
 
 //get artist chart history
 
-app.get("/artist/:artist_to_find", async(req, res) => {
+app.get("/artist/:dartist/:dtype", async(req, res) => {
     try {
-        const artistName = req.params.artist_to_find;
-        console.log(artistName);
+        const artistName = req.params.dartist;
+        const queryType = req.params.dtype;
         console.log(req.params);
-        const artist = await pool.query(`SELECT get_songs_by_artist($1)`, [artistName]);
+        let artist;
+        if (queryType === 'songs')
+            artist = await pool.query(`SELECT get_songs_by_artist($1)`, [artistName]);
+        else
+            artist = await pool.query(`SELECT get_albums_by_artist($1)`, [artistName]);
         res.json(artist.rows);
     } catch (err) {
         console.error(err.message);

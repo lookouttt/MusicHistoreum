@@ -1,16 +1,35 @@
-.artistCard {
+.artistCard.card {
     margin-top: 20px;
     margin-bottom: 20px;
+    background: rgba(255,255,255,0.2);
+}
+
+.artistContentCard.card {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    background: rgba(255,255,255,0.0);
 }
 
 .artistHeader {
     text-align: center;
 }
 
-.artistBody {
-    background-image: linear-gradient(to bottom right, #8dc3ec, #8dabc0, #8596a1);
+.artistContentHeader {
+    text-align: center;
 }
 
-.ibizxK.ibizxK {
+.artistBody.artistBody {
+    background: rgba(255,255,255,0.2);
+}
+
+.artistContentBody.artistContentBody {
+    background: rgba(255,255,255,0.0);
+}
+
+.card-sub-title.card-sub-title {
     color: white;
+}
+
+.timeline-controls.timeline-controls {
+    margin-top: 20px;
 }
