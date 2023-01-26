@@ -13,7 +13,10 @@ const ContactForm = () => {
 
     const handleSubmit = (values) => {
         const comment = {
-            author: values.author,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            email: values.email,
+            topic: values.topic,
             text: values.commentText,
             date: new Date(Date.now()).toISOString()
         };
@@ -38,7 +41,10 @@ const ContactForm = () => {
                     <Formik 
                         initialValues={
                             {
-                                author: '',
+                                firstName: '',
+                                lastName: '',
+                                email: '',
+                                topic: 0,
                                 commentText: ''
                             }
                         }
@@ -47,24 +53,52 @@ const ContactForm = () => {
                         >
                         <Form>
                             <FormGroup>
-                                <Label htmlFor='author'>Your Name</Label>
-
+                                <Label htmlFor='firstName'>First Name</Label>
                                 <Field
-                                    name='author'
-                                    placeholder='Your Name'
+                                    name='firstName'
+                                    placeholder='First Name'
                                     className='form-control'
                                 />
-                                <ErrorMessage name='author'>
+                                <ErrorMessage name='firstName'>
                                     {(msg) => <p className='text-danger'>{msg}</p>} 
-                                </ErrorMessage>       
-                            </FormGroup>                         
+                                </ErrorMessage>
+                                <Label htmlFor='lastName'>Last Name</Label>
+                                <Field
+                                    name='lastName'
+                                    placeholder='Last Name'
+                                    className='form-control'
+                                />
+                                <ErrorMessage name='lastName'>
+                                    {(msg) => <p className='text-danger'>{msg}</p>} 
+                                </ErrorMessage>          
+                            </FormGroup>
+                            <FormGroup>
+                                <Label htmlFor='email'>Email</Label>
+                                <Field
+                                    name='email'
+                                    placeholder='Email'
+                                    className='form-control'
+                                />
+                                <ErrorMessage name='email'>
+                                    {(msg) => <p className='text-danger'>{msg}</p>}
+                                </ErrorMessage>
+                            </FormGroup>    
+                            <FormGroup>
+                                <Label htmlFor='topic'>Topic</Label>
+                                <Field as='select' name='topic'>
+                                    <option value='0'>Choose...</option>
+                                    <option value='1'>Chart Question</option>
+                                    <option value='2'>Feature Request</option>
+                                    <option value='3'>Other</option>
+                                </Field>
+                            </FormGroup>                     
                             <FormGroup>
                                 <Label htmlFor='commentText'>Comment</Label>
                                 <Field
-                                name='commentText'
-                                as='textarea'
-                                rows='12'
-                                className='form-control'
+                                    name='commentText'
+                                    as='textarea'
+                                    rows='12'
+                                    className='form-control'
                                 />
                                 <ErrorMessage name='commentText'>
                                     {(msg) => <p className='text-danger'>{msg}</p>} 
