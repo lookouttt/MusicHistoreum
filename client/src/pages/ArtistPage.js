@@ -1,9 +1,11 @@
+import { useParams } from "react-router-dom";
 import { Container, Row, Col } from "reactstrap";
 import ArtistCard from "../features/artist/ArtistCard";
 
-const testArtist = 'U2';
-
 const ArtistPage = () => {
+    let { artist } = useParams();
+    console.log('Artist Page artist: ', artist);
+
     return (
         <Container fluid>
             <Row className="justify-content-md-center">
@@ -12,7 +14,7 @@ const ArtistPage = () => {
                         <Container>
                             <Row>
                                 <Col>
-                                    <ArtistCard artist={testArtist} />
+                                    <ArtistCard artist={artist} />
                                 </Col>
                             </Row>
                         </Container>

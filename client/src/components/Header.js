@@ -18,10 +18,13 @@ import { NavLink } from 'react-router-dom';
 import ChartMenu from '../features/chartMenu/ChartMenu';
 import './Header.css';
 import ContactForm from '../features/contact/ContactForm';
+import ArtistCard from '../features/artist/ArtistCard';
 
 const Header = () => {
     // const [menuOpen, setMenuOpen] = useState(false);
     const [dropdownOpen, setdropdownOpen] = useState(false);
+
+    const testValue='U2';
 
     return (
         <Container fluid>
@@ -70,7 +73,7 @@ const Header = () => {
                                 </DropdownMenu>
                             </Dropdown>
                             <NavItem>
-                                <NavLink className='nav-link' to='/Artist' id='bottomNavItems2'>
+                                <NavLink className='nav-link' to={`/Artist/${testValue}`} id='bottomNavItems2'>
                                     Artists
                                 </NavLink>
                             </NavItem>

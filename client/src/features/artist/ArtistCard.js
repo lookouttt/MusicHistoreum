@@ -65,7 +65,7 @@ function ArtistCard(artist) {
                         <Col>
                             <Card className='artistContentCard'>
                                 <CardHeader className='artistContentHeader'>
-                                    <h2>Songs</h2>
+                                    <h2>Charted Songs</h2>
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
                                     <div style={{ width: "500px", height: "700px" }}>
@@ -84,7 +84,7 @@ function ArtistCard(artist) {
                         <Col>
                             <Card className='artistContentCard'>
                                 <CardHeader className='artistContentHeader'>
-                                    <h2>Albums</h2>
+                                    <h2>Charted Albums</h2>
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
                                     <div style={{ width: "500px", height: "700px" }}>

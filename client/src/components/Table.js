@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { usePagination, useTable } from "react-table";
 import { useNavigate } from 'react-router-dom';
+import { current } from "@reduxjs/toolkit";
 
 export default function Table({ columns, data, hiddenColumns = [] }) {
     let prevHiddenColumns = [];
@@ -42,7 +43,8 @@ export default function Table({ columns, data, hiddenColumns = [] }) {
         if (cell.column.id == 'artist_name') {
             console.log('This is the artist cell');
             console.log(cell.value);
-            navigate('/Artist');
+            const currentArtist = cell.value;
+            navigate(`/Artist/${currentArtist}`);
         }
     }
   /* 
