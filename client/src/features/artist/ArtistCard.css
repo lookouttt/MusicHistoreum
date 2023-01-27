@@ -10,21 +10,22 @@
     background: rgba(255,255,255,0.0);
 }
 
-.artistHeader {
+.artistHeader.artistHeader {
     text-align: center;
+    background: rgba(255,255,255,0.4);
 }
 
-.artistContentHeader {
+.artistContentHeader.artistContentHeader {
     text-align: center;
     background: rgba(255,255,255,0.3);
 }
 
 .artistBody.artistBody {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.0);
 }
 
 .artistContentBody.artistContentBody {
-    background: rgba(255,255,255,0.0);
+    background: rgba(255,255,255,0.1);
 }
 
 .card-sub-title.card-sub-title {
