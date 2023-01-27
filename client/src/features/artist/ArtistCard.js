@@ -19,36 +19,59 @@ function ArtistCard(artist) {
         const fetchData = async () => {
             console.log('Pre Fetch Data:', artist.artist);
             const artistSongData = await fetchArtistData(artist.artist, 'songs');
-            console.log('Post Fetch Song Data: ', artistSongData);
-            const tempSongItems = artistSongData.map(({ song_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
-                const formattedDate = format(new Date(dayjs(first_date)), 'MMM yyyy');
-                const weeksText = (weeks > 1) ? 'weeks' : 'week';
-                const peakText = (peak_weeks > 1) ? 'weeks' : 'week';
-
-                return {
-                    title: formattedDate,
-                    cardTitle: song_title,
-                    cardSubtitle: artist_name,
-                    cardDetailedText: `Debuted and spent ${weeks} ${weeksText} on the chart, peaking at number ${peak} for ${peak_weeks} ${peakText}.`
+            if (artistSongData != null) {
+                console.log('Post Fetch Song Data: ', artistSongData);
+                const tempSongItems = artistSongData.map(({ song_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
+                    const formattedDate = format(new Date(dayjs(first_date)), 'MMM yyyy');
+                    const weeksText = (weeks > 1) ? 'weeks' : 'week';
+                    const peakText = (peak_weeks > 1) ? 'weeks' : 'week';
+    
+                    return {
+                        title: formattedDate,
+                        cardTitle: song_title,
+                        cardSubtitle: artist_name,
+                        cardDetailedText: `Debuted and spent ${weeks} ${weeksText} on the chart, peaking at number ${peak} for ${peak_weeks} ${peakText}.`
+                    }
+                });
+                setSongItems(tempSongItems);
+            }
+            else {
+                const formattedDate = format(new Date(), 'MMM yyyy');
+                const tempSongItems = () => {
+                    return [{
+                        cardTitle: 'No songs found'
+                    }]
                 }
-            });
-            setSongItems(tempSongItems);
+                setSongItems(tempSongItems);
+            }
+
 
             const artistAlbumData = await fetchArtistData(artist.artist, 'albums');
             console.log('Post Fetch Album Data: ', artistAlbumData);
-            const tempAlbumItems = artistAlbumData.map(({ album_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
-                const formattedDate = format(new Date(dayjs(first_date)), 'MMM yyyy');
-                const weeksText = (weeks > 1) ? 'weeks' : 'week';
-                const peakText = (peak_weeks > 1) ? 'weeks' : 'week';
-
-                return {
-                    title: formattedDate,
-                    cardTitle: album_title,
-                    cardSubtitle: artist_name,
-                    cardDetailedText: `Debuted and spent ${weeks} ${weeksText} on the chart, peaking at number ${peak} for ${peak_weeks} ${peakText}.`
+            if (artistAlbumData != null) {
+                const tempAlbumItems = artistAlbumData.map(({ album_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
+                    const formattedDate = format(new Date(dayjs(first_date)), 'MMM yyyy');
+                    const weeksText = (weeks > 1) ? 'weeks' : 'week';
+                    const peakText = (peak_weeks > 1) ? 'weeks' : 'week';
+    
+                    return {
+                        title: formattedDate,
+                        cardTitle: album_title,
+                        cardSubtitle: artist_name,
+                        cardDetailedText: `Debuted and spent ${weeks} ${weeksText} on the chart, peaking at number ${peak} for ${peak_weeks} ${peakText}.`
+                    }
+                });
+                setAlbumItems(tempAlbumItems);
+            }
+            else {
+                const formattedDate = format(new Date(), 'MMM yyyy');
+                const tempAlbumItems = () => {
+                    return [{
+                        cardTitle: 'No albums found'
+                    }]
                 }
-            });
-            setAlbumItems(tempAlbumItems);
+                setAlbumItems(tempAlbumItems);
+            }
         }
 
         fetchData();

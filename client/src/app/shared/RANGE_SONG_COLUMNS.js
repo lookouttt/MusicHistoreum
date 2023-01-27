@@ -13,7 +13,7 @@ const RANGE_SONG_COLUMNS = [
     },
     {
         Header: 'Artist',
-        accessor: 'artist',
+        accessor: 'artist_name',
     },
     {
         Header: 'Peak',
