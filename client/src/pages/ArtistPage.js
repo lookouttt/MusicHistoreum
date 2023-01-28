@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { Container, Row, Col } from "reactstrap";
 import ArtistCard from "../features/artist/ArtistCard";
+import ArtistList from "../features/artist/ArtistList";
 
 const ArtistPage = () => {
     let { artist } = useParams();
@@ -15,6 +16,7 @@ const ArtistPage = () => {
                             <Row>
                                 <Col>
                                     <ArtistCard artist={artist} />
+                                    <ArtistList />
                                 </Col>
                             </Row>
                         </Container>

@@ -21,6 +21,18 @@ app.get("/chartList", async(req, res) => {
     }
 });
 
+app.get("/artist/list", async(req, res) => {
+    try {
+        console.log('trying to get artist list');
+        const allArtists = await pool.query("SELECT get_artist_list()");
+        console.log('post artist list check');
+        res.json(allArtists.rows);
+    } catch (err) {
+        console.log('got error trying to get artist list');
+        console.error(err.message);
+    }
+});
+
 //get artist chart history
 
 app.get("/artist/:dartist/:dtype", async(req, res) => {
