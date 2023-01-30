@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { Container, Row, Col } from "reactstrap";
 import ArtistCard from "../features/artist/ArtistCard";
 import ArtistList from "../features/artist/ArtistList";
+import AlphabetNav from "../components/AlphabetNav";
 
 const ArtistPage = () => {
     let { artist } = useParams();
@@ -15,6 +16,7 @@ const ArtistPage = () => {
                         <Container>
                             <Row>
                                 <Col>
+                                    <AlphabetNav />
                                     <ArtistCard artist={artist} />
                                     <ArtistList />
                                 </Col>

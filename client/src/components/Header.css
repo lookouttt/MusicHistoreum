@@ -4,6 +4,17 @@
     width: 100%
 }
 
+#alphaNav {
+    flex-direction: row;
+    background-color: #4A4A4A;
+    min-height: 3rem;
+    width: 100%
+}
+
+.alphaItem.alphaItem {
+    display: inline-block;
+}
+
 #bottomNav {
     background-color: #5D8FB5;
     min-height: 2rem;
