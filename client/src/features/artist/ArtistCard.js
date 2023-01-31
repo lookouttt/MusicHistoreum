@@ -75,7 +75,7 @@ function ArtistCard(artist) {
         }
 
         fetchData();
-    }, [artist]);
+    }, [artist.artist]);
 
     return songItems && albumItems && (
         <Card className='artistCard'>
@@ -92,7 +92,7 @@ function ArtistCard(artist) {
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
                                     <div style={{ width: "500px", height: "700px" }}>
-                                        <Chrono items={songItems} mode="VERTICAL" cardHeight={"10px"} useReadMore theme={{
+                                        <Chrono items={songItems} mode="VERTICAL" cardHeight={"10px"} allowDynamicUpdate='true' useReadMore theme={{
                                             primary: '#ce7f2f',
                                             secondary: '#4A4A4A',
                                             cardBgColor: '#a57038',
@@ -111,7 +111,7 @@ function ArtistCard(artist) {
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
                                     <div style={{ width: "500px", height: "700px" }}>
-                                        <Chrono items={albumItems} mode="VERTICAL" cardHeight={"10px"} useReadMore theme={{
+                                        <Chrono items={albumItems} mode="VERTICAL" cardHeight={"10px"} allowDynamicUpdate='true' useReadMore theme={{
                                             primary: '#ce7f2f',
                                             secondary: '#4A4A4A',
                                             cardBgColor: '#a57038',

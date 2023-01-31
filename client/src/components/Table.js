@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePagination, useTable } from "react-table";
 import { useNavigate } from 'react-router-dom';
 import { current } from "@reduxjs/toolkit";
 
-export default function Table({ columns, data, hiddenColumns = [] }) {
+export default function Table({ columns, data, hiddenColumns = [], onCloseModal }) {
     let prevHiddenColumns = [];
   // Use the useTable Hook to send the columns and data to build the table
   const {
@@ -38,12 +38,15 @@ export default function Table({ columns, data, hiddenColumns = [] }) {
     }
 }, [hiddenColumns]);
    
+    const [closeModal, setCloseModal] = useState(false);
     const navigate = useNavigate();
     const checkCellValue = (cell) =>{
         if (cell.column.id == 'artist_name') {
             console.log('This is the artist cell');
             console.log(cell.value);
             const currentArtist = cell.value;
+            if (onCloseModal)
+                onCloseModal();
             navigate(`/Artist/${currentArtist}`);
         }
     }
@@ -69,6 +72,7 @@ export default function Table({ columns, data, hiddenColumns = [] }) {
             return (
                 <tr {...row.getRowProps()}>
                 {row.cells.map(cell => {
+                    // console.log("I'm put a rown in the table");
                     return <td onClick={() => checkCellValue(cell)} {...cell.getCellProps()}>{cell.render("Cell")}</td>;
                 })}
                 </tr>

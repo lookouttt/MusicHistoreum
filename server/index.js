@@ -24,7 +24,7 @@ app.get("/chartList", async(req, res) => {
 app.get("/artist/list/:start_char", async(req, res) => {
     try {
         const startChar = req.params.start_char;
-        console.log('trying to get artist list');
+        console.log('trying to get artist list: ', startChar);
         const allArtists = await pool.query(`SELECT get_artist_list(${startChar})`);
         console.log('post artist list check');
         res.json(allArtists.rows);

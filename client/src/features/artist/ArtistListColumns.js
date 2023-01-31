@@ -1,4 +1,4 @@
-import artistColumns from '../../app/shared/ARTIST_COLUMNS';
+import artistColumns from '../../app/shared/ARTIST_LIST_COLUMNS';
 
 const ArtistColumns = () => {
     return artistColumns;

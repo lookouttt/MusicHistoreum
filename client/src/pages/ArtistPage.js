@@ -18,7 +18,7 @@ const ArtistPage = () => {
                                 <Col>
                                     <AlphabetNav />
                                     <ArtistCard artist={artist} />
-                                    <ArtistList />
+                                    {/* <ArtistList /> */}
                                 </Col>
                             </Row>
                         </Container>

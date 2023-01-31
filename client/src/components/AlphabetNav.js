@@ -3,17 +3,14 @@ import {
     Navbar, 
     Nav,
     NavItem,
-    Modal,
-    ModalHeader,
-    ModalBody
 } from 'reactstrap';
 import { NavLink } from 'react-router-dom';
 
+import ArtistModal from "./ArtistModal";
+
 const AlphabetNav = () => {
 
-    const [ alphaModalOpen, setAlphaModalOpen] = useState(false);
-    const openModal = () => setAlphaModalOpen(true);
-
+    const [passChar, setPassChar] = useState(null)
 
     const alphaChars = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
          'S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9','*'];
@@ -22,7 +19,7 @@ const AlphabetNav = () => {
         console.log('Inside AlphaNavItems');
         return (
             <NavItem >
-                {alphaChars.map(alphaChar => (<NavLink className='nav-link alphaItem' to='#' onClick={openModal}>{alphaChar}</NavLink>))}
+                {alphaChars.map(alphaChar => (<NavLink className='nav-link alphaItem' to='#' onClick={() => setPassChar(alphaChar)}>{alphaChar}</NavLink>))}
             </NavItem>
         );
     }
@@ -32,13 +29,7 @@ const AlphabetNav = () => {
             <Nav navbar>
                 <AlphaNavItems />
             </Nav>
-            <Modal isOpen={alphaModalOpen}>
-                <ModalHeader toggle={() => setAlphaModalOpen(false)}>
-                    Artist List
-                </ModalHeader>
-                <ModalBody>
-                </ModalBody>
-            </Modal>
+            <ArtistModal passChar={passChar} />
         </Navbar>
     );
 }

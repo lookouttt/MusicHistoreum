@@ -17,7 +17,7 @@ function ArtistList() {
     useEffect(() => { 
         const fetchData = async () => {
             console.log('Pre Fetch Artist List');
-            const artistListData = await fetchArtistList(null);
+            const artistListData = await fetchArtistList("'!'");
             console.log('Post Fetch Artist List');
             setData(artistListData);
         }
