@@ -5,10 +5,11 @@ import ArtistListColumns from "../features/artist/ArtistListColumns";
 import ArtistStyles from "../features/artist/ArtistStyles";
 import fetchArtistList from "../services/fetchArtistList";
 
-const ArtistModal = ({ passChar }) => {
+const ArtistModal = ({ passChar, resetPassChar }) => {
 
-    const [ alphaModalOpen, setAlphaModalOpen] = useState(false);
-    const [ currentChar, setCurrentChar] = useState(null);
+    const [alphaModalOpen, setAlphaModalOpen] = useState(false);
+    const [currentChar, setCurrentChar] = useState(null);
+    const [hideResults, setHideResults] = useState(false);
 
     const openModal = (alphaChar) => {
         console.log('openModal: ', alphaChar);
@@ -18,14 +19,17 @@ const ArtistModal = ({ passChar }) => {
 
     const closeModal = () => {
         setCurrentChar(null);
+        setData(null);
         setAlphaModalOpen(false);
+        setHideResults(false);
+        resetPassChar();
     }
 
     const columns = useMemo(
         () => ArtistListColumns(), []
     );
 
-    const [data, setData] = useState([]);
+    const [data, setData] = useState(null);
     
     useEffect(() => { 
         const fetchData = async () => {
@@ -34,7 +38,11 @@ const ArtistModal = ({ passChar }) => {
                 console.log('Pre Fetch Artist List: ', charString);
                 const artistListData = await fetchArtistList(charString);
                 console.log('Post Fetch Artist List ');
-                setData(artistListData);
+                if (artistListData)
+                    setData(artistListData);
+                else
+                    setHideResults(true);
+
             }
         }
         fetchData();
@@ -46,16 +54,20 @@ const ArtistModal = ({ passChar }) => {
         }
     }, [passChar]);
 
-    return (
+    return (data || hideResults) && (
         <Modal isOpen={alphaModalOpen}>
             <ModalHeader toggle={() => { setCurrentChar(null);
+                                        setData(null);
                                         setAlphaModalOpen(false);
+                                        setHideResults(false);
+                                        resetPassChar();
             }}>
                 Artist List
             </ModalHeader>
             <ModalBody>
                 <ArtistStyles>
-                    <Table columns={columns} data={data} onCloseModal={() => closeModal()} />
+                    { hideResults ? 'No Artists Found' :
+                       <Table columns={columns} data={data} onCloseModal={() => closeModal()} /> }
                 </ArtistStyles>
             </ModalBody>
         </Modal>

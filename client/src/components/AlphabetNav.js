@@ -29,7 +29,7 @@ const AlphabetNav = () => {
             <Nav navbar>
                 <AlphaNavItems />
             </Nav>
-            <ArtistModal passChar={passChar} />
+            <ArtistModal passChar={passChar} resetPassChar={() => setPassChar(null)}/>
         </Navbar>
     );
 }
