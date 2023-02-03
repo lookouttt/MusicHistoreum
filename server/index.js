@@ -96,6 +96,10 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
     }
 });
 
+app.post("/contact", async(req, res) => {
+    console.log(req.body);
+});
+
 app.listen(5000, () => {
     console.log("server has started on port 5000");
 });
