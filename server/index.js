@@ -1,12 +1,33 @@
+require('dotenv').config();
 const express = require("express");
-const app = express();
+const router = express.Router();
 const cors = require("cors");
+const nodemailer = require("nodemailer");
+
+const app = express();
 const pool = require("./db");
 const dayjs = require("dayjs");
 
 //middleware
 app.use(cors());
 app.use(express.json()); //req.body
+app.use("/", router);
+
+const contactEmail = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASSWORD
+    },
+});
+
+contactEmail.verify((error) => {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log("Ready to Send Email");
+    }
+});
 
 //ROUTES//
 
@@ -96,8 +117,29 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
     }
 });
 
-app.post("/contact", async(req, res) => {
-    console.log(req.body);
+
+router.post("/contact", (req, res) => {
+    console.log(req.body)
+    const name = req.body.firstName + " " + req.body.lastName;
+    const email = req.body.email;
+    const message = req.body.text; 
+    const mail = {
+        from: name,
+        to: process.env.MAIL_USER,
+        subject: "Music Historeum Contact Form Submission",
+        html: `<p>Name: ${name}</p>
+                <p>Email: ${email}</p>
+                <p>Message: ${message}</p>`,
+    };
+    contactEmail.sendMail(mail, (error) => {
+        if (error) {
+        console.log("Status: ERROR");
+        res.json({ status: "ERROR" });
+        } else {
+        console.log("Status: Message Sent");
+        res.json({ status: "Message Sent" });
+        }
+    });
 });
 
 app.listen(5000, () => {
