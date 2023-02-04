@@ -1,6 +1,4 @@
 import { createSlice, current } from '@reduxjs/toolkit';
-import { useState } from 'react';
-
 
 const initialState = {
     currentChart: {
@@ -10,7 +8,7 @@ const initialState = {
         chartDate: "1989-11-25"
     },
     pendingChart: {
-        chartId: 1,
+        chartId: 1, 
         chartType: "Song",
         chartTimeframe: "Week",
         chartDate: "1989-11-25"

@@ -36,7 +36,6 @@ function ArtistCard(artist) {
                 setSongItems(tempSongItems);
             }
             else {
-                const formattedDate = format(new Date(), 'MMM yyyy');
                 const tempSongItems = () => {
                     return [{
                         cardTitle: 'No songs found'
@@ -64,7 +63,6 @@ function ArtistCard(artist) {
                 setAlbumItems(tempAlbumItems);
             }
             else {
-                const formattedDate = format(new Date(), 'MMM yyyy');
                 const tempAlbumItems = () => {
                     return [{
                         cardTitle: 'No albums found'
