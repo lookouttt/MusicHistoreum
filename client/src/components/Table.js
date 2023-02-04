@@ -3,7 +3,7 @@ import { usePagination, useTable } from "react-table";
 import { useNavigate } from 'react-router-dom';
 import { current } from "@reduxjs/toolkit";
 
-export default function Table({ columns, data, hiddenColumns = [], onCloseModal }) {
+export default function Table({ columns, data, hiddenColumns = [], onCloseModal, tablePageSize }) {
     let prevHiddenColumns = [];
   // Use the useTable Hook to send the columns and data to build the table
   const {
@@ -26,7 +26,7 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal 
   } = useTable({
     columns,
     data,
-    initialState: { pageIndex: 0, pageSize: 20 },
+    initialState: { pageIndex: 0, pageSize: tablePageSize},
     },
     usePagination
   );
@@ -50,40 +50,9 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal 
             navigate(`/Artist/${currentArtist}`);
         }
     }
-  /* 
-    Render the UI for your table
-    - react-table doesn't have UI, it's headless. We just need to put the react-table props from the Hooks, and it will do its magic automatically
-  */
-  return (
-    <>
-        <table {...getTableProps()}>
-        <thead>
-            {headerGroups.map(headerGroup => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map(column => (
-                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
-                ))}
-            </tr>
-            ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-            {page.map((row, i) => {
-            prepareRow(row);
+
+    const TablePagination = () => {
             return (
-                <tr {...row.getRowProps()}>
-                {row.cells.map(cell => {
-                    // console.log("I'm put a rown in the table");
-                    return <td onClick={() => checkCellValue(cell)} {...cell.getCellProps()}>{cell.render("Cell")}</td>;
-                })}
-                </tr>
-            );
-            })}
-        </tbody>
-        </table>
-        {/* 
-        Pagination can be built however you'd like. 
-        This is just a very basic UI implementation:
-      */}
       <div className="pagination">
         <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
           {'<<'}
@@ -128,6 +97,39 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal 
           ))}
         </select>
       </div>
+        )
+    }
+  /* 
+    Render the UI for your table
+    - react-table doesn't have UI, it's headless. We just need to put the react-table props from the Hooks, and it will do its magic automatically
+  */
+  return (
+    <>
+        <table {...getTableProps()}>
+        <thead>
+            {headerGroups.map(headerGroup => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map(column => (
+                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
+                ))}
+            </tr>
+            ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+            {page.map((row, i) => {
+            prepareRow(row);
+            return (
+                <tr {...row.getRowProps()}>
+                {row.cells.map(cell => {
+                     console.log("I'm putting a row in the table");
+                    return <td onClick={() => checkCellValue(cell)} {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+                })}
+                </tr>
+            );
+            })}
+        </tbody>
+        </table>
+        { (tablePageSize === 20) && <TablePagination /> }
     </>
   );
 }

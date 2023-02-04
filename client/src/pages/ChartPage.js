@@ -16,7 +16,7 @@ const ChartPage = () => {
                         <Container>
                             <Row>
                                 <Col>
-                                    <ChartCard chart={currentChart} />
+                                    <ChartCard chart={currentChart} bIncludeNav={true} pageSize={20} />
                                 </Col>
                             </Row>
                         </Container>
