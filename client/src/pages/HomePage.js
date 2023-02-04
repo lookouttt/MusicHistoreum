@@ -1,8 +1,44 @@
 import { Container, Row, Col, Card, CardHeader, CardBody } from "reactstrap";
+import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import '../App.css';
-
+import ChartCard from "../features/chart/ChartCard";
+import { selectSpecificChart } from "../features/chartMenu/chartsMenusSlice";
 const HomePage = () => {
-    return (
+    const [songChart, setSongChart] = useState(null);
+    const [albumChart, setAlbumChart] = useState(null);
+    const songChartType = useSelector(selectSpecificChart('Song', 1));
+    const albumChartType = useSelector(selectSpecificChart('Album', 2));
+    
+    useEffect(() => {
+        setSongChart(() => {
+            return (
+                {
+                    chartId: 1,
+                    chartType: "Song",
+                    chartTimeframe: "Week",
+                    chartDate: songChartType.LastDate
+                }
+            )
+        });
+        setAlbumChart(() => {
+            return (
+                {
+                    chartId: 2,
+                    chartType: "Album",
+                    chartTimeframe: "Week",
+                    chartDate: albumChartType.LastDate
+                }
+            )
+        });
+    
+    }, [songChartType, albumChartType]);
+
+    if (songChart) {
+
+    }
+
+    return songChart && albumChart && (
         <Container fluid>
             <Row className="justify-content-md-center">
                 <Col>
@@ -30,12 +66,33 @@ const HomePage = () => {
 
                                             <br/>
                                             <br/>
-                                                Now, take a look around. Use the Charts menu above to find the chart information you're looking for. we
+                                                Now, take a look around. Use the Charts menu above to find the chart information you're looking for. We
                                                 have weekly chart data for the Top Songs and Top Albums. We also have monthly, yearly, and decade charts 
                                                 for those two categoaries as well as for other genre-specific categories. We hope you enjoy the site.
                                             </p>
                                         </CardBody>
                                     </Card>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    <Card className='homeChartCard'>
+                                        <CardHeader className='homeChartHeader'>
+                                            <h1>Most Recent Top Charts</h1>
+                                        </CardHeader>
+                                        <CardBody className='homeChartBody'>
+                                            <Container>
+                                                <Row>
+                                                    <Col>
+                                                        <ChartCard chart={songChart}/>
+                                                    </Col>
+                                                    <Col>
+                                                        <ChartCard chart={albumChart}/>
+                                                    </Col>
+                                                </Row>
+                                            </Container>
+                                        </CardBody>
+                                    </Card>                                
                                 </Col>
                             </Row>
                         </Container>
