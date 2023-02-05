@@ -5,7 +5,7 @@ import {
     NavItem,
 } from 'reactstrap';
 import { NavLink } from 'react-router-dom';
-
+import './AlphabetNav.css';
 import ArtistModal from "./ArtistModal";
 
 const AlphabetNav = () => {
@@ -26,7 +26,7 @@ const AlphabetNav = () => {
 
     return (
         <Navbar dark expand='md' id='alphaNav'>
-            <Nav navbar>
+            <Nav navbar className='mx-auto'>
                 <AlphaNavItems />
             </Nav>
             <ArtistModal passChar={passChar} resetPassChar={() => setPassChar(null)}/>
