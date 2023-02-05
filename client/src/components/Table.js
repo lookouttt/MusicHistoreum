@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { usePagination, useTable } from "react-table";
 import { useNavigate } from 'react-router-dom';
-import { current } from "@reduxjs/toolkit";
 
 export default function Table({ columns, data, hiddenColumns = [], onCloseModal, tablePageSize }) {
     let prevHiddenColumns = [];
@@ -38,10 +37,9 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal,
     }
 }, [hiddenColumns]);
    
-    const [closeModal, setCloseModal] = useState(false);
     const navigate = useNavigate();
     const checkCellValue = (cell) =>{
-        if (cell.column.id == 'artist_name') {
+        if (cell.column.id === 'artist_name') {
             console.log('This is the artist cell');
             console.log(cell.value);
             const currentArtist = cell.value;
@@ -121,7 +119,7 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal,
             return (
                 <tr {...row.getRowProps()}>
                 {row.cells.map(cell => {
-                     console.log("I'm putting a row in the table");
+                    //  console.log("I'm putting a row in the table");
                     return <td onClick={() => checkCellValue(cell)} {...cell.getCellProps()}>{cell.render("Cell")}</td>;
                 })}
                 </tr>
