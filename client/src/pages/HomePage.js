@@ -2,6 +2,7 @@ import { Container, Row, Col, Card, CardHeader, CardBody } from "reactstrap";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import '../App.css';
+import '../features/chart/ChartCard.css';
 import ChartCard from "../features/chart/ChartCard";
 import { selectSpecificChart } from "../features/chartMenu/chartsMenusSlice";
 const HomePage = () => {

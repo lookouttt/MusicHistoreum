@@ -1,10 +1,12 @@
-.chartCard {
+.chartCard.card {
     margin-top: 20px;
     margin-bottom: 20px;
+    background: rgba(255,255,255,0.2);
 }
 
-.chartHeader {
+.chartHeader.chartHeader {
     text-align: center;
+    background: rgba(255,255,255,0.4);
 }
 
 .chartNavCont {
@@ -12,6 +14,21 @@
     justify-content: center;
 }
 
-.chartBody {
-    background-image: linear-gradient(to bottom right, #8dc3ec, #8dabc0, #8596a1);
+.chartBody.chartBody {
+    background: rgba(255,255,255,0.0);
+}
+
+.homeChartCard.card {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    background: rgba(255,255,255,0.2);
+}
+
+.homeChartHeader.homeChartHeader {
+    text-align: center;
+    background: rgba(255,255,255,0.4);
+}
+
+.homeChartBody.homeChartBody {
+    background: rgba(255,255,255,0.0);
 }

@@ -67,7 +67,7 @@ const ArtistModal = ({ passChar, resetPassChar }) => {
             <ModalBody>
                 <ArtistStyles>
                     { hideResults ? 'No Artists Found' :
-                       <Table columns={columns} data={data} onCloseModal={() => closeModal()} /> }
+                       <Table columns={columns} data={data} onCloseModal={() => closeModal()} tablePageSize={20} /> }
                 </ArtistStyles>
             </ModalBody>
         </Modal>
