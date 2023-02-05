@@ -6,11 +6,11 @@ import DecadePicker from '../../utils/DecadePicker';
 import './TimeFrameMenu.css';
 
 const TimeFrameMenu = (({bWeekly, firstDate, lastDate}) => {
-    let index;
+    let idx;
     let timeframes = [];
 
     if (bWeekly) {
-        index = 1;
+        idx = 1;
         timeframes = [
             {tf: "Weekly", picker: <><WeekPicker firstDate={firstDate} lastDate={lastDate}/></>},
             {tf: "Monthly", picker: <><MonthPicker firstDate={firstDate} lastDate={lastDate}/></>},
@@ -18,7 +18,7 @@ const TimeFrameMenu = (({bWeekly, firstDate, lastDate}) => {
             {tf: "Decade", picker: <><DecadePicker firstDate={firstDate} lastDate={lastDate}/></>}
         ];
     } else {
-        index = 2;
+        idx = 2;
         timeframes = [
             {tf: "Monthly", picker: <><MonthPicker firstDate={firstDate} lastDate={lastDate}/></>},
             {tf: "Yearly", picker: <><YearPicker firstDate={firstDate} lastDate={lastDate}/></>},
@@ -27,14 +27,14 @@ const TimeFrameMenu = (({bWeekly, firstDate, lastDate}) => {
     }
 
     return (
-        timeframes.map((timeframe) => {
+        timeframes.map((timeframe, index) => {
 
             return (
-                <AccordionItem>
-                    <AccordionHeader targetId={String(index)} className='timeframeMenuHeader'>
+                <AccordionItem key={index}>
+                    <AccordionHeader targetId={String(idx)} className='timeframeMenuHeader'>
                         {timeframe.tf}
                     </AccordionHeader>
-                    <AccordionBody accordionId={String(index++)} className='timeframeMenuBody'>
+                    <AccordionBody accordionId={String(idx++)} className='timeframeMenuBody'>
                         {timeframe.picker}
                     </AccordionBody>
                 </AccordionItem> 

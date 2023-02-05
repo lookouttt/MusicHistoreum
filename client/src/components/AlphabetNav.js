@@ -19,7 +19,7 @@ const AlphabetNav = () => {
         console.log('Inside AlphaNavItems');
         return (
             <NavItem >
-                {alphaChars.map(alphaChar => (<NavLink className='nav-link alphaItem' to='#' onClick={() => setPassChar(alphaChar)}>{alphaChar}</NavLink>))}
+                {alphaChars.map((alphaChar, index) => (<NavLink key={index} className='nav-link alphaItem' to='#' onClick={() => setPassChar(alphaChar)}>{alphaChar}</NavLink>))}
             </NavItem>
         );
     }

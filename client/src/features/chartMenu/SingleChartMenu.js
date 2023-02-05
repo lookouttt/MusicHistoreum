@@ -23,11 +23,11 @@ const SingleChartMenu = (({chartType}) => {
 
 
     return (
-        chartList.map((chart) => {
+        chartList.map((chart, index) => {
             const bWeekly = (parseInt(chart.ChartId) <= 2) ? true : false;
 
             return (
-                <AccordionItem>
+                <AccordionItem key={index}>
                     <AccordionHeader targetId={String(chart.ChartId)} className='chartMenuHeader'>
                         {chart.ChartTitle}
                     </AccordionHeader>
