@@ -9,6 +9,7 @@ import fetchContactForm from '../../services/fetchContactForm';
 
 const ContactForm = () => {
     const [modalOpen, setModalOpen] = useState(false);
+    const FormTopics = ['Default','Chart Question', 'Feature Request', 'Other' ];
 
     // const dispatch = useDispatch();
 
@@ -17,7 +18,7 @@ const ContactForm = () => {
             firstName: values.firstName,
             lastName: values.lastName,
             email: values.email,
-            topic: values.topic,
+            topic: FormTopics[values.topic],
             text: values.commentText,
             date: new Date(Date.now()).toISOString()
         };
@@ -37,7 +38,7 @@ const ContactForm = () => {
             </span>
             <Modal isOpen={modalOpen}>
                 <ModalHeader toggle={() => setModalOpen(false)}>
-                    Add Comment
+                    Contact Us
                 </ModalHeader>
                 <ModalBody>
                     <Formik 
@@ -86,7 +87,7 @@ const ContactForm = () => {
                                 </ErrorMessage>
                             </FormGroup>    
                             <FormGroup>
-                                <Label htmlFor='topic'>Topic</Label>
+                                <Label htmlFor='topic' style={{ paddingRight:10 }}>Topic</Label>
                                 <Field as='select' name='topic'>
                                     <option value='0'>Choose...</option>
                                     <option value='1'>Chart Question</option>
