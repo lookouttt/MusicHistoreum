@@ -1,38 +1,21 @@
-import { createSlice, current } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
+import { TOP_ARTISTS } from '../../app/shared/TOP_ARTISTS';
 
 const initialState = {
-    artistStatus: {
-        updateArtist: false  
-    }
+    topArtists: TOP_ARTISTS,
 };
 
 const artistsSlice = createSlice({
     name: 'artists',
-    initialState,
-    reducers: {
-        updateCurrentArtist: (state) => {
-            const newStatus = {
-                updateArtist: true
-            };
-            state.artistStatus = newStatus;
-            console.log('UCA reset state: ', state.artistStatus);
-        },
-        updateArtistStatus: (state) => {
-            const newStatus = {
-                updateArtist: false
-            };
-            state.artistStatus = newStatus;
-            console.log('UAS reset state: ', state.artistStatus);
-        }
-    }
+    initialState
 });
 
 
 
 export const artistsReducer = artistsSlice.reducer;
 
-export const { updateCurrentArtist, updateArtistStatus } = artistsSlice.actions;
-
-export const getUpdateArtistState = (state) => {
-    return state.artists.artistStatus.updateArtist;
+export const getTopArtists = () =>  (state) => {
+    console.log('artistSlice: ', state);
+    console.log('artistSlice: ', state.artists);
+    return state.artists.topArtists;
 }

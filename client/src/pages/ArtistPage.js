@@ -1,10 +1,11 @@
 import { useParams } from "react-router-dom";
 import { Container, Row, Col } from "reactstrap";
 import ArtistCard from "../features/artist/ArtistCard";
-import ArtistList from "../features/artist/ArtistList";
 import AlphabetNav from "../components/AlphabetNav";
+import ArtistList from '../features/artist/ArtistList';
 
 const ArtistPage = () => {
+    const defaultValue = "ABCXYZ"
     let { artist } = useParams();
     console.log('Artist Page artist: ', artist);
 
@@ -17,8 +18,7 @@ const ArtistPage = () => {
                             <Row>
                                 <Col>
                                     <AlphabetNav />
-                                    <ArtistCard artist={artist} />
-                                    {/* <ArtistList /> */}
+                                    { artist !== defaultValue ? <ArtistCard artist={artist} /> : <ArtistList />}
                                 </Col>
                             </Row>
                         </Container>

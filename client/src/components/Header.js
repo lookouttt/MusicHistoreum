@@ -24,7 +24,7 @@ const Header = () => {
     // const [menuOpen, setMenuOpen] = useState(false);
     const [dropdownOpen, setdropdownOpen] = useState(false);
 
-    const testValue='U2';
+    const defaultValue='ABCXYZ';
 
     return (
         <Container fluid>
@@ -73,7 +73,7 @@ const Header = () => {
                                 </DropdownMenu>
                             </Dropdown>
                             <NavItem>
-                                <NavLink className='nav-link' to={`/Artist/${testValue}`} id='bottomNavItems2'>
+                                <NavLink className='nav-link' to={`/Artist/${defaultValue}`} id='bottomNavItems2'>
                                     Artists
                                 </NavLink>
                             </NavItem>
