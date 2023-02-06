@@ -55,7 +55,7 @@ const ArtistModal = ({ passChar, resetPassChar }) => {
     }, [passChar]);
 
     return (data || hideResults) && (
-        <Modal isOpen={alphaModalOpen}>
+        <Modal isOpen={alphaModalOpen} size='lg'>
             <ModalHeader toggle={() => { setCurrentChar(null);
                                         setData(null);
                                         setAlphaModalOpen(false);
