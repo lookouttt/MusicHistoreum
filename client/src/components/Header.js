@@ -18,7 +18,6 @@ import { NavLink } from 'react-router-dom';
 import ChartMenu from '../features/chartMenu/ChartMenu';
 import './Header.css';
 import ContactForm from '../features/contact/ContactForm';
-import ArtistCard from '../features/artist/ArtistCard';
 
 const Header = () => {
     // const [menuOpen, setMenuOpen] = useState(false);

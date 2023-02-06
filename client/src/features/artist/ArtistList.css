@@ -1,10 +1,12 @@
-.artistListCard {
+.artistListCard.card {
     margin-top: 20px;
     margin-bottom: 20px;
+    background: rgba(255,255,255,0.2);
 }
 
-.artistListHeader {
+.artistListHeader.artistListHeader {
     text-align: center;
+    background: rgba(255,255,255,0.4);
 }
 
 .artistListNavCont {
@@ -12,18 +14,26 @@
     justify-content: center;
 }
 
-.artistListBody {
-    background-image: linear-gradient(to bottom right, #8dc3ec, #8dabc0, #8596a1);
-}
-
 .topArtistList {
     columns: 3;
     -webkit-columns: 3;
     -moz-columns: 3;
     list-style-type: none;
-    background-color: rgba(255,255,255,0.2);
+    background-color: rgba(255,255,255,0.3);
 }
 
 .topArtistList li {
-    padding-top: 20px;
+    padding: 10px;
+}
+
+.artistListName a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #64390e;
+}
+
+.artistListName a:hover {
+    text-decoration: none;
+    font-weight: bold;
+    color: #ac6927;
 }
