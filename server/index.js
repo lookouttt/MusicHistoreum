@@ -123,10 +123,11 @@ router.post("/contact", (req, res) => {
     const name = req.body.firstName + " " + req.body.lastName;
     const email = req.body.email;
     const message = req.body.text; 
+    const topic = req.body.topic;
     const mail = {
         from: name,
         to: process.env.MAIL_USER,
-        subject: "Music Historeum Contact Form Submission",
+        subject: `Music Historeum Contact Form Submission - ${topic}`,
         html: `<p>Name: ${name}</p>
                 <p>Email: ${email}</p>
                 <p>Message: ${message}</p>`,
