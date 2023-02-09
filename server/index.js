@@ -33,6 +33,10 @@ contactEmail.verify((error) => {
 
 //get list of available charts
 
+app.get("/testConnect", (req, res) => {
+    res.json('This is a test response');
+})
+
 app.get("/chartList", async(req, res) => {
     try {
         const allCharts = await pool.query("SELECT * FROM chart_list");
