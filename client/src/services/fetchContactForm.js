@@ -12,6 +12,8 @@ async function fetchContactForm(formData) {
             console.log('Response succeeded');
         }
     });
+
+    return response;
 }
 
 export default fetchContactForm;

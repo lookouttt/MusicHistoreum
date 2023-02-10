@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import styled from "styled-components";
-import { addDays, getDay, format, parseISO } from 'date-fns';
+import { addDays, getDay, format } from 'date-fns';
 import { updateCurrentChart, updatePendingDate } from '../features/chart/chartsSlice';
 
 const Styles = styled.div`

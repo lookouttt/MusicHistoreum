@@ -31,7 +31,7 @@ const ContactForm = () => {
     return (
         <>
             <span className='navbar-text ml-auto'>
-                <a href='#' style={{ textDecoration: 'none' }} onClick={() => setModalOpen(true)}
+                <a href style={{ textDecoration: 'none' }} onClick={() => setModalOpen(true)}
                 >
                     <i className='fa fa-comment' /> Contact
                 </a>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFilters, useGlobalFilter, usePagination, useTable, useAsyncDebounce } from "react-table";
 import { useNavigate } from 'react-router-dom';
 import {matchSorter} from 'match-sorter';
@@ -59,8 +59,9 @@ function fuzzyTextFilterFn(rows, id, filterValue) {
 fuzzyTextFilterFn.autoRemove = val => !val
 
 export default function Table({ columns, data, hiddenColumns = [], onCloseModal, tablePageSize }) {
-    let prevHiddenColumns = [];
-      const filterTypes = React.useMemo(
+    const [prevHiddenColumns, setPrevHiddenColumns] = useState([]);
+
+    const filterTypes = React.useMemo(
     () => ({
       // Add a new fuzzyTextFilterFn filter type.
       fuzzyText: fuzzyTextFilterFn,
@@ -120,11 +121,12 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal,
   );
 
   useEffect(() => {
+    // const prevHiddenColumns = () => [];
     if (JSON.stringify(prevHiddenColumns) !== JSON.stringify(hiddenColumns)) {
-      prevHiddenColumns = hiddenColumns;
+      setPrevHiddenColumns(hiddenColumns);
       setHiddenColumns(hiddenColumns);
     }
-}, [hiddenColumns]);
+}, [hiddenColumns, prevHiddenColumns, setHiddenColumns, setPrevHiddenColumns]);
    
     const navigate = useNavigate();
     const checkCellValue = (cell) =>{
