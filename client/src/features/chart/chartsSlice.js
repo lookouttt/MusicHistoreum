@@ -32,7 +32,8 @@ const chartsSlice = createSlice({
         },
         updatePendingType: (state, action) => {
             let chartType;
-            if (action.payload == 1)
+            console.log('updatePendingType action: ', action);
+            if (action.payload === '1')
                 chartType = 'Song';
             else
                 chartType = 'Album';
@@ -46,11 +47,12 @@ const chartsSlice = createSlice({
         },
         updatePendingTimeframe: (state, action) => {
             let chartTimeframe;
-            if (action.payload == 1)
+            console.log('updatePendingTimeframe action: ', action);
+            if (action.payload === '1')
                 chartTimeframe = 'Week';
-            else if (action.payload == 2)
+            else if (action.payload === '2')
                 chartTimeframe = 'Month';
-            else if (action.payload == 3)
+            else if (action.payload === '3')
                 chartTimeframe = 'Year';
             else
                 chartTimeframe = 'Decade';

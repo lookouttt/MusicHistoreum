@@ -83,14 +83,14 @@ const ChartNav = ({chart}) => {
         console.log('End of checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
     }
 
-    useLayoutEffect(() => {
-        checkTimeframes();
-        console.log('Outside checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
-    }, []);
+    // useLayoutEffect(() => {
+    //     checkTimeframes();
+    //     //console.log('Outside checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
+    // }, []);
 
     useLayoutEffect(() => {
         checkTimeframes();
-        console.log('Outside checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
+        //console.log('Outside checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
     }, [checkUpdateChartState]);
 
     return (
