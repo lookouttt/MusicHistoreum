@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+const winston = require("winston");
+const { combine, timestamp, json } = winston.format;
 
 const app = express();
 const pool = require("./db");
@@ -12,6 +14,15 @@ const dayjs = require("dayjs");
 app.use(cors());
 app.use(express.json()); //req.body
 app.use("/", router);
+
+const logger = winston.createLogger({
+    level: process.env.LOG_LEVEL || 'info',
+    format: combine(timestamp(), json()),
+    transports: [new winston.transports.File({
+        filename: 'mh_server.log',
+        }),
+    ],
+});
 
 const contactEmail = nodemailer.createTransport({
     service: 'gmail',
@@ -23,9 +34,9 @@ const contactEmail = nodemailer.createTransport({
 
 contactEmail.verify((error) => {
     if (error) {
-        console.log(error);
+        logger.error(error);
     } else {
-        console.log("Ready to Send Email");
+        logger.info("Ready to Send Email");
     }
 });
 
@@ -42,20 +53,20 @@ app.get("/chartList", async(req, res) => {
         const allCharts = await pool.query("SELECT * FROM chart_list");
         res.json(allCharts.rows);
     } catch (err) {
-        console.error(err.message);
+       logger.error(err.message);
     }
 });
 
 app.get("/artist/list/:start_char", async(req, res) => {
     try {
         const startChar = req.params.start_char;
-        console.log('trying to get artist list: ', startChar);
+        logger.info('trying to get artist list: ', startChar);
         const allArtists = await pool.query(`SELECT get_artist_list(${startChar})`);
-        console.log('post artist list check');
+        logger.info('post artist list check');
         res.json(allArtists.rows);
     } catch (err) {
-        console.log('got error trying to get artist list');
-        console.error(err.message);
+        logger.info('got error trying to get artist list');
+        logger.error(err.message);
     }
 });
 
@@ -65,7 +76,7 @@ app.get("/artist/:dartist/:dtype", async(req, res) => {
     try {
         const artistName = req.params.dartist;
         const queryType = req.params.dtype;
-        console.log(req.params);
+        logger.info(req.params);
         let artist;
         if (queryType === 'songs')
             artist = await pool.query(`SELECT get_songs_by_artist($1)`, [artistName]);
@@ -73,7 +84,7 @@ app.get("/artist/:dartist/:dtype", async(req, res) => {
             artist = await pool.query(`SELECT get_albums_by_artist($1)`, [artistName]);
         res.json(artist.rows);
     } catch (err) {
-        console.error(err.message);
+        logger.error(err.message);
     }
 });
 
@@ -86,7 +97,7 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
         const chartTime = req.params.ctf;
         const chartDate = req.params.cdate;
         const startDate = dayjs(chartDate);
-        console.log(req.params);
+        logger.info(req.params);
         if (chartType === 'Song' || chartType === 'Album') {
             if (chartTime === 'Week') {
                 const chart = await pool.query(`SELECT get_weekly_${chartType}_chart($1, $2)`, [chartId, chartDate]);
@@ -117,13 +128,13 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
         }
 
     } catch (err) {
-        console.error(err.message);
+        logger.error(err.message);
     }
 });
 
 
 router.post("/contact", (req, res) => {
-    console.log(req.body)
+    logger.info(req.body)
     const name = req.body.firstName + " " + req.body.lastName;
     const email = req.body.email;
     const message = req.body.text; 
@@ -138,15 +149,15 @@ router.post("/contact", (req, res) => {
     };
     contactEmail.sendMail(mail, (error) => {
         if (error) {
-        console.log("Status: ERROR");
+        logger.error("Status: ERROR");
         res.json({ status: "ERROR" });
         } else {
-        console.log("Status: Message Sent");
+        logger.info("Status: Message Sent");
         res.json({ status: "Message Sent" });
         }
     });
 });
 
-app.listen(5000, () => {
-    console.log("server has started on port 5000");
+app.listen(0, () => {
+    logger.info("server has started on musichistoreum.com");
 });

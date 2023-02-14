@@ -1,7 +1,7 @@
 import { baseUrl } from "./baseUrl";
 
 async function fetchContactForm(formData) {
-    const response = await fetch(`${baseUrl}/contact`, {
+    const response = await fetch(`${baseUrl}contact`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json, text/plain, */*',
