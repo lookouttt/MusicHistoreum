@@ -158,6 +158,6 @@ router.post("/contact", (req, res) => {
     });
 });
 
-app.listen(0, () => {
-    logger.info("server has started on musichistoreum.com");
+app.listen(process.env.API_PORT, () => {
+    logger.info("server has started on musichistoreum.com with port ", process.env.API_PORT);
 });
