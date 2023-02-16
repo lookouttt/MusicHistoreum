@@ -26,13 +26,13 @@
     padding: 10px;
 }
 
-.artistListName a {
+.artistListName {
     text-decoration: none;
     font-weight: bold;
     color: #64390e;
 }
 
-.artistListName a:hover {
+.artistListName:hover {
     text-decoration: none;
     font-weight: bold;
     color: #ac6927;
