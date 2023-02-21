@@ -25,7 +25,8 @@ const logger = winston.createLogger({
 });
 
 const contactEmail = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'mail.musichistoreum.com',
+    port: 465,
     auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD
@@ -151,7 +152,7 @@ router.post("/contact", (req, res) => {
     };
     contactEmail.sendMail(mail, (error) => {
         if (error) {
-        logger.error("Status: ERROR");
+        logger.error("Status: ERROR", error);
         res.json({ status: "ERROR" });
         } else {
         logger.info("Status: Message Sent");
