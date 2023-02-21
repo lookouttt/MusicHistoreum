@@ -1,6 +1,9 @@
 import { Container, Row, Col, Card, CardHeader, CardBody } from "reactstrap";
 
 const AboutPage = () => {
+    if (sessionStorage.getItem('reloadPage') === 'yes') {
+        sessionStorage.clear();
+    }
     return (
         <Container fluid>
             <Row className="justify-content-md-center">

@@ -10,6 +10,10 @@ const HomePage = () => {
     const [albumChart, setAlbumChart] = useState(null);
     const songChartType = useSelector(selectSpecificChart('Song', 1));
     const albumChartType = useSelector(selectSpecificChart('Album', 2));
+
+    if (sessionStorage.getItem('reloadPage') === 'yes') {
+        sessionStorage.clear();
+    }
     
     useEffect(() => {
         setSongChart(() => {
@@ -34,10 +38,6 @@ const HomePage = () => {
         });
     
     }, [songChartType, albumChartType]);
-
-    if (songChart) {
-
-    }
 
     return songChart && albumChart && (
         <Container fluid>

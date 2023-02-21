@@ -8,6 +8,9 @@ const ArtistPage = () => {
     const defaultValue = "ABCXYZ"
     let { artist } = useParams();
     console.log('Artist Page artist: ', artist);
+    if (sessionStorage.getItem('reloadPage') === 'yes') {
+        sessionStorage.clear();
+    }
 
     return (
         <Container fluid>
