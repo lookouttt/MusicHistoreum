@@ -46,7 +46,9 @@ contactEmail.verify((error) => {
 
 app.get("/testConnect", (req, res) => {
     res.json('This is a test response');
-})
+});
+
+
 
 app.get("/chartList", async(req, res) => {
     try {
