@@ -85,10 +85,22 @@ const HomePage = () => {
                                             <Container>
                                                 <Row>
                                                     <Col>
-                                                        <ChartCard chart={songChart} bIncludeNav={false} pageSize={10} />
+                                                        <ChartCard 
+                                                            chart={songChart} 
+                                                            bIncludeNav={false} 
+                                                            pageSize={10} 
+                                                            bPage={false} 
+                                                            bFilter={false}
+                                                        />
                                                     </Col>
                                                     <Col>
-                                                        <ChartCard chart={albumChart} bIncludeNav={false} pageSize={10} />
+                                                        <ChartCard 
+                                                            chart={albumChart} 
+                                                            bIncludeNav={false} 
+                                                            pageSize={10} 
+                                                            bPage={false} 
+                                                            bFilter={false}
+                                                        />
                                                     </Col>
                                                 </Row>
                                             </Container>

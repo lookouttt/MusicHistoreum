@@ -11,7 +11,7 @@ import ChartNav from './ChartNav';
 import './ChartCard.css';
 const dayjs = require("dayjs");
 
-function ChartCard({chart, bIncludeNav, pageSize}) {
+function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
 
     const columns = useMemo(
         () => ChartColumns(chart), [chart]
@@ -80,7 +80,14 @@ function ChartCard({chart, bIncludeNav, pageSize}) {
             <CardBody className='chartBody'>
                 { bIncludeNav && <ChartNav chart={chart}/> } 
                 <ChartStyles>
-                    <Table columns={columns} data={data} hiddenColumns={hiddenColumns} tablePageSize={pageSize} />
+                    <Table 
+                        columns={columns} 
+                        data={data} 
+                        hiddenColumns={hiddenColumns} 
+                        tablePageSize={pageSize}  
+                        bPage={bPage}
+                        bFilter={bFilter}
+                    />
                 </ChartStyles>
             </CardBody>
         </Card>

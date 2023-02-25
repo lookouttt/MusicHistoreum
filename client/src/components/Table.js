@@ -47,6 +47,11 @@ function DefaultColumnFilter({
         setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
       }}
       placeholder={`Search ${count} records...`}
+      style={{
+        fontSize: '0.9rem',
+        border: '0',
+        maxWidth: '125px',
+      }}
     />
   )
 }
@@ -58,7 +63,14 @@ function fuzzyTextFilterFn(rows, id, filterValue) {
 // Let the table remove the filter if the string is empty
 fuzzyTextFilterFn.autoRemove = val => !val
 
-export default function Table({ columns, data, hiddenColumns = [], onCloseModal, tablePageSize }) {
+export default function Table({ 
+                            columns, 
+                            data, 
+                            hiddenColumns = [], 
+                            onCloseModal, 
+                            tablePageSize, 
+                            bPage, 
+                            bFilter }) {
     const [prevHiddenColumns, setPrevHiddenColumns] = useState([]);
 
     const filterTypes = React.useMemo(
@@ -82,7 +94,7 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal,
   )
 
   const defaultColumn = React.useMemo(
-    () => ({
+    () =>  ({
       // Let's set up our default Filter UI
       Filter: DefaultColumnFilter,
     }),
@@ -200,7 +212,7 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal,
             <tr {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map(column => (
                 <th {...column.getHeaderProps()}>{column.render("Header")}
-                    <div>{column.canFilter ? column.render('Filter') : null}</div>
+                    <div>{(column.canFilter && bFilter) ? column.render('Filter') : null}</div>
                 </th>
                 ))}
             </tr>
@@ -220,7 +232,7 @@ export default function Table({ columns, data, hiddenColumns = [], onCloseModal,
             })}
         </tbody>
         </table>
-        { (tablePageSize === 20) && <TablePagination /> }
+        { (bPage) && <TablePagination /> }
     </>
   );
 }

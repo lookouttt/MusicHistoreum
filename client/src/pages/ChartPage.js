@@ -28,7 +28,13 @@ const ChartPage = () => {
                         <Container>
                             <Row>
                                 <Col>
-                                    <ChartCard chart={currentChart} bIncludeNav={true} pageSize={20} />
+                                    <ChartCard 
+                                        chart={currentChart} 
+                                        bIncludeNav={true} 
+                                        pageSize={20} 
+                                        bPage={true} 
+                                        bFilter={true}
+                                    />
                                 </Col>
                             </Row>
                         </Container>
