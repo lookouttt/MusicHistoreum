@@ -25,7 +25,7 @@ const AlphabetNav = () => {
     }
 
     return (
-        <Navbar dark expand='md' id='alphaNav'>
+        <Navbar dark id='alphaNav'>
             <Nav navbar className='mx-auto'>
                 <AlphaNavItems />
             </Nav>
