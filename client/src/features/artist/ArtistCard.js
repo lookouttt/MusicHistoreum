@@ -89,8 +89,8 @@ function ArtistCard(artist) {
                                     <h2>Charted Songs</h2>
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
-                                    <div style={{ width: "500px", height: "700px" }}>
-                                        <Chrono items={songItems} mode="VERTICAL" cardHeight={"10px"} allowDynamicUpdate='true' useReadMore theme={{
+                                    <div style={{ minWidth: "335px", maxWidth: "500px", height: "700px" }}>
+                                        <Chrono items={songItems} mode="VERTICAL" cardHeight={100} allowDynamicUpdate='true' useReadMore theme={{
                                             primary: '#ce7f2f',
                                             secondary: '#4A4A4A',
                                             cardBgColor: '#a57038',
@@ -108,8 +108,8 @@ function ArtistCard(artist) {
                                     <h2>Charted Albums</h2>
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
-                                    <div style={{ width: "500px", height: "700px" }}>
-                                        <Chrono items={albumItems} mode="VERTICAL" cardHeight={"10px"} allowDynamicUpdate='true' useReadMore theme={{
+                                    <div style={{ minWidth: "325px", maxWidth: "700px", height: "700px" }}> 
+                                        <Chrono items={albumItems} mode="VERTICAL" cardHeight={100} allowDynamicUpdate='true' useReadMore theme={{
                                             primary: '#ce7f2f',
                                             secondary: '#4A4A4A',
                                             cardBgColor: '#a57038',
