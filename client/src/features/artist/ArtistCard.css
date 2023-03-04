@@ -1,12 +1,15 @@
 .artistCard.card {
     margin-top: 20px;
     margin-bottom: 20px;
+    min-width: 340px;
+
     background: rgba(255,255,255,0.2);
 }
 
 .artistContentCard.card {
     margin-top: 20px;
     margin-bottom: 20px;
+
     background: rgba(255,255,255,0.0);
 }
 
@@ -22,11 +25,13 @@
 
 .artistBody.artistBody {
     background: rgba(255,255,255,0.0);
-    padding: 1rem 0.2rem
+    padding: 0rem
 }
 
 .artistContentBody.artistContentBody {
     background: rgba(255,255,255,0.1);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 .card-sub-title.card-sub-title {

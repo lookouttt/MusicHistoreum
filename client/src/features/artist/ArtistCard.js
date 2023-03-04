@@ -81,7 +81,7 @@ function ArtistCard(artist) {
                 <h1>{artistTitle()}</h1>
             </CardHeader>
             <CardBody className='artistBody'>
-                <Container>
+                <Container style={{paddingRight: '0.3rem', paddingLeft: '0.3rem'}}>
                     <Row>
                         <Col>
                             <Card className='artistContentCard'>
@@ -89,15 +89,28 @@ function ArtistCard(artist) {
                                     <h2>Charted Songs</h2>
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
-                                    <div style={{ minWidth: "335px", maxWidth: "500px", height: "700px" }}>
-                                        <Chrono items={songItems} mode="VERTICAL" cardHeight={100} allowDynamicUpdate='true' useReadMore theme={{
-                                            primary: '#ce7f2f',
-                                            secondary: '#4A4A4A',
-                                            cardBgColor: '#a57038',
-                                            cardForeColor: 'white',
-                                            titleColor: 'white',
-                                            titleColorActive: '#ed8b2a',
-                                            }}/>
+                                    <div style={{ minWidth: "250px", maxWidth: "500px", height: "700px" }}>
+                                        <Chrono 
+                                            items={songItems} 
+                                            mode="VERTICAL" 
+                                            cardHeight={100} 
+                                            allowDynamicUpdate='true' 
+                                            useReadMore
+                                            fontSizes={{
+                                                title: '0.8rem',
+                                                cardTitle: '1rem',
+                                                cardSubtitle: '0.9rem',
+                                                cardText: '0.7rem',
+                                              }}
+                                            theme={{
+                                                primary: '#ce7f2f',
+                                                secondary: '#4A4A4A',
+                                                cardBgColor: '#a57038',
+                                                cardForeColor: 'white',
+                                                titleColor: 'white',
+                                                titleColorActive: '#ed8b2a',
+                                            }}
+                                        />
                                     </div>
                                 </CardBody>
                             </Card>
@@ -108,15 +121,28 @@ function ArtistCard(artist) {
                                     <h2>Charted Albums</h2>
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
-                                    <div style={{ minWidth: "325px", maxWidth: "700px", height: "700px" }}> 
-                                        <Chrono items={albumItems} mode="VERTICAL" cardHeight={100} allowDynamicUpdate='true' useReadMore theme={{
-                                            primary: '#ce7f2f',
-                                            secondary: '#4A4A4A',
-                                            cardBgColor: '#a57038',
-                                            cardForeColor: 'white',
-                                            titleColor: 'white',
-                                            titleColorActive: '#ed8b2a',
-                                            }}/>
+                                    <div style={{ minWidth: "250px", maxWidth: "500px", height: "700px" }}> 
+                                        <Chrono 
+                                            items={albumItems} 
+                                            mode="VERTICAL" 
+                                            cardHeight={100} 
+                                            allowDynamicUpdate='true' 
+                                            useReadMore 
+                                            fontSizes={{
+                                                title: '0.8rem',
+                                                cardTitle: '1rem',
+                                                cardSubtitle: '0.9rem',
+                                                cardText: '0.7rem',
+                                              }}
+                                                theme={{
+                                                primary: '#ce7f2f',
+                                                secondary: '#4A4A4A',
+                                                cardBgColor: '#a57038',
+                                                cardForeColor: 'white',
+                                                titleColor: 'white',
+                                                titleColorActive: '#ed8b2a',
+                                            }}
+                                        />
                                     </div>
                                 </CardBody>
                             </Card>
