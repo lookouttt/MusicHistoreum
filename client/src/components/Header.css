@@ -26,10 +26,10 @@
 
 #bottomNavItems1, #bottomNavItems2, #bottomNavItems3, #bottomNavItems4  {
     color: white;
-    padding: 2px 125px;
-    margin: 2px;
+    padding: 0.1vw 3vw;
+    margin: 1vw 3vw;
     border: 1px solid #3471a0;
-    border-radius: 5px;
+    border-radius: 0.3vw;
 }
 
 #bottomNavItems1:hover, #bottomNavItems2:hover, #bottomNavItems3:hover, #bottomNavItems4:hover {

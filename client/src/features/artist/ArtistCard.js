@@ -81,7 +81,7 @@ function ArtistCard(artist) {
                 <h1>{artistTitle()}</h1>
             </CardHeader>
             <CardBody className='artistBody'>
-                <Container style={{paddingRight: '0.3rem', paddingLeft: '0.3rem'}}>
+                <Container style={{paddingRight: '1vw', paddingLeft: '1vw'}}>
                     <Row>
                         <Col>
                             <Card className='artistContentCard'>

@@ -82,9 +82,9 @@ const HomePage = () => {
                                             <h1>Most Recent Top Charts</h1>
                                         </CardHeader>
                                         <CardBody className='homeChartBody'>
-                                            <Container>
+                                            <Container style={{paddingRight: '0.2vw', paddingLeft: '0.2vw'}}>
                                                 <Row>
-                                                    <Col>
+                                                    <Col style={{paddingRight: '0.4vw', paddingLeft: '0.4vw'}}>
                                                         <ChartCard 
                                                             chart={songChart} 
                                                             bIncludeNav={false} 
@@ -93,7 +93,7 @@ const HomePage = () => {
                                                             bFilter={false}
                                                         />
                                                     </Col>
-                                                    <Col>
+                                                    <Col style={{paddingRight: '0.4vw', paddingLeft: '0.4vw'}}>
                                                         <ChartCard 
                                                             chart={albumChart} 
                                                             bIncludeNav={false} 
