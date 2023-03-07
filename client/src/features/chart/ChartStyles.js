@@ -10,6 +10,7 @@ const ChartStyles= styled.div`
         overflow: auto;
         margin-left: auto;
         margin-right: auto;
+        margin-bottom: 10px;
         tr {
             :last-child {
                 td {
@@ -45,9 +46,12 @@ const ChartStyles= styled.div`
         }
     }
     .pagination {
-        padding-top: 1rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
         display: flex;
         justify-content: center;
+        background-size: cover;
+        background-color: rgba(255,255,255,0.3);
     }
 `
 
