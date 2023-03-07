@@ -9,10 +9,26 @@ const initialState = {
 
 const chartsMenuSlice = createSlice({
     name: 'chartsMenu',
-    initialState
+    initialState,
+    reducers: {
+        updateLastDate: (state, action) => {
+            if (action.payload.chartType === "Song") {
+                const newIndex = state.songChartsArray.findIndex(chart => chart.ChartId === action.payload.chartId)
+                const newChart = [...state.songChartsArray];
+                newChart[newIndex].LastDate = action.payload.lastDate;
+            }
+            if (action.payload.chartType === "Album") {
+                const newIndex = state.albumChartsArray.findIndex(chart => chart.ChartId === action.payload.chartId)
+                const newChart = [...state.albumChartsArray];
+                newChart[newIndex].LastDate = action.payload.lastDate;
+            }
+        }
+    }
 });
 
 export const chartsMenuReducer = chartsMenuSlice.reducer;
+
+export const { updateLastDate } = chartsMenuSlice.actions;
 
 export const selectChartsMenu = (chartType) => (state) => {
     if (chartType === 'Song') 

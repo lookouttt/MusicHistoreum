@@ -53,7 +53,7 @@ app.get("/testConnect", (req, res) => {
 
 app.get("/chartList", async(req, res) => {
     try {
-        const allCharts = await pool.query("SELECT * FROM chart_list");
+        const allCharts = await pool.query("SELECT * FROM chart_list where online=true");
         res.json(allCharts.rows);
     } catch (err) {
        logger.error(err.message);
