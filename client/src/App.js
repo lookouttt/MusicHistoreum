@@ -15,6 +15,8 @@ import fetchChartList from './services/fetchChartList';
 import './features/chartMenu/chartsMenusSlice.js'
 import { updateLastDate } from './features/chartMenu/chartsMenusSlice.js';
 const dayjs = require("dayjs");
+var utc = require("dayjs/plugin/utc");
+dayjs.extend(utc);
 
 function App() {
     console.log('This is the beginning. Getting chart list data');
@@ -27,7 +29,7 @@ function App() {
             const chartList = await fetchChartList();
             console.log('Got chart list: ', chartList);
             chartList.forEach(chart => {
-                const formattedDate = (dayjs(chart.last_date).format('YYYY-MM-DD'));
+                const formattedDate = (dayjs.utc(chart.last_date).format('YYYY-MM-DD'));
                 dispatch(updateLastDate({chartId: chart.chart_id, chartType: chart.chart_type, lastDate: formattedDate}));
                 setDataLoaded(true);
             });
