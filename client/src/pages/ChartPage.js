@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Container, Row, Col } from "reactstrap";
+import { useNavigate } from 'react-router-dom';
 import ChartCard from "../features/chart/ChartCard";
 import { selectCurrentChart, updatePendingId, updatePendingType, updatePendingTimeframe, updatePendingDate, updateCurrentChart } from "../features/chart/chartsSlice";
 import '../App.css';
@@ -8,6 +9,9 @@ import '../App.css';
 
 const ChartPage = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const [largeScreen, setLargeScreen] = useState(true);
+
     if (sessionStorage.getItem('reloadPage') === 'yes') {
         console.log('Getting stored data');
         dispatch(updatePendingId(sessionStorage.getItem('chartId')));
@@ -19,6 +23,20 @@ const ChartPage = () => {
     }
 
     const currentChart = useSelector(selectCurrentChart);
+    
+    window.onresize = () => {
+        if (largeScreen) {
+            if (window.innerWidth < 550) {
+                setLargeScreen(false);
+                navigate('/Chart');
+            }
+        } else {
+            if (window.innerWidth > 550) {
+                setLargeScreen(true);
+                navigate('/Chart');
+            }
+        }
+    }
     
     return (
         <Container fluid>

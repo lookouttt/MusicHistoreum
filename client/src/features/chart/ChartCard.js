@@ -21,6 +21,7 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
     const [data, setData] = useState([]);
     const chartList = useSelector(selectChartsMenu(chartType));
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
+
     window.onbeforeunload = () => {
         console.log("I'm getting ready to unload the current page");
         sessionStorage.setItem('chartType', (chartType==='Song' ? '1' : '2'));
@@ -48,11 +49,17 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
                 return(`${currentChart.ChartTitle} of ${formattedDate}`);
             case 'Year':
                 formattedDate = format(new Date(dayjs(chartDate)), 'yyyy');
-                hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points'];
+                if (window.innerWidth > 550)
+                    hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points'];
+                else
+                    hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points', 'peak', 'weeks'];
                 return(`${currentChart.ChartTitle} of ${formattedDate}`);
             case 'Decade':
                 formattedDate = format(new Date(dayjs(chartDate)), 'yyyy');
-                hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points'];
+                if (window.innerWidth > 550)
+                    hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points'];
+                else
+                    hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points', 'peak', 'weeks'];
                 return(`${currentChart.ChartTitle} of the ${formattedDate}s`);
             default:
                 break;
