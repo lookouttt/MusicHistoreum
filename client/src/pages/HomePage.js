@@ -69,7 +69,7 @@ const HomePage = () => {
                                             <br/>
                                                 Now, take a look around. Use the Charts menu above to find the chart information you're looking for. We
                                                 have weekly chart data for the Top Songs and Top Albums. We also have monthly, yearly, and decade charts 
-                                                for those two categoaries as well as for other genre-specific categories. We hope you enjoy the site.
+                                                for those two categories as well as for other genre-specific categories. We hope you enjoy the site.
                                             </p>
                                         </CardBody>
                                     </Card>
