@@ -19,8 +19,6 @@ const TopArtistList = () => {
                 }}>{artist.DisplayName}</Link>
                 </li>)
     }));
-    // return <li key={index} className="artistListName"><a href={`/Artist/${artist.ArtistName}`}>{artist.DisplayName}</a></li>
-
 }
 
 export default TopArtistList;

@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import {
     Navbar, 
-    // NavbarBrand,
-    // Collapse,
-    // NavbarToggler,
     Nav,
     NavItem,
     Dropdown,
-    // DropdownItem,
     DropdownToggle,
     DropdownMenu,
     Container,
@@ -20,9 +16,7 @@ import './Header.css';
 import ContactForm from '../features/contact/ContactForm';
 
 const Header = () => {
-    // const [menuOpen, setMenuOpen] = useState(false);
     const [dropdownOpen, setdropdownOpen] = useState(false);
-
     const defaultValue='ABCXYZ';
 
     return (
@@ -34,26 +28,15 @@ const Header = () => {
                             <NavItem>
                                 <NavLink className='nav-link fa fa-home p-3' to='/'> Home</NavLink>
                             </NavItem>
-                            {/* <NavItem>
-                                <NavLink className='nav-link' to='/Contact'>
-                                    Contact
-                                </NavLink>
-                            </NavItem> */}
-                            {/* <NavItem>
-                                <NavLink className='nav-link' to='/'>
-                                    Search
-                                </NavLink>
-                            </NavItem> */}
                         </Nav>
                         <ContactForm />
                     </Navbar>
                 </Col>
             </Row>
-            <Row>
+            <Row style={{backgroundColor: "#c3bee5"}}>
                 <Col>
                     <div className='d-flex justify-content-center' expand='md' id='mainTitle'>
                         <h1>Music Historeum</h1>
-
                     </div>
                 </Col>
             </Row>

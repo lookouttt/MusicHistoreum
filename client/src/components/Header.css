@@ -16,7 +16,8 @@
 }
 
 #bottomNav {
-    background-color: #5D8FB5;
+    /* background-color: #5D8FB5; */
+    background-color: #483d8b    ;
     min-height: 2rem;
 }
 
@@ -28,16 +29,17 @@
     color: white;
     padding: 0.1vw 3vw;
     margin: 1vw 3vw;
-    border: 1px solid #3471a0;
+    /* border: 1px solid #3471a0; */
+    border: 1px solid #7b68ee    ;
     border-radius: 0.3vw;
 }
 
 #bottomNavItems1:hover, #bottomNavItems2:hover, #bottomNavItems3:hover, #bottomNavItems4:hover {
-    color:rgb(114, 229, 233);
+    color: #7b68ee;
 }
 
 #mainTitle {
-    background-color: white;
+    background-color: #c3bee5;
     color: black;
     text-align: center;
     min-height: 4rem;

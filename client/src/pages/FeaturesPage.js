@@ -1,6 +1,9 @@
 import { Container, Row, Col, Card, CardHeader, CardBody, List } from "reactstrap";
+import { useNavigate, Link } from "react-router-dom";
 
 const FeaturesPage = () => {
+    const navigate = useNavigate();
+
     if (sessionStorage.getItem('reloadPage') === 'yes') {
         sessionStorage.clear();
     }
@@ -22,20 +25,31 @@ const FeaturesPage = () => {
                                             <h3>This growing list includes the following:</h3>
                                             <List>
                                                 <li>
-                                                    Add search and filtering capability for charts
+                                                    Enhance searching and filtering capability for charts.
                                                 </li>
                                                 <li>
-                                                    Include additional information for songs, albums, and artists
+                                                    Include additional information for songs, albums, and artists.
                                                 </li>
                                                 <li>
-                                                    Allow users to login and create/store custom charts
+                                                    Allow users to login and create/store custom charts.
                                                 </li>
                                                 <li>
                                                     Allow users to listen to songs and/or create playlists to use with 
-                                                    their local music library or online streaming services
+                                                    their local music library or online streaming services.
                                                 </li>
                                                 <li>
                                                     Add a blog with interesting facts about chart history.
+                                                </li>
+                                                <li>
+                                                    <Link to={`/Issues`} 
+                                                        key={1}
+                                                        className="knownIssuesLink"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            navigate(`/Issues`);
+                                                        }}>Known Issues - Click here to take a look at our current list of 
+                                                            known issues that we are looking into.
+                                                    </Link>
                                                 </li>
                                             </List>
                                         </CardBody>

@@ -1,17 +1,13 @@
 import { useState} from 'react';
-// import { useDispatch } from 'react-redux';
 import { Button, Modal, ModalHeader, ModalBody, FormGroup, Label } from 'reactstrap';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import validateContactForm from '../../utils/validateContactForm';
 import fetchContactForm from '../../services/fetchContactForm';
-// import { postComment } from './commentsSlice';
-
+import '../../App.css';
 
 const ContactForm = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const FormTopics = ['Default','Chart Question', 'Feature Request', 'Other' ];
-
-    // const dispatch = useDispatch();
 
     const handleSubmit = (values) => {
         const comment = {
@@ -24,7 +20,6 @@ const ContactForm = () => {
         };
         console.log("comment: ", comment);
         fetchContactForm(comment);
-        // dispatch(postComment(comment));
         setModalOpen(false);
     };
 
@@ -36,7 +31,7 @@ const ContactForm = () => {
                     <i className='fa fa-comment' /> Contact
                 </a>
             </span>
-            <Modal isOpen={modalOpen}>
+            <Modal isOpen={modalOpen} className='modalStyle'>
                 <ModalHeader toggle={() => setModalOpen(false)}>
                     Contact Us
                 </ModalHeader>
@@ -108,13 +103,12 @@ const ContactForm = () => {
                                 </ErrorMessage>         
                             </FormGroup>
 
-                            <Button type='submit' color='primary'>
+                            <Button type='submit' style={{backgroundColor:"#483d8b", color:"white", margin: "5%", boxShadow: "3px 3px 1px rgba(46, 46, 46, 0.62)"}}>
                                 Submit
                             </Button>
                         </Form>
                     </Formik>
                 </ModalBody>
-
             </Modal>
         </>
     );

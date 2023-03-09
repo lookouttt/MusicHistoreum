@@ -97,14 +97,14 @@ const ChartNav = ({chart}) => {
         <Container className='chartNavCont'>
             <Row className="row-cols-lg-auto g-3">
                 <Col>
-                    <Button disabled={beginningOfChart} color='primary' size='sm' 
+                    <Button disabled={beginningOfChart} size='sm' style={{backgroundColor:"#483d8b", color:"white", margin: "5%", boxShadow: "3px 3px 1px rgba(46, 46, 46, 0.62)"}}
                             onClick={ () => getNewChart(true) }>Prev</Button>
                 </Col>
                 <Col>
                     {picker}
                 </Col>
                 <Col>
-                    <Button disabled={endOfChart} color='primary' size='sm' 
+                    <Button disabled={endOfChart} size='sm' style={{backgroundColor:"#483d8b", color:"white", margin: "5%", boxShadow: "3px 3px 1px rgba(46, 46, 46, 0.62)"}}
                             onClick={ () => getNewChart(false) }>Next</Button>
                 </Col>
             </Row>

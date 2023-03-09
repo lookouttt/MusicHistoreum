@@ -19,18 +19,32 @@ const ArtistStyles= styled.div`
         }
 
         tr:nth-child(even) {
-            background-color: #8F9AA5;
+            background-color: #7b68ee;
         }
 
         tr:nth-child(odd) {
-            background-color: white;
+            background-color: #a69be4;
         }
 
         th {
-            background-color: #5D8FB5;
+            background-color: #483d8b;
             color: white;
             text-align: center;
         }
+
+        // tr:nth-child(even) {
+        //     background-color: #8F9AA5;
+        // }
+
+        // tr:nth-child(odd) {
+        //     background-color: white;
+        // }
+
+        // th {
+        //     background-color: #5D8FB5;
+        //     color: white;
+        //     text-align: center;
+        // }
 
         th,
         td {

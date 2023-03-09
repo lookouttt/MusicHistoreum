@@ -11,6 +11,7 @@ import ChartPage from './pages/ChartPage';
 import ArtistPage from './pages/ArtistPage';
 import FeaturesPage from './pages/FeaturesPage';
 import AboutPage from './pages/AboutPage';
+import KnownIssuesPage from './pages/KnownIssues';
 import fetchChartList from './services/fetchChartList';
 import './features/chartMenu/chartsMenusSlice.js'
 import { updateLastDate } from './features/chartMenu/chartsMenusSlice.js';
@@ -56,6 +57,7 @@ function App() {
                 <Route path='/Artist/:artist' element={<ArtistPage />}/>
                 <Route path='/Features' element={<FeaturesPage />}/>
                 <Route path='/About' element={<AboutPage />}/>
+                <Route path='/Issues' element={<KnownIssuesPage/>}/>
             </Routes>
             <Footer />
         </div>

@@ -4,6 +4,7 @@ import Table from './Table';
 import ArtistListColumns from "../features/artist/ArtistListColumns";
 import ArtistStyles from "../features/artist/ArtistStyles";
 import fetchArtistList from "../services/fetchArtistList";
+import '../App.css';
 
 const ArtistModal = ({ passChar, resetPassChar }) => {
 
@@ -55,7 +56,7 @@ const ArtistModal = ({ passChar, resetPassChar }) => {
     }, [passChar]);
 
     return (data || hideResults) && (
-        <Modal isOpen={alphaModalOpen} size='lg'>
+        <Modal isOpen={alphaModalOpen} className='modalStyle' size='lg'>
             <ModalHeader toggle={() => { setCurrentChar(null);
                                         setData(null);
                                         setAlphaModalOpen(false);
