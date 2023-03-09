@@ -15,15 +15,15 @@
 }
 
 .topArtistList {
-    columns: 3;
-    -webkit-columns: 3;
-    -moz-columns: 3;
+    columns: 7em 3;
+    -webkit-columns: 7em 3;
+    -moz-columns: 7em 3;
     list-style-type: none;
     background-color: rgba(255,255,255,0.3);
 }
 
 .topArtistList li {
-    padding: 10px;
+    padding: 0.7em 0.5em;
 }
 
 .artistListName {
