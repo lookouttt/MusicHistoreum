@@ -7,15 +7,21 @@
 .chartHeader.chartHeader {
     text-align: center;
     background: rgba(255,255,255,0.4);
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
 }
 
 .chartNavCont {
     display: flex;
     justify-content: center;
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
 }
 
 .chartBody.chartBody {
     background: rgba(255,255,255,0.0);
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
 }
 
 .homeChartCard.card {

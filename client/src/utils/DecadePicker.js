@@ -11,7 +11,7 @@ const Styles = styled.div`
   .react-datepicker-wrapper,
   .react-datepicker__input-container,
   .react-datepicker__input-container input {
-    width: 175px;
+    width: 10em;
   }
 
   .react-datepicker__close-icon::before,

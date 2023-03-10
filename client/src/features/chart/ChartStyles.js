@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 const ChartStyles= styled.div`
-    padding: 1rem;
+    padding: 0.2rem;
 
     table {
         border-spacing: 0;
@@ -11,6 +11,8 @@ const ChartStyles= styled.div`
         margin-left: auto;
         margin-right: auto;
         margin-bottom: 10px;
+        padding-left: 0.2rem;
+        padding-right: 0.2rem;
         tr {
             :last-child {
                 td {
