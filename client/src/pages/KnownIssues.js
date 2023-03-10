@@ -29,6 +29,10 @@ const KnownIssuesPage = () => {
                                                     these collaborations to the multiple artists involved.  Once that background data 
                                                     cleaning is complete we will switch to an ID-based searching algorithm.
                                                 </li>
+                                                <li>
+                                                    The website currently has some shortcomings when used on mobile devices.  We are currently looking
+                                                    at options for improving the site for mobile devices.
+                                                </li>
                                             </List>
                                         </CardBody>
                                     </Card>
