@@ -32,20 +32,6 @@ const ArtistStyles= styled.div`
             text-align: center;
         }
 
-        // tr:nth-child(even) {
-        //     background-color: #8F9AA5;
-        // }
-
-        // tr:nth-child(odd) {
-        //     background-color: white;
-        // }
-
-        // th {
-        //     background-color: #5D8FB5;
-        //     color: white;
-        //     text-align: center;
-        // }
-
         th,
         td {
             margin: 0;
@@ -58,8 +44,15 @@ const ArtistStyles= styled.div`
             }
         }
     }
+    
     .pagination {
         padding-top: 1rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination2 {
+        padding-top: 0.2rem;
         display: flex;
         justify-content: center;
     }

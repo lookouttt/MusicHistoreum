@@ -41,3 +41,7 @@
 .timeline-controls.timeline-controls {
     margin-top: 20px;
 }
+
+.timeline-main-wrapper.timeline-main-wrapper {
+    padding: 1rem 0.2rem
+}
