@@ -3,21 +3,24 @@ export const SONG_CHARTS = [
         ChartId: 1,
         ChartName: "hot-100",
         ChartTitle: "Top Songs",
-        FirstDate: "1958-08-04",
+        FirstDate: "1962-01-01",
+        // FirstDate: "1958-08-04",
         LastDate: "2023-02-18",
     },
     {
         ChartId: 43,
         ChartName: "adult-contemporary",
         ChartTitle: "Top Adult Contemporary Songs",
-        FirstDate: "1961-07-17",
+        FirstDate: "1962-01-01",
+        // FirstDate: "1961-07-17",
         LastDate: "2023-02-18",
     },
     {
         ChartId: 45,
         ChartName: "country-songs",
         ChartTitle: "Top Country Songs",
-        FirstDate: "1958-10-20",
+        FirstDate: "1962-01-01",
+        // FirstDate: "1958-10-20",
         LastDate: "2023-02-18",
     },
     {
@@ -38,7 +41,8 @@ export const SONG_CHARTS = [
         ChartId: 68,
         ChartName: "r-b-hip-hop-songs",
         ChartTitle: "Top R&B / Hip Hop Songs",
-        FirstDate: "1958-10-20",
+        FirstDate: "1962-01-01",
+        // FirstDate: "1958-10-20",
         LastDate: "2023-02-18",
     }
 ]
