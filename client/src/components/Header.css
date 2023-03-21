@@ -47,6 +47,10 @@
     display: inline-block;
 }
 
+#mainTitle > h1 {
+    font-weight: bold;
+}
+
 span {
     padding-right: 20px;
 }
