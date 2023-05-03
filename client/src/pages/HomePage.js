@@ -50,7 +50,7 @@ const HomePage = () => {
                                     <Card id='home-card'>
                                         <CardHeader>
                                             <h1 id="home-title">
-                                                Welcome to Music Historeum!!
+                                                Welcome to Music Historeum
                                             </h1>
                                         </CardHeader>
                                         <CardBody>
@@ -61,9 +61,11 @@ const HomePage = () => {
 
                                             <br/>
                                             <br/>
-                                                This site is still under contruction and being updated regularly. Check out the Future Features section
-                                                to see where we are headed with the site. Feel free to use the contact form to offer any suggestions
-                                                or feedback you may have.
+                                                This site started as a project in a software bootcamp. It is a proof of concept that is still under 
+                                                contruction with much work still to be done. For the next few months, most of the work will be behind
+                                                the scenes cleaning up the 5 million rows of raw data. Check out the Future Features section to see 
+                                                where we are headed with the site. Feel free to use the contact form to offer any suggestions or 
+                                                feedback you may have.
 
                                             <br/>
                                             <br/>

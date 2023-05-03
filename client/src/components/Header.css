@@ -40,7 +40,6 @@
 
 #mainTitle {
     background-color: #c3bee5;
-    color: black;
     text-align: center;
     min-height: 4rem;
     margin-top: 1rem;
@@ -49,6 +48,7 @@
 
 #mainTitle > h1 {
     font-weight: bold;
+    color: rgb(74, 74, 74);
 }
 
 span {
