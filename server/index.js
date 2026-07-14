@@ -161,6 +161,11 @@ router.post("/contact", (req, res) => {
     });
 });
 
-app.listen(process.env.API_PORT, () => {
-    logger.info("server has started on musichistoreum.com with port ", process.env.API_PORT);
+let server = app.listen(process.env.API_PORT, () => {
+    logger.info("server has started on musichistoreum.com with port ", server.address().port);
+    logger.info("Test: ", server.address())
 });
+
+process.on('exit', () => {
+    logger.info("server is stopping");
+})
