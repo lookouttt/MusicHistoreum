@@ -23,16 +23,13 @@ const ChartNav = ({chart}) => {
     const [picker, setPicker] = useState(<><WeekPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>);
 
     const getNewChart = (bPrevButton) => {
-        console.log('bPrevButton = ', bPrevButton);
         const newDate = bPrevButton ? prevDate : nextDate;
-        console.log('newDate = ', newDate);
         dispatch(updatePendingDate(newDate));
         dispatch(updateCurrentChart());
         navigate('/Chart');
     }
 
     const checkTimeframes = () => {
-        console.log('Start of checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
         switch (chartTimeframe) {
             case 'Week':
                 setPicker(<><WeekPicker firstDate={thisChart.FirstDate} lastDate={thisChart.LastDate}/></>);
@@ -61,36 +58,25 @@ const ChartNav = ({chart}) => {
         if (nextDate > thisChart.LastDate) {
             setNextDate(null);
             setEndOfChart(true);
-            console.log('Found last chart');
         }
         else if (endOfChart) {
             setEndOfChart(false);
-            console.log('No longer on last chart')
         }
 
 
         if (prevDate < thisChart.FirstDate) {
             setPrevDate(null);
             setBeginningOfChart(true);
-            console.log('Found first chart');
         }
         else if (beginningOfChart) {
             setBeginningOfChart(false);
-            console.log('No longer on last chart')
         }
 
         dispatch(updateChartStatus());
-        console.log('End of checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
     }
-
-    // useLayoutEffect(() => {
-    //     checkTimeframes();
-    //     //console.log('Outside checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
-    // }, []);
 
     useLayoutEffect(() => {
         checkTimeframes();
-        //console.log('Outside checkTimeFrames: Prev = ', prevDate, ' - Next = ', nextDate);
     }, [checkUpdateChartState]);
 
     return (

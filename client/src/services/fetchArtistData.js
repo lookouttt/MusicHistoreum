@@ -1,7 +1,7 @@
 import { baseUrl } from "./baseUrl";
 
 async function fetchArtistData(artistToFind, queryType) {
-    const response = await fetch(`${baseUrl}artist/${artistToFind}/${queryType}`);
+    const response = await fetch(`${baseUrl}artist/${encodeURIComponent(artistToFind)}/${queryType}`);
     if (!response.ok) {
         throw new Error(`Failed to fetch artist data: ${response.status}`);
     }

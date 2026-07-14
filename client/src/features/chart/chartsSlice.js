@@ -1,4 +1,16 @@
-import { createSlice, current } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
+
+const CHART_TYPE_BY_ID = {
+    '1': 'Song',
+    '2': 'Album'
+};
+
+const CHART_TIMEFRAME_BY_ID = {
+    '1': 'Week',
+    '2': 'Month',
+    '3': 'Year',
+    '4': 'Decade'
+};
 
 const initialState = {
     currentChart: {
@@ -28,40 +40,28 @@ const chartsSlice = createSlice({
                 chartId: action.payload
             };
             state.pendingChart = newChart;
-            console.log('pending ID: ', state.pendingChart);
         },
         updatePendingType: (state, action) => {
-            let chartType;
-            console.log('updatePendingType action: ', action);
-            if (action.payload === '1')
-                chartType = 'Song';
-            else
-                chartType = 'Album';
-
-            const newChart = {
+            const chartType = CHART_TYPE_BY_ID[action.payload];
+            if (!chartType) {
+                console.warn('updatePendingType: unrecognized chart type id', action.payload);
+                return;
+            }
+            state.pendingChart = {
                 ...state.pendingChart,
                 chartType: chartType
             };
-            state.pendingChart = newChart;
-            console.log('pending type: ', state.pendingChart);
         },
         updatePendingTimeframe: (state, action) => {
-            let chartTimeframe;
-            console.log('updatePendingTimeframe action: ', action);
-            if (action.payload === '1')
-                chartTimeframe = 'Week';
-            else if (action.payload === '2')
-                chartTimeframe = 'Month';
-            else if (action.payload === '3')
-                chartTimeframe = 'Year';
-            else
-                chartTimeframe = 'Decade';
-            const newChart = {
+            const chartTimeframe = CHART_TIMEFRAME_BY_ID[action.payload];
+            if (!chartTimeframe) {
+                console.warn('updatePendingTimeframe: unrecognized timeframe id', action.payload);
+                return;
+            }
+            state.pendingChart = {
                 ...state.pendingChart,
                 chartTimeframe: chartTimeframe
             };
-            state.pendingChart = newChart;
-            console.log('pending timeframe: ', state.pendingChart);
         },
         updatePendingDate: (state, action) => {
             const newChart = {
@@ -69,24 +69,19 @@ const chartsSlice = createSlice({
                 chartDate: action.payload
             };
             state.pendingChart = newChart;
-            console.log('pending date: ', state.pendingChart);
         },
         updateCurrentChart: (state) => {
-            console.log('current before: ', current(state.currentChart));
             state.currentChart = state.pendingChart;
-            console.log('current after: ', current(state.currentChart));
             const newStatus = {
                 updateChart: true
             };
             state.chartStatus = newStatus;
-            console.log('UCC reset state: ', state.chartStatus);
         },
         updateChartStatus: (state) => {
             const newStatus = {
                 updateChart: false
             };
             state.chartStatus = newStatus;
-            console.log('UCS reset state: ', state.chartStatus);
         }
     }
 });

@@ -10,12 +10,12 @@ const TopArtistList = () => {
     return (artistList.map((artist, index) => {
         return (
             <li>
-            <Link to={`/Artist/${artist.ArtistName}`} 
+            <Link to={`/Artist/${encodeURIComponent(artist.ArtistName)}`}
                 key={index}
                 className="artistListName"
                 onClick={(e) => {
                     e.preventDefault();
-                    navigate(`/Artist/${artist.ArtistName}`);
+                    navigate(`/Artist/${encodeURIComponent(artist.ArtistName)}`);
                 }}>{artist.DisplayName}</Link>
                 </li>)
     }));

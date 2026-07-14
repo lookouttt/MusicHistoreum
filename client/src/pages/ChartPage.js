@@ -13,7 +13,6 @@ const ChartPage = () => {
     const [largeScreen, setLargeScreen] = useState(true);
 
     if (sessionStorage.getItem('reloadPage') === 'yes') {
-        console.log('Getting stored data');
         dispatch(updatePendingId(sessionStorage.getItem('chartId')));
         dispatch(updatePendingDate(sessionStorage.getItem('chartDate')));
         dispatch(updatePendingType(sessionStorage.getItem('chartType')));

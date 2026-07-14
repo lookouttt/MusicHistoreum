@@ -143,12 +143,10 @@ export default function Table({
     const navigate = useNavigate();
     const checkCellValue = (cell) =>{
         if (cell.column.id === 'artist_name') {
-            console.log('This is the artist cell');
-            console.log(cell.value);
             const currentArtist = cell.value;
             if (onCloseModal)
                 onCloseModal();
-            navigate(`/Artist/${currentArtist}`);
+            navigate(`/Artist/${encodeURIComponent(currentArtist)}`);
         }
     }
 

@@ -80,6 +80,11 @@ export const TOP_ARTISTS = [
         ClaimedSales: 200
     },
     {
+        ArtistName: 'AC/DC',
+        DisplayName: 'AC/DC',
+        ClaimedSales: 200
+    },
+    {
         ArtistName: 'Rolling Stones',
         DisplayName: 'The Rolling Stones',
         ClaimedSales: 200

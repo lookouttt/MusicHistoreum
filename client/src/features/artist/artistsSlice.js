@@ -15,7 +15,5 @@ const artistsSlice = createSlice({
 export const artistsReducer = artistsSlice.reducer;
 
 export const getTopArtists = () =>  (state) => {
-    console.log('artistSlice: ', state);
-    console.log('artistSlice: ', state.artists);
     return state.artists.topArtists;
 }

@@ -24,7 +24,6 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
 
     window.onbeforeunload = () => {
-        console.log("I'm getting ready to unload the current page");
         sessionStorage.setItem('chartType', (chartType==='Song' ? '1' : '2'));
         sessionStorage.setItem('chartId', chartId);
         sessionStorage.setItem('chartTimeframe', (chartTimeframe === 'Week' ? '1' : 
@@ -32,7 +31,6 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
                                                     (chartTimeframe === 'Year' ? '3' : '4'))));
         sessionStorage.setItem('chartDate', chartDate);
         sessionStorage.setItem('reloadPage', 'yes');
-        console.log(sessionStorage);
     }
 
     let hiddenColumns;

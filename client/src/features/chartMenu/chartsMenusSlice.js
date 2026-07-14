@@ -13,14 +13,16 @@ const chartsMenuSlice = createSlice({
     reducers: {
         updateLastDate: (state, action) => {
             if (action.payload.chartType === "Song") {
-                const newIndex = state.songChartsArray.findIndex(chart => chart.ChartId === action.payload.chartId)
-                const newChart = [...state.songChartsArray];
-                newChart[newIndex].LastDate = action.payload.lastDate;
+                const chart = state.songChartsArray.find(chart => chart.ChartId === action.payload.chartId);
+                if (chart) {
+                    chart.LastDate = action.payload.lastDate;
+                }
             }
             if (action.payload.chartType === "Album") {
-                const newIndex = state.albumChartsArray.findIndex(chart => chart.ChartId === action.payload.chartId)
-                const newChart = [...state.albumChartsArray];
-                newChart[newIndex].LastDate = action.payload.lastDate;
+                const chart = state.albumChartsArray.find(chart => chart.ChartId === action.payload.chartId);
+                if (chart) {
+                    chart.LastDate = action.payload.lastDate;
+                }
             }
         }
     }

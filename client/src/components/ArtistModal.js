@@ -13,7 +13,6 @@ const ArtistModal = ({ passChar, resetPassChar }) => {
     const [hideResults, setHideResults] = useState(false);
 
     const openModal = (alphaChar) => {
-        console.log('openModal: ', alphaChar);
         setCurrentChar(alphaChar);
         setAlphaModalOpen(true);
     }
@@ -35,10 +34,7 @@ const ArtistModal = ({ passChar, resetPassChar }) => {
     useEffect(() => { 
         const fetchData = async () => {
             if (currentChar != null) {
-                const charString = `'${currentChar}'`
-                console.log('Pre Fetch Artist List: ', charString);
-                const artistListData = await fetchArtistList(charString);
-                console.log('Post Fetch Artist List ');
+                const artistListData = await fetchArtistList(currentChar);
                 if (artistListData)
                     setData(artistListData);
                 else

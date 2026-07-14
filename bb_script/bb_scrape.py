@@ -200,11 +200,13 @@ def updateChartList(ucdate, ucndate, ucid):
     cur.execute(chart_list_query, chart_entry)
     conn.commit()
 
-def updateChartDateItemCount(cdateid, itemcount):
+def updateChartDateItemCount(cdateid):
     cur = conn.cursor()
-    item_count_query = """ UPDATE chart_dates SET item_count= %s WHERE chart_date_id = %s """
-    item_count_to_update = (itemcount, cdateid)
-    cur.execute(item_count_query, item_count_to_update)
+    count_query = """ SELECT count(*) FROM chart_entries WHERE chart_id = %s """
+    cur.execute(count_query, (cdateid,))
+    actual_count = cur.fetchone()[0]
+    item_count_query = """ UPDATE chart_dates SET item_count = %s WHERE chart_date_id = %s """
+    cur.execute(item_count_query, (actual_count, cdateid))
     conn.commit()
 
 def insertChartEntry(songId, chartRank, chartId):
@@ -282,7 +284,9 @@ else:
                         time.sleep(10)
                         continue
 
+                    items_in_chart = 0
                     for item in chart:
+                        items_in_chart += 1
                         artist_id = getArtistId(item.artist)
                         if (getSong):
                             item_id = getSongId(item.title, artist_id)
@@ -293,19 +297,28 @@ else:
                             entries_entered += 1
                         else:
                             logging.info("Duplicate item - %s", item)
-                    updateChartDateItemCount(chart_date_id, entries_entered)
+                    updateChartDateItemCount(chart_date_id)
                     print ("%d entries entered for %s chart for the date %s" % (entries_entered, chart_name, chart_date))
-                    try:
-                        if ((hasattr(chart, 'nextDate')) and (chart.nextDate == '')) or (not hasattr(chart, 'nextDate')):
-                            print ("This is the last chart for %s" % chart_name)
-                            last_date = True
-                            updateChartList(chart_date, chart_date + datetime.timedelta(days=7), current_chart_id)
-                        else:
-                            updateChartList(chart_date, chart.nextDate, current_chart_id)
-                    except AttributeError as error:
-                        print(chart)
-                        print ("Error encountered (%s) - This is the last chart" % error)
+
+                    if items_in_chart == 0:
+                        # Billboard has no entries for this date yet (e.g. not published), as
+                        # opposed to entries_entered==0 meaning they were all duplicates of
+                        # already-scraped data. Don't advance the cursor past a chart with no
+                        # real data - retry this same date on the next run.
+                        print ("No entries found for %s on %s - not yet published, will retry later" % (chart_name, chart_date))
                         last_date = True
+                    else:
+                        try:
+                            if ((hasattr(chart, 'nextDate')) and (chart.nextDate == '')) or (not hasattr(chart, 'nextDate')):
+                                print ("This is the last chart for %s" % chart_name)
+                                last_date = True
+                                updateChartList(chart_date, chart_date + datetime.timedelta(days=7), current_chart_id)
+                            else:
+                                updateChartList(chart_date, chart.nextDate, current_chart_id)
+                        except AttributeError as error:
+                            print(chart)
+                            print ("Error encountered (%s) - This is the last chart" % error)
+                            last_date = True
                     time.sleep(10)
             last_chart_date = True;
 conn.close()
