@@ -8,9 +8,29 @@ logging.basicConfig(filename='billboard.log', format='%(asctime)s: %(message)s',
 default_date = '1950-01-01'
 last_chart_date = False
 new_chart = False
-conn = psycopg2.connect("dbname=BillboardData user=postgres password=1202ThurnRidge")
+DB_CONN_STRING = "dbname=BillboardData user=postgres password=1202ThurnRidge"
+conn = psycopg2.connect(DB_CONN_STRING)
 retrieve_Ids = False
 active_lists = []
+
+
+def ensure_connection():
+    global conn
+    if conn.closed:
+        conn = psycopg2.connect(DB_CONN_STRING)
+        logging.warning("Reconnected to the database after the connection was closed.")
+        return
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT 1")
+        cur.close()
+    except psycopg2.Error:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        conn = psycopg2.connect(DB_CONN_STRING)
+        logging.warning("Reconnected to the database after a connection error.")
 
 
 
@@ -39,6 +59,7 @@ def retrieveChartIds():
 
 
 def getChartList():
+    active_lists.clear()
     chartList = []
     cur = conn.cursor()
     list_query = """ SELECT chart_id, chart_name, chart_type, included FROM chart_list ORDER BY chart_id"""
@@ -228,16 +249,39 @@ else:
             while not last_date:
                 skip_chart = False
                 entries_entered = 0
-                chart_date = getChartDate(current_chart_id)
+
+                try:
+                    ensure_connection()
+                    chart_date = getChartDate(current_chart_id)
+                except psycopg2.OperationalError as db_error:
+                    logging.error("Database error while checking chart date for %s: %s - reconnecting and retrying", chart_name, db_error)
+                    print("Database error while checking chart date for %s - reconnecting and retrying" % chart_name)
+                    ensure_connection()
+                    time.sleep(5)
+                    continue
+
                 if chart_date > (datetime.date.today() + datetime.timedelta(days=4)):
                     skip_chart = True
                     last_date = True
                     print ("No current chart to check - Move on")
 
                 if (not skip_chart):
-                    chart_date_id = getChartDateId(current_chart_id, chart_date)
-                    chart = billboard.ChartData(chart_name,chart_date)
-                    
+                    try:
+                        chart_date_id = getChartDateId(current_chart_id, chart_date)
+                        chart = billboard.ChartData(chart_name,chart_date)
+                    except psycopg2.OperationalError as db_error:
+                        logging.error("Database error while fetching %s for %s: %s - reconnecting and retrying", chart_name, chart_date, db_error)
+                        print("Database error while fetching %s for %s - reconnecting and retrying" % (chart_name, chart_date))
+                        ensure_connection()
+                        time.sleep(5)
+                        continue
+                    except Exception as fetch_error:
+                        logging.error("Failed to fetch %s chart for %s: %s", chart_name, chart_date, fetch_error)
+                        print("Failed to fetch %s chart for %s: %s - will retry on a future run" % (chart_name, chart_date, fetch_error))
+                        last_date = True
+                        time.sleep(10)
+                        continue
+
                     for item in chart:
                         artist_id = getArtistId(item.artist)
                         if (getSong):
@@ -250,17 +294,14 @@ else:
                         else:
                             logging.info("Duplicate item - %s", item)
                     updateChartDateItemCount(chart_date_id, entries_entered)
-                    print ("%d entries entered for %s chart for the date %s" % (entries_entered, chart_name, chart_date)) 
+                    print ("%d entries entered for %s chart for the date %s" % (entries_entered, chart_name, chart_date))
                     try:
-                        if (entries_entered > 0):
-                            if ((hasattr(chart, 'nextDate')) and (chart.nextDate == '')) or (not hasattr(chart, 'nextDate')):
-                                print ("This is the last chart for %s" % chart_name)
-                                last_date = True            
-                                updateChartList(chart_date, chart_date + datetime.timedelta(days=7), current_chart_id)
-                            else:
-                                updateChartList(chart_date, chart.nextDate, current_chart_id)
-                        else:
+                        if ((hasattr(chart, 'nextDate')) and (chart.nextDate == '')) or (not hasattr(chart, 'nextDate')):
+                            print ("This is the last chart for %s" % chart_name)
                             last_date = True
+                            updateChartList(chart_date, chart_date + datetime.timedelta(days=7), current_chart_id)
+                        else:
+                            updateChartList(chart_date, chart.nextDate, current_chart_id)
                     except AttributeError as error:
                         print(chart)
                         print ("Error encountered (%s) - This is the last chart" % error)

@@ -1,62 +1,31 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import styled from "styled-components";
-import { addDays, getYear, format } from 'date-fns';
-import { updateCurrentChart, updatePendingDate } from '../features/chart/chartsSlice';
+import { addDays, getYear } from 'date-fns';
+import DatePickerStyles from './DatePickerStyles';
+import useChartDateChange from './useChartDateChange';
 
-const Styles = styled.div`
-  .react-datepicker-wrapper,
-  .react-datepicker__input-container,
-  .react-datepicker__input-container input {
-    width: 8em;
-  }
+const roundToDecadeStart = (date) => {
+    const decade = Math.floor(getYear(date) / 10) * 10;
+    return new Date(decade, 0, 1);
+};
 
-  .react-datepicker__close-icon::before,
-  .react-datepicker__close-icon::after {
-    background-color: grey;
-  }
-`;
-
-const DecadePicker = (dates) => {
-    const { firstDate, lastDate } = dates;
-    const [startDate, setStartDate] = useState(null);
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-
-    const onChange = (date) => {
-        console.log('Check date: ', date);
-        const year = getYear(date);
-        const newYear = parseInt(year/10);
-        const decade = newYear*10;
-        const newDate = new Date(decade, 0, 1);
-        setStartDate(newDate);
-        const chartDate = format(newDate, "yyyy-MM-dd");
-        console.log('WeekPicker Before: ', chartDate);
-        dispatch(updatePendingDate(chartDate));
-        console.log('WeekPicker After: ', chartDate);
-        dispatch(updateCurrentChart());
-        document.getElementById('root')
-            .dispatchEvent(new MouseEvent('click', {shiftKey: true}));
-        navigate('/Chart');
-    }
+const DecadePicker = ({ firstDate, lastDate }) => {
+    const { startDate, onChange } = useChartDateChange(roundToDecadeStart);
 
     return (
-        <Styles>
+        <DatePickerStyles>
             <DatePicker
                 selected={startDate}
-                onChange = {onChange}
+                onChange={onChange}
                 minDate={new Date(firstDate)}
-                maxDate={addDays(new Date(lastDate),1)}
+                maxDate={addDays(new Date(lastDate), 1)}
                 showYearPicker
                 dateFormat="yyyy"
                 placeholderText="Select year in desired decade"
             />
-        </Styles>
-
+        </DatePickerStyles>
     );
-  };
+};
 
-  export default DecadePicker;
+export default DecadePicker;

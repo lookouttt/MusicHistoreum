@@ -10,16 +10,24 @@ const app = express();
 const pool = require("./db");
 const dayjs = require("dayjs");
 
+const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+    : ['http://localhost:3000'];
+
 //middleware
-app.use(cors());
+app.use(cors({ origin: corsOrigins }));
 app.use(express.json()); //req.body
 app.use("/", router);
 
 const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'info',
     format: combine(timestamp(), json()),
-    transports: [new winston.transports.File({
-        filename: 'mh_server.log',
+    transports: [
+        new winston.transports.File({
+            filename: 'mh_server.log',
+        }),
+        new winston.transports.Console({
+            format: combine(winston.format.colorize(), winston.format.simple()),
         }),
     ],
 });

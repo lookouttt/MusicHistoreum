@@ -233,8 +233,26 @@ export default function Table({
             return (
                 <tr {...row.getRowProps()}>
                 {row.cells.map(cell => {
-                    //  console.log("I'm putting a row in the table");
-                    return <td onClick={() => checkCellValue(cell)} {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+                    if (cell.column.id !== 'artist_name') {
+                        return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+                    }
+                    return (
+                        <td
+                            {...cell.getCellProps()}
+                            role="button"
+                            tabIndex={0}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => checkCellValue(cell)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    checkCellValue(cell);
+                                }
+                            }}
+                        >
+                            {cell.render("Cell")}
+                        </td>
+                    );
                 })}
                 </tr>
             );

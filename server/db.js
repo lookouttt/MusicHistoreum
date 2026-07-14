@@ -10,4 +10,8 @@ const pool = new Pool({
     database: process.env.PG_DATABASE
 });
 
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle PostgreSQL client', err);
+});
+
 module.exports = pool;

@@ -10,7 +10,6 @@
     "@testing-library/user-event": "^14.4.3",
     "bootstrap": "^5.1.3",
     "bootstrap-social": "^5.1.1",
-    "disconnect": "^1.2.2",
     "font-awesome": "^4.7.0",
     "formik": "^2.2.9",
     "match-sorter": "^6.3.1",
@@ -24,13 +23,7 @@
     "react-spring": "^9.4.5-beta.1",
     "react-table": "^7.8.0",
     "reactstrap": "^9.0.1",
-    "redux-logger": "^3.0.6",
-    "source-sans": "^3.46.0",
-    "source-serif": "^4.4.0",
     "styled-components": "^5.3.6",
-    "typeface-lobster": "^1.1.13",
-    "typeface-noto-sans": "^1.1.13",
-    "typeface-open-sans": "^1.1.13",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
