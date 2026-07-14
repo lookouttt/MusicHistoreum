@@ -8,14 +8,18 @@ async function fetchContactForm(formData) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
-    }).then((res) => {
-        console.log('Response received: ', res);
-        if (res.status === 200) {
-            console.log('Response succeeded');
-        }
     });
 
-    return response;
+    if (!response.ok) {
+        throw new Error(`Contact form request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.status !== 'Message Sent') {
+        throw new Error('Contact form submission failed');
+    }
+
+    return data;
 }
 
 export default fetchContactForm;

@@ -20,35 +20,43 @@ var utc = require("dayjs/plugin/utc");
 dayjs.extend(utc);
 
 function App() {
-    console.log('This is the beginning. Getting chart list data');
-    // const [latestChartList, setLatestChartList] = useState([]);
     const [dataLoaded, setDataLoaded] = useState(false);
+    const [loadError, setLoadError] = useState(false);
     const dispatch = useDispatch();
 
     useEffect (() => {
         const fetchList = async () => {
-            const chartList = await fetchChartList();
-            console.log('Got chart list: ', chartList);
-            chartList.forEach(chart => {
-                const formattedDate = (dayjs.utc(chart.last_date).format('YYYY-MM-DD'));
-                dispatch(updateLastDate({chartId: chart.chart_id, chartType: chart.chart_type, lastDate: formattedDate}));
+            try {
+                const chartList = await fetchChartList();
+                chartList.forEach(chart => {
+                    const formattedDate = (dayjs.utc(chart.last_date).format('YYYY-MM-DD'));
+                    dispatch(updateLastDate({chartId: chart.chart_id, chartType: chart.chart_type, lastDate: formattedDate}));
+                });
                 setDataLoaded(true);
-            });
+            } catch (err) {
+                setLoadError(true);
+            }
         }
         fetchList();
     }, [dispatch]);
 
-    // useEffect(() => {
-    //     console.log('Test');
-    //     if (latestChartList)
-    //         latestChartList.forEach(chart => {
-    //             const formattedDate = (dayjs(chart.last_date).format('YYYY-MM-DD'));
-    //             dispatch(updateLastDate({chartId: chart.chart_id, lastDate: formattedDate}));
+    if (loadError) {
+        return (
+            <div className="App">
+                <p>Sorry, something went wrong loading Music Historeum. Please try again later.</p>
+            </div>
+        );
+    }
 
-    //     })
-    // }, [latestChartList]);
+    if (!dataLoaded) {
+        return (
+            <div className="App">
+                <p>Loading...</p>
+            </div>
+        );
+    }
 
-    return dataLoaded && (
+    return (
         <div className="App">
             <Header />
             <Routes>

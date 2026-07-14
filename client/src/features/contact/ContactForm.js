@@ -7,9 +7,10 @@ import '../../App.css';
 
 const ContactForm = () => {
     const [modalOpen, setModalOpen] = useState(false);
+    const [submitError, setSubmitError] = useState(false);
     const FormTopics = ['Default','Chart Question', 'Feature Request', 'Other' ];
 
-    const handleSubmit = (values) => {
+    const handleSubmit = async (values) => {
         const comment = {
             firstName: values.firstName,
             lastName: values.lastName,
@@ -18,25 +19,34 @@ const ContactForm = () => {
             text: values.commentText,
             date: new Date(Date.now()).toISOString()
         };
-        console.log("comment: ", comment);
-        fetchContactForm(comment);
-        setModalOpen(false);
+        try {
+            await fetchContactForm(comment);
+            setSubmitError(false);
+            setModalOpen(false);
+        } catch (err) {
+            setSubmitError(true);
+        }
     };
 
     return (
         <>
             <span className='navbar-text ml-auto'>
-                <a href style={{ textDecoration: 'none' }} onClick={() => setModalOpen(true)}
+                <button
+                    type='button'
+                    className='nav-link'
+                    style={{ textDecoration: 'none', background: 'none', border: 'none', padding: 0, color: 'inherit' }}
+                    onClick={() => { setSubmitError(false); setModalOpen(true); }}
                 >
                     <i className='fa fa-comment' /> Contact
-                </a>
+                </button>
             </span>
             <Modal isOpen={modalOpen} className='modalStyle'>
                 <ModalHeader toggle={() => setModalOpen(false)}>
                     Contact Us
                 </ModalHeader>
                 <ModalBody>
-                    <Formik 
+                    {submitError && <p className='text-danger'>Sorry, your message couldn't be sent. Please try again.</p>}
+                    <Formik
                         initialValues={
                             {
                                 firstName: '',

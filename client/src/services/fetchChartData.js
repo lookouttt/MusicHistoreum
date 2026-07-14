@@ -3,6 +3,9 @@ import { baseUrl } from "./baseUrl";
 async function fetchChartData({chart}) {
     const { chartId, chartType, chartTimeframe, chartDate } = chart;
     const response = await fetch(`${baseUrl}chart/${chartId}/${chartType}/${chartTimeframe}/${chartDate}`);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch chart data: ${response.status}`);
+    }
     const data = await response.json();
 
     if (chartType === 'Song') {

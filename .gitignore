@@ -3,3 +3,6 @@ Other_Files
 client/build.zip
 server/mh_server.log
 .vscode/settings.json
+bb_script/__pycache__/
+bb_script/billboard.log
+bb_script/billboard.txt

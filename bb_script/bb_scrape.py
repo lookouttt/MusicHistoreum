@@ -11,10 +11,6 @@ new_chart = False
 conn = psycopg2.connect("dbname=BillboardData user=postgres password=1202ThurnRidge")
 retrieve_Ids = False
 active_lists = []
-active_song_lists = []
-active_albums_lists = []
-active_artists_lists = []
-active_greatest_lists = []
 
 
 
@@ -42,25 +38,6 @@ def retrieveChartIds():
     f.close()
 
 
-def testEntries():
-    cur = conn.cursor()
-    for i in range(0,50):
-        chart = billboard.ChartData(chart_name,chart_date)
-        for song in chart:
-            print (song.title)
-            print (song.artist)
-            print (song.rank)
-            insert_query = """ INSERT INTO charttest (rank, title, artist, chartdate) VALUES (%s,%s,%s,%s)"""
-            record_to_insert = (song.rank,song.title,song.artist,chart_date)
-            cur.execute(insert_query, record_to_insert)
-            conn.commit()
-            count = cur.rowcount
-            print(count, "Record insrerted successfully")
-        chart_date = chart.nextDate
-        time.sleep(10)
-    print("Test Complete")
-
-
 def getChartList():
     chartList = []
     cur = conn.cursor()
@@ -71,15 +48,6 @@ def getChartList():
         if (row[3]):
             add_row = (row[0], row[1], row[2])
             active_lists.append(add_row)
-#            add_row = (row[0],row[1])
-#            if (row[2] == 'Song'):
-#                active_song_lists.append(add_row)
-#            elif (row[2] == 'Album'):
-#                active_albums_lists.append(add_row)
-#            elif (row[2] == 'Artist'):
-#                active_artists_lists.append(add_row)
-#            elif (row[2] == 'Greatest'):
-#                active_greatest_lists.append(add_row)
     cur.close()
     
     

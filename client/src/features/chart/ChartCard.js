@@ -19,6 +19,7 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
     
     const { chartType, chartId, chartTimeframe, chartDate } = chart;
     const [data, setData] = useState([]);
+    const [fetchError, setFetchError] = useState(false);
     const chartList = useSelector(selectChartsMenu(chartType));
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
 
@@ -67,16 +68,29 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
 
     };
 
-    useEffect(() => { 
+    useEffect(() => {
         const fetchData = async () => {
-            console.log('Pre Fetch Data:', {chart});
-            const chartData = await fetchChartData({chart});
-            console.log('Post Fetch Data: ', chartData);
-            setData(chartData);
+            try {
+                const chartData = await fetchChartData({chart});
+                setData(chartData);
+                setFetchError(false);
+            } catch (err) {
+                setFetchError(true);
+            }
         }
 
         fetchData();
     }, [chart]);
+
+    if (fetchError) {
+        return (
+            <Card className='chartCard'>
+                <CardBody className='chartBody'>
+                    <p>Sorry, this chart couldn't be loaded. Please try again later.</p>
+                </CardBody>
+            </Card>
+        );
+    }
 
     return data && (
         <>
@@ -85,13 +99,13 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
                 { bIncludeNav ? <h1>{chartTitle()}</h1> : <h3>{chartTitle()}</h3> }
             </CardHeader>
             <CardBody className='chartBody'>
-                { bIncludeNav && <ChartNav chart={chart}/> } 
+                { bIncludeNav && <ChartNav chart={chart}/> }
                 <ChartStyles>
-                    <Table 
-                        columns={columns} 
-                        data={data} 
-                        hiddenColumns={hiddenColumns} 
-                        tablePageSize={pageSize}  
+                    <Table
+                        columns={columns}
+                        data={data}
+                        hiddenColumns={hiddenColumns}
+                        tablePageSize={pageSize}
                         bPage={bPage}
                         bFilter={bFilter}
                     />

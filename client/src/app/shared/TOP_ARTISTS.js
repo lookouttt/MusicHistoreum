@@ -79,11 +79,6 @@ export const TOP_ARTISTS = [
         DisplayName: 'Celine Dion',
         ClaimedSales: 200
     },
-    // {
-    //     ArtistName: 'AC/DC',
-    //     DisplayName: 'AC/DC',
-    //     ClaimedSales: 200
-    // },
     {
         ArtistName: 'Rolling Stones',
         DisplayName: 'The Rolling Stones',
@@ -146,7 +141,7 @@ export const TOP_ARTISTS = [
     },
     {
         ArtistName: 'Barbra Streisand',
-        DisplayName: 'Barbra Steisand',
+        DisplayName: 'Barbra Streisand',
         ClaimedSales: 150
     },
     {

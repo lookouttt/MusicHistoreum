@@ -41,6 +41,37 @@ contactEmail.verify((error) => {
     }
 });
 
+const escapeHtml = (str) => String(str).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+}[c]));
+
+const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+const CONTACT_TOPICS = ['Default', 'Chart Question', 'Feature Request', 'Other'];
+
+const validateContactPayload = ({ firstName, lastName, email, text, topic }) => {
+    const errors = [];
+    if (!firstName || firstName.length < 2 || firstName.length > 30) {
+        errors.push('First name must be between 2 and 30 characters.');
+    }
+    if (!lastName || lastName.length < 2 || lastName.length > 40) {
+        errors.push('Last name must be between 2 and 40 characters.');
+    }
+    if (!email || email.length > 254 || !EMAIL_REGEX.test(email)) {
+        errors.push('A valid email address is required.');
+    }
+    if (!text || text.length < 1 || text.length > 5000) {
+        errors.push('Comment text must be between 1 and 5000 characters.');
+    }
+    if (!CONTACT_TOPICS.includes(topic)) {
+        errors.push('Invalid topic.');
+    }
+    return errors;
+};
+
 //ROUTES//
 
 //get list of available charts
@@ -57,6 +88,7 @@ app.get("/chartList", async(req, res) => {
         res.json(allCharts.rows);
     } catch (err) {
        logger.error(err.message);
+       res.status(500).json({ error: "Failed to retrieve chart list." });
     }
 });
 
@@ -64,12 +96,13 @@ app.get("/artist/list/:start_char", async(req, res) => {
     try {
         const startChar = req.params.start_char;
         logger.info('trying to get artist list: ', startChar);
-        const allArtists = await pool.query(`SELECT get_artist_list(${startChar})`);
+        const allArtists = await pool.query(`SELECT get_artist_list($1)`, [startChar]);
         logger.info('post artist list check');
         res.json(allArtists.rows);
     } catch (err) {
         logger.info('got error trying to get artist list');
         logger.error(err.message);
+        res.status(500).json({ error: "Failed to retrieve artist list." });
     }
 });
 
@@ -88,6 +121,7 @@ app.get("/artist/:dartist/:dtype", async(req, res) => {
         res.json(artist.rows);
     } catch (err) {
         logger.error(err.message);
+        res.status(500).json({ error: "Failed to retrieve artist data." });
     }
 });
 
@@ -132,28 +166,33 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
 
     } catch (err) {
         logger.error(err.message);
+        res.status(500).json({ error: "Failed to retrieve chart data." });
     }
 });
 
 
 router.post("/contact", (req, res) => {
     logger.info(req.body)
-    const name = req.body.firstName + " " + req.body.lastName;
-    const email = req.body.email;
-    const message = req.body.text; 
-    const topic = req.body.topic;
+
+    const validationErrors = validateContactPayload(req.body);
+    if (validationErrors.length > 0) {
+        return res.status(422).json({ status: "ERROR", errors: validationErrors });
+    }
+
+    const { firstName, lastName, email, text, topic } = req.body;
+    const name = `${firstName} ${lastName}`;
     const mail = {
         from: name,
         to: process.env.MAIL_USER,
         subject: `Music Historeum Contact Form Submission - ${topic}`,
-        html: `<p>Name: ${name}</p>
-                <p>Email: ${email}</p>
-                <p>Message: ${message}</p>`,
+        html: `<p>Name: ${escapeHtml(name)}</p>
+                <p>Email: ${escapeHtml(email)}</p>
+                <p>Message: ${escapeHtml(text)}</p>`,
     };
     contactEmail.sendMail(mail, (error) => {
         if (error) {
         logger.error("Status: ERROR", error);
-        res.json({ status: "ERROR" });
+        res.status(500).json({ status: "ERROR" });
         } else {
         logger.info("Status: Message Sent");
         res.json({ status: "Message Sent" });

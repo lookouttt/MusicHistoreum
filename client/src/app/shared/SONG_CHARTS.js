@@ -5,7 +5,7 @@ export const SONG_CHARTS = [
         ChartTitle: "Top Songs",
         FirstDate: "1962-01-01",
         // FirstDate: "1958-08-04",
-        LastDate: "2023-02-18",
+        LastDate: null,
     },
     {
         ChartId: 43,
@@ -13,7 +13,7 @@ export const SONG_CHARTS = [
         ChartTitle: "Top Adult Contemporary Songs",
         FirstDate: "1962-01-01",
         // FirstDate: "1961-07-17",
-        LastDate: "2023-02-18",
+        LastDate: null,
     },
     {
         ChartId: 45,
@@ -21,21 +21,21 @@ export const SONG_CHARTS = [
         ChartTitle: "Top Country Songs",
         FirstDate: "1962-01-01",
         // FirstDate: "1958-10-20",
-        LastDate: "2023-02-18",
+        LastDate: null,
     },
     {
         ChartId:60,
         ChartName: "alternative-airplay",
         ChartTitle: "Top Alternative Songs",
         FirstDate: "1988-09-10",
-        LastDate: "2023-02-18",
+        LastDate: null,
     },
     {
         ChartId: 67,
         ChartName: "hot-mainstream-rock-tracks",
         ChartTitle: "Top Rock Songs",
         FirstDate: "1981-03-21",
-        LastDate: "2023-02-18",
+        LastDate: null,
     },
     {
         ChartId: 68,
@@ -43,6 +43,6 @@ export const SONG_CHARTS = [
         ChartTitle: "Top R&B / Hip Hop Songs",
         FirstDate: "1962-01-01",
         // FirstDate: "1958-10-20",
-        LastDate: "2023-02-18",
+        LastDate: null,
     }
 ]

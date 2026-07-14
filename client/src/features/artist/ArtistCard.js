@@ -7,20 +7,18 @@ import { format } from 'date-fns';
 const dayjs = require("dayjs");
 
 function ArtistCard(artist) {
-    console.log('ArtistCard: ', artist.artist);
-
     const [songItems, setSongItems] = useState();
     const [albumItems, setAlbumItems] = useState();
+    const [fetchError, setFetchError] = useState(false);
     const artistTitle = () => {
         return(`${artist.artist} Chart History`);
     };
 
-    useEffect(() => { 
+    useEffect(() => {
         const fetchData = async () => {
-            console.log('Pre Fetch Data:', artist.artist);
+          try {
             const artistSongData = await fetchArtistData(artist.artist, 'songs');
             if (artistSongData != null) {
-                console.log('Post Fetch Song Data: ', artistSongData);
                 const tempSongItems = artistSongData.map(({ song_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
                     const formattedDate = format(new Date(dayjs(first_date)), 'MMM yyyy');
                     const weeksText = (weeks > 1) ? 'weeks' : 'week';
@@ -46,7 +44,6 @@ function ArtistCard(artist) {
 
 
             const artistAlbumData = await fetchArtistData(artist.artist, 'albums');
-            console.log('Post Fetch Album Data: ', artistAlbumData);
             if (artistAlbumData != null) {
                 const tempAlbumItems = artistAlbumData.map(({ album_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
                     const formattedDate = format(new Date(dayjs(first_date)), 'MMM yyyy');
@@ -70,10 +67,24 @@ function ArtistCard(artist) {
                 }
                 setAlbumItems(tempAlbumItems);
             }
+            setFetchError(false);
+          } catch (err) {
+            setFetchError(true);
+          }
         }
 
         fetchData();
     }, [artist.artist]);
+
+    if (fetchError) {
+        return (
+            <Card className='artistCard'>
+                <CardBody className='artistBody'>
+                    <p>Sorry, this artist's chart history couldn't be loaded. Please try again later.</p>
+                </CardBody>
+            </Card>
+        );
+    }
 
     return songItems && albumItems && (
         <Card className='artistCard'>
