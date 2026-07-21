@@ -121,7 +121,7 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
             </CardHeader>
             <CardBody className='chartBody'>
                 { bIncludeNav && <ChartNav chart={chart}/> }
-                { chartType === 'Song' &&
+                { bIncludeNav && chartType === 'Song' &&
                     <AppleMusicPlaylistToolbar
                         data={data}
                         selectedIds={selectedIds}
@@ -138,7 +138,7 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
                         tablePageSize={pageSize}
                         bPage={bPage}
                         bFilter={bFilter}
-                        selectable={chartType === 'Song'}
+                        selectable={bIncludeNav && chartType === 'Song'}
                         selectedIds={selectedIds}
                         onToggleRow={toggleRow}
                     />
