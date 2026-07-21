@@ -8,6 +8,7 @@ import ChartStyles from "./ChartStyles";
 import { selectChartsMenu } from "../chartMenu/chartsMenusSlice";
 import { format } from 'date-fns';
 import ChartNav from './ChartNav';
+import AppleMusicPlaylistToolbar from '../appleMusicPlaylist/AppleMusicPlaylistToolbar';
 import './ChartCard.css';
 const dayjs = require("dayjs");
 
@@ -20,6 +21,7 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
     const { chartType, chartId, chartTimeframe, chartDate } = chart;
     const [data, setData] = useState([]);
     const [fetchError, setFetchError] = useState(false);
+    const [selectedIds, setSelectedIds] = useState(() => new Set());
     const chartList = useSelector(selectChartsMenu(chartType));
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
 
@@ -78,7 +80,28 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
         }
 
         fetchData();
+        setSelectedIds(new Set());
     }, [chart]);
+
+    const toggleRow = (songId) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            const id = String(songId);
+            if (next.has(id))
+                next.delete(id);
+            else
+                next.add(id);
+            return next;
+        });
+    };
+
+    const selectTopN = (n) => {
+        setSelectedIds(new Set(
+            data.filter((row) => row.song_rank <= n).map((row) => String(row.song_id))
+        ));
+    };
+
+    const clearSelection = () => setSelectedIds(new Set());
 
     if (fetchError) {
         return (
@@ -98,6 +121,15 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
             </CardHeader>
             <CardBody className='chartBody'>
                 { bIncludeNav && <ChartNav chart={chart}/> }
+                { chartType === 'Song' &&
+                    <AppleMusicPlaylistToolbar
+                        data={data}
+                        selectedIds={selectedIds}
+                        onSelectTopN={selectTopN}
+                        onClear={clearSelection}
+                        defaultPlaylistName={chartTitle()}
+                    />
+                }
                 <ChartStyles>
                     <Table
                         columns={columns}
@@ -106,6 +138,9 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
                         tablePageSize={pageSize}
                         bPage={bPage}
                         bFilter={bFilter}
+                        selectable={chartType === 'Song'}
+                        selectedIds={selectedIds}
+                        onToggleRow={toggleRow}
                     />
                 </ChartStyles>
             </CardBody>

@@ -7,7 +7,8 @@ const pool = new Pool({
     password: process.env.PG_PASSWORD,
     host: process.env.PG_HOST,
     port: process.env.PG_PORT,
-    database: process.env.PG_DATABASE
+    database: process.env.PG_DATABASE,
+    ssl: process.env.PG_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
 pool.on('error', (err) => {

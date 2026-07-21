@@ -4,6 +4,9 @@ const router = express.Router();
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const winston = require("winston");
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
 const { combine, timestamp, json } = winston.format;
 
 const app = express();
@@ -48,6 +51,47 @@ contactEmail.verify((error) => {
         logger.info("Ready to Send Email");
     }
 });
+
+let appleMusicPrivateKey = null;
+if (process.env.APPLE_TEAM_ID && process.env.APPLE_KEY_ID) {
+    try {
+        if (process.env.APPLE_PRIVATE_KEY) {
+            // Preferred for serverless deployments (e.g. Vercel), where there's no
+            // local file to read - the key's PEM content is stored directly.
+            appleMusicPrivateKey = process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n');
+        } else if (process.env.APPLE_PRIVATE_KEY_PATH) {
+            appleMusicPrivateKey = fs.readFileSync(path.resolve(__dirname, process.env.APPLE_PRIVATE_KEY_PATH), 'utf8');
+        }
+        if (appleMusicPrivateKey) {
+            logger.info("Apple Music private key loaded, developer token route enabled");
+        } else {
+            logger.info("Apple Music env vars not configured, developer token route disabled");
+        }
+    } catch (error) {
+        logger.error(`Failed to load Apple Music private key: ${error.message}`);
+    }
+} else {
+    logger.info("Apple Music env vars not configured, developer token route disabled");
+}
+
+const APPLE_MUSIC_TOKEN_TTL_SECONDS = 15777000; // ~6 months, Apple's documented max
+let appleMusicDeveloperToken = null;
+let appleMusicDeveloperTokenExpiresAt = 0;
+
+const getAppleMusicDeveloperToken = () => {
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    if (appleMusicDeveloperToken && Date.now() < appleMusicDeveloperTokenExpiresAt - oneDayMs) {
+        return appleMusicDeveloperToken;
+    }
+    appleMusicDeveloperToken = jwt.sign({}, appleMusicPrivateKey, {
+        algorithm: 'ES256',
+        issuer: process.env.APPLE_TEAM_ID,
+        keyid: process.env.APPLE_KEY_ID,
+        expiresIn: APPLE_MUSIC_TOKEN_TTL_SECONDS,
+    });
+    appleMusicDeveloperTokenExpiresAt = Date.now() + APPLE_MUSIC_TOKEN_TTL_SECONDS * 1000;
+    return appleMusicDeveloperToken;
+};
 
 const escapeHtml = (str) => String(str).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;',
@@ -178,6 +222,21 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
     }
 });
 
+//get a signed Apple Music developer token (MusicKit JS uses this to authorize the end user client-side)
+
+app.get("/apple-music/developer-token", (req, res) => {
+    if (!appleMusicPrivateKey) {
+        return res.status(503).json({ error: "Apple Music integration is not configured." });
+    }
+    try {
+        const token = getAppleMusicDeveloperToken();
+        res.json({ token });
+    } catch (err) {
+        logger.error(err.message);
+        res.status(500).json({ error: "Failed to generate Apple Music developer token." });
+    }
+});
+
 
 router.post("/contact", (req, res) => {
     logger.info(req.body)
@@ -208,11 +267,18 @@ router.post("/contact", (req, res) => {
     });
 });
 
-let server = app.listen(process.env.API_PORT, () => {
-    logger.info("server has started on musichistoreum.com with port ", server.address().port);
-    logger.info("Test: ", server.address())
-});
+// Only bind to a port when run directly (e.g. `node index.js` / `npm start`).
+// Serverless entry points (e.g. api/index.js for Vercel) just require the
+// exported app instead, since the platform handles listening itself.
+if (require.main === module) {
+    let server = app.listen(process.env.API_PORT, () => {
+        logger.info("server has started on musichistoreum.com with port ", server.address().port);
+        logger.info("Test: ", server.address())
+    });
 
-process.on('exit', () => {
-    logger.info("server is stopping");
-})
+    process.on('exit', () => {
+        logger.info("server is stopping");
+    });
+}
+
+module.exports = app;

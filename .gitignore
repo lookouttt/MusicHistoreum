@@ -6,3 +6,11 @@ server/mh_server.log
 bb_script/__pycache__/
 bb_script/billboard.log
 bb_script/billboard.txt
+bb_script/.env
+bb_script/aiven-db-migrate/
+bb_script/venv_aiven_migrate/
+bb_script/*.dump
+bb_script/*.list
+bb_script/migration_report.json
+bb_script/migration_run.log
+bb_script/chart_entries_migration_progress.txt

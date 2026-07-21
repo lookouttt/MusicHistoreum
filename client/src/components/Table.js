@@ -63,14 +63,17 @@ function fuzzyTextFilterFn(rows, id, filterValue) {
 // Let the table remove the filter if the string is empty
 fuzzyTextFilterFn.autoRemove = val => !val
 
-export default function Table({ 
-                            columns, 
-                            data, 
-                            hiddenColumns = [], 
-                            onCloseModal, 
-                            tablePageSize, 
-                            bPage, 
-                            bFilter }) {
+export default function Table({
+                            columns,
+                            data,
+                            hiddenColumns = [],
+                            onCloseModal,
+                            tablePageSize,
+                            bPage,
+                            bFilter,
+                            selectable = false,
+                            selectedIds,
+                            onToggleRow }) {
     const [prevHiddenColumns, setPrevHiddenColumns] = useState([]);
 
     const filterTypes = React.useMemo(
@@ -217,6 +220,7 @@ export default function Table({
         <thead>
             {headerGroups.map(headerGroup => (
             <tr {...headerGroup.getHeaderGroupProps()}>
+                {selectable && <th></th>}
                 {headerGroup.headers.map(column => (
                 <th {...column.getHeaderProps()}>{column.render("Header")}
                     <div>{(column.canFilter && bFilter) ? column.render('Filter') : null}</div>
@@ -230,6 +234,15 @@ export default function Table({
             prepareRow(row);
             return (
                 <tr {...row.getRowProps()}>
+                {selectable && (
+                    <td>
+                        <input
+                            type="checkbox"
+                            checked={selectedIds.has(String(row.original.song_id))}
+                            onChange={() => onToggleRow(row.original.song_id)}
+                        />
+                    </td>
+                )}
                 {row.cells.map(cell => {
                     if (cell.column.id !== 'artist_name') {
                         return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
