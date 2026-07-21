@@ -1,38 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useFilters, useGlobalFilter, usePagination, useTable, useAsyncDebounce } from "react-table";
+import { useFilters, useGlobalFilter, usePagination, useTable } from "react-table";
 import { useNavigate } from 'react-router-dom';
 import {matchSorter} from 'match-sorter';
-
-// Define a default UI for filtering
-function GlobalFilter({
-  preGlobalFilteredRows,
-  globalFilter,
-  setGlobalFilter,
-}) {
-  const count = preGlobalFilteredRows.length
-  const [value, setValue] = React.useState(globalFilter)
-  const onChange = useAsyncDebounce(value => {
-    setGlobalFilter(value || undefined)
-  }, 200)
-
-  return (
-    <span>
-      Search:{' '}
-      <input
-        value={value || ""}
-        onChange={e => {
-          setValue(e.target.value);
-          onChange(e.target.value);
-        }}
-        placeholder={`${count} records...`}
-        style={{
-          fontSize: '1.1rem',
-          border: '0',
-        }}
-      />
-    </span>
-  )
-}
 
 // Define a default UI for filtering
 function DefaultColumnFilter({
@@ -121,8 +90,6 @@ export default function Table({
     previousPage,
     setPageSize,
     state: { pageIndex, pageSize },
-    preGlobalFilteredRows,
-    setGlobalFilter,
   } = useTable({
         columns,
         data,

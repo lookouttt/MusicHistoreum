@@ -77,6 +77,7 @@ const ChartNav = ({chart}) => {
 
     useLayoutEffect(() => {
         checkTimeframes();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [checkUpdateChartState]);
 
     return (
