@@ -97,6 +97,10 @@ Adding a new chart timeframe or query means adding/matching a corresponding SQL 
 
 **Apple Music playlist export (`src/features/appleMusicPlaylist/`):** lets a user turn a selection of chart rows into an Apple Music library playlist. `ChartCard` renders `AppleMusicPlaylistToolbar` only for the main chart page's Song charts (`bIncludeNav && chartType === 'Song'`) — album charts and the embedded/secondary chart views don't get it. Flow: `musicKitLoader` lazy-loads the MusicKit JS SDK from Apple's CDN → `musicKitAuth` fetches a developer token via `fetchAppleMusicDeveloperToken` (calling the server's `/apple-music/developer-token`) and prompts the user to authorize their Apple Music account → `CreatePlaylistModal` collects a playlist name and calls `createAppleMusicPlaylist`, which uses `songMatcher` to fuzzy-match each Billboard song/artist against Apple's catalog search (normalizing text and splitting out the primary artist from "Featuring"/"&"/etc. credits, since Billboard's `artist_name` often lists collaborators that Apple's catalog doesn't) before creating the playlist and batching tracks into it via the MusicKit API.
 
+### Planned features (see `pages/FeaturesPage.js`)
+
+The "Future Features" page lists roadmap items not yet built: chart search/filtering enhancements, richer song/album/artist metadata, user login with custom saved charts, playlist/streaming-service integration, a chart-history blog, and looking up a song's BPM via [GetSongBPM.com](https://getsongbpm.com).
+
 ### Known in-progress issues (see `pages/KnownIssues.js` and recent commit history)
 
 - Artist search is currently plain text matching, not ID-based — collaborations aren't properly associated across multiple artists yet.
