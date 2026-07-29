@@ -41,10 +41,7 @@ const FeaturesPage = () => {
                                                     Add a blog with interesting facts about chart history.
                                                 </li>
                                                 <li>
-                                                    Add the ability to find the BPM of a given song using{" "}
-                                                    <a href="https://getsongbpm.com" target="_blank" rel="noopener noreferrer">
-                                                        GetSongBPM.com
-                                                    </a>.
+                                                    Add the ability to find the BPM of a given song using GetSongBPM.com.
                                                 </li>
                                                 <li>
                                                     <Link to={`/Issues`}
