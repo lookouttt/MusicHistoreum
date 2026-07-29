@@ -19,6 +19,9 @@ const Footer = () => {
                     <li>
                         <ContactForm />
                     </li>
+                    <li>
+                        <a className='fa fa-music' href='https://getsongbpm.com' target='_blank' rel='noopener noreferrer'> GetSongBPM.com</a>
+                    </li>
                 </ul>
             </Col>
             <Col sm='6' className='text-center'>
