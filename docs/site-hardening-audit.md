@@ -13,8 +13,18 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
   works correctly behind Vercel.
 
 ### High
+- S11. The contact form's outbound mail is completely dead, not just unhardened. `mail
+  .musichistoreum.com` resolves to `216.198.79.1` (Vercel's apex IP, not a mail server) — the
+  A2 Hosting account that `MAIL_USER`/`MAIL_PASSWORD` and that hostname depended on is no
+  longer active. Confirmed by running `server/index.js` locally against real `.env`
+  credentials: `contactEmail.verify()`/`sendMail()` (`server/index.js:44`) time out after
+  ~21s with `ESOCKET` — no SMTP greeting ever arrives. `POST /contact` (`server/index.js:366`)
+  therefore always fails in production; the client (`ContactForm.js`) does show its error
+  state, just slowly enough that it reads as "clicking submit does nothing." This is a fully
+  broken user-facing feature, not a hardening gap.
 - S1. `POST /contact` has no rate limiting — a script can loop it to spam outbound mail
   through `mail.musichistoreum.com`, risking that domain's deliverability/blacklist status.
+  (Moot until S11 is fixed — a dead mail transport can't be abused for spam either.)
 
 ### Medium
 - S2. No rate limiting on any other public DB-backed read route (`/chartList`,
@@ -169,6 +179,14 @@ High
 - U2. The chart picker (`ChartMenu.js` → `SingleChartMenu.js` → `TimeFrameMenu.js`) is three
   nested accordions with no explanatory text — a new user must click through blind to learn
   the structure (Song/Album → specific chart → Week/Month/Year/Decade).
+- U24. Confirmed via screenshot: the header's five bottom-nav items (`Charts`, `Artists`,
+  `Top Songs by Year`, `Future Features`, `About the Site`) all render via the same
+  `NavLink className='nav-link'` in `Header.js`, but the boxed-button look (white text, border,
+  padding, hover color) is applied entirely through a hardcoded CSS ID selector list in
+  `Header.css` (`#bottomNavItems1, #bottomNavItems2, #bottomNavItems3, #bottomNavItems4`).
+  `Top Songs by Year` was given `id='bottomNavItems2b'` (to slot between Artists=2 and
+  Features=3) — which isn't in that selector list — so it silently falls back to reactstrap's
+  plain blue link style instead of matching its four siblings.
 
 Medium
 - U3. The "Artists" nav link (`components/Header.js`) routes to a magic sentinel value
@@ -178,6 +196,17 @@ Medium
   is the only way to retrace navigation between chart and artist views.
 - U5. `/Issues` (Known Issues) is a real route but reachable only via a link buried inside the
   Features page, not the header nav — most users won't find it.
+- U25. Regular chart tables (`Table.js`, used by `ChartCard`/`ArtistCard`) require picking a
+  page size from a "Show 10/20/30/40/50" dropdown and manually flipping through pages, unlike
+  the newer Annual Top Songs page's continuous-scroll list — raised directly during live-site
+  review as an inconsistency worth evaluating. Regular chart datasets are already fetched in
+  full in one response and are far smaller than Annual Top Songs' (Weekly ≤100 rows, even
+  Decade ranges are at most a few hundred to low-thousands of unique songs — nowhere near
+  Annual Top Songs' ~16-21k), so matching Annual Top Songs' full `react-window` virtualization
+  isn't necessary to fix this: rendering the complete already-fetched result set as one
+  continuously scrollable list would remove the manual "how many to show" decision and give one
+  consistent browsing pattern site-wide, without the added complexity server-side pagination
+  would require for a dataset this size.
 - U6. Search/filter (`Table.js`'s per-column filters) is invisible on the homepage
   (`bFilter={false}`) — no indication a search/filter feature exists until a user is already
   viewing a chart.
@@ -266,3 +295,47 @@ Low
 rendering blank; `CreatePlaylistModal` shows live progress counts during a long async job and a
 clear summary afterward — genuinely good UX for what's normally a hard case to get right; the
 contact form's Formik fields are properly `<label htmlFor>`-associated.
+
+### Visual Design Consistency
+
+Raised directly from live-site review: the user felt the site's per-page background-image
+approach reads as inconsistent, using `AnnualTopSongsPage`'s plain white background as the
+concrete example.
+
+High
+- U26. `AnnualTopSongsPage` was never wired into the per-page background-image system in
+  `App.css`. Every other page sets `data-urltype='X'` on its `.mh-background` section with a
+  matching `[data-urltype='X']::before { background-image: ... }` rule (`ChartPage`,
+  `HomePage`, `ArtistPage`, `FeaturesPage`, `AboutPage`, `KnownIssuesPage` all have one) — no
+  such rule exists for `AnnualTopSongsPage`, confirmed in `App.css`. The `::before` overlay
+  still applies (`filter: brightness(50%)`, fixed positioning) with nothing behind it, so the
+  page renders on a plain white background instead of the themed-photo treatment every other
+  page gets. Same "new page added, forgot to update the existing hardcoded selector list"
+  pattern as U24.
+
+Decision (not a quick fix)
+- U27. Beyond the immediate gap above: is a different themed photo per page (vinyl records, a
+  concert crowd, genre-specific photos, each dimmed 50% via a shared overlay) still the right
+  direction, or would a more visually consistent treatment — e.g. one shared background across
+  all pages, or a small, deliberately-reused set of treatments instead of one per page — read
+  as more cohesive? A design-direction call, not a mechanical fix; the existing `data-urltype`
+  mechanism supports either outcome once decided.
+
+### Apple Music Playlist Toolbar
+
+Found via direct visual review of the live chart page (screenshot), not code inspection alone
+— confirmed against `AppleMusicPlaylistToolbar.js` afterward.
+
+High
+- U22. `AppleMusicPlaylistToolbar.js`'s wrapping `<div>` has no background of its own and sits
+  directly on the page's photo background — reactstrap's `outline` buttons (designed for a
+  solid background) wash out and become hard to read against it. Confirmed in the same
+  screenshot: the custom-count `<input>`'s hardcoded `width: '70px'` is too narrow for its
+  "Custom" placeholder at the current font size, rendering as a visibly truncated "Custo".
+
+Medium
+- U23. The "Select top" control cluster (three preset buttons + a separate custom number input
+  + a separate "Apply" button) packs five discrete controls into one row with no visual
+  grouping, making it unclear which control does what at a glance. Recommend consolidating into
+  a single dropdown (`50 / 75 / 100 / All / Custom…`) that reveals one inline number input only
+  when "Custom…" is selected.
