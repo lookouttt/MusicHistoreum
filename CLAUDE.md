@@ -40,6 +40,7 @@ There is no configured server test script (`npm test` in `server/` just exits wi
 - `APPLE_TEAM_ID`, `APPLE_KEY_ID` — Apple Developer/MusicKit identifiers used to sign Apple Music developer tokens
 - `APPLE_PRIVATE_KEY_PATH` — path (relative to `server/`) to the `.p8` MusicKit private key file, e.g. `./keys/AuthKey_<KEY_ID>.p8`. The `server/keys/` directory is gitignored — never commit the `.p8` file.
 - `APPLE_PRIVATE_KEY` — alternative to `APPLE_PRIVATE_KEY_PATH`: the key's PEM contents directly (with `\n` for newlines), used on serverless platforms like Vercel where there's no local file to read. If neither Apple env var is set, the developer-token route just responds 503 rather than failing startup.
+- `APPLE_MUSIC_CLIENT_SECRET` — optional. `GET /apple-music/developer-token` is public and rate-limited per-IP (since a browser client can't hide a secret); if this is set and a request sends a matching `X-MH-Client-Secret` header, it's treated as a trusted non-browser caller (e.g. the native iOS app) and skips that rate limit. Unset by default — a no-op until a native client exists to use it.
 
 The server logs via `winston` to both `server/mh_server.log` (JSON file transport) and the console (colorized simple format).
 

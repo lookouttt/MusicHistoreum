@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const nodemailer = require("nodemailer");
 const winston = require("winston");
 const jwt = require("jsonwebtoken");
@@ -18,6 +19,11 @@ const corsOrigins = process.env.CORS_ORIGIN
     : ['http://localhost:3000'];
 
 //middleware
+
+// Required for express-rate-limit to see the real client IP (rather than Vercel's
+// edge/proxy address) when this app runs behind Vercel's serverless platform.
+app.set('trust proxy', 1);
+
 app.use(cors({ origin: corsOrigins }));
 app.use(express.json()); //req.body
 app.use("/", router);
@@ -92,6 +98,27 @@ const getAppleMusicDeveloperToken = () => {
     appleMusicDeveloperTokenExpiresAt = Date.now() + APPLE_MUSIC_TOKEN_TTL_SECONDS * 1000;
     return appleMusicDeveloperToken;
 };
+
+// The public web client can't hide a secret (it's a plain browser fetch, readable in the
+// bundle/Network tab), so a shared-secret header can't restrict it. What it *can* do is
+// throttle scripted scraping of this credential-backed route. APPLE_MUSIC_CLIENT_SECRET is
+// optional and unset by default; it exists for a future native (e.g. iOS) caller, which can
+// keep a secret with real (if not perfect) effectiveness and so gets to skip the public limit.
+const isTrustedAppleMusicClient = (req) =>
+    Boolean(process.env.APPLE_MUSIC_CLIENT_SECRET) &&
+    req.get('X-MH-Client-Secret') === process.env.APPLE_MUSIC_CLIENT_SECRET;
+
+const appleMusicDeveloperTokenLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: isTrustedAppleMusicClient,
+    handler: (req, res) => {
+        logger.warn(`Rate limit exceeded for /apple-music/developer-token from ${req.ip}`);
+        res.status(429).json({ error: "Too many requests. Please try again later." });
+    },
+});
 
 const escapeHtml = (str) => String(str).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;',
@@ -222,9 +249,107 @@ app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
     }
 });
 
+//get the top songs of each year across a fixed set of charts (annual_top_songs table)
+
+const ANNUAL_TOP_SONGS_CHARTS = {
+    'hot-100': 1,
+    'country-songs': 45,
+    'adult-contemporary': 43,
+    'alternative-airplay': 60,
+    'hot-mainstream-rock-tracks': 67,
+};
+
+// each sort key maps to one or more actual columns, applied together as a unit in the requested direction
+// (chart/rank use the "best-ever" columns derived per song by the grouped query below)
+const ANNUAL_TOP_SONGS_SORT_COLUMNS = {
+    chart: ['best_chart_name'],
+    artist: ['artist_name', 'song_title'],
+    rank: ['best_rank'],
+    title: ['song_title', 'artist_name'],
+};
+
+app.get("/annual-top-songs", async (req, res) => {
+    try {
+        const requestedCharts = req.query.chart
+            ? String(req.query.chart).split(',').filter((c) => c in ANNUAL_TOP_SONGS_CHARTS)
+            : Object.keys(ANNUAL_TOP_SONGS_CHARTS);
+        if (requestedCharts.length === 0) {
+            return res.status(422).json({ error: "Invalid chart filter." });
+        }
+        const chartIds = requestedCharts.map((c) => ANNUAL_TOP_SONGS_CHARTS[c]);
+
+        const seen = new Set();
+        const sortLevels = String(req.query.sort || 'rank:asc')
+            .split(',')
+            .map((part) => {
+                const [field, dir] = part.split(':');
+                return { field, dir: dir === 'desc' ? 'DESC' : 'ASC' };
+            })
+            .filter(({ field }) => ANNUAL_TOP_SONGS_SORT_COLUMNS[field] && !seen.has(field) && seen.add(field));
+        if (sortLevels.length === 0) {
+            sortLevels.push({ field: 'rank', dir: 'ASC' });
+        }
+        const orderClause = sortLevels
+            .flatMap(({ field, dir }) => ANNUAL_TOP_SONGS_SORT_COLUMNS[field].map((col) => `${col} ${dir}`))
+            .join(', ');
+
+        // "all" bypasses LIMIT/OFFSET entirely -- used by "Select All" on the client, which
+        // needs every matching song_id (not just a page of them) to populate a selection.
+        // annual_top_songs is a bounded, materialized table (~16-21k rows total across all
+        // charts), so returning everything matching a filter in one response is fine.
+        const fetchAll = req.query.limit === 'all';
+        const limit = fetchAll ? null : Math.min(parseInt(req.query.limit, 10) || 50, 200);
+        const offset = fetchAll ? 0 : (parseInt(req.query.offset, 10) || 0);
+
+        const params = [chartIds];
+        let where = 'WHERE chart_id = ANY($1)';
+        if (req.query.yearFrom) {
+            params.push(parseInt(req.query.yearFrom, 10));
+            where += ` AND year >= $${params.length}`;
+        }
+        if (req.query.yearTo) {
+            params.push(parseInt(req.query.yearTo, 10));
+            where += ` AND year <= $${params.length}`;
+        }
+        let limitClause = '';
+        if (!fetchAll) {
+            params.push(limit, offset);
+            limitClause = `LIMIT $${params.length - 1} OFFSET $${params.length}`;
+        }
+
+        const sql = `WITH matching_appearances AS (
+                         SELECT * FROM annual_top_songs ${where}
+                     ),
+                     grouped AS (
+                         SELECT
+                             song_id, song_title, artist_id, artist_name,
+                             json_agg(json_build_object(
+                                 'chart_id', chart_id, 'chart_name', chart_name,
+                                 'year', year, 'year_rank', year_rank, 'is_year_complete', is_year_complete
+                             ) ORDER BY year_rank ASC, year DESC) AS appearances,
+                             MIN(year_rank) AS best_rank,
+                             (array_agg(chart_name ORDER BY year_rank ASC))[1] AS best_chart_name,
+                             bool_and(is_year_complete) AS all_complete
+                         FROM matching_appearances
+                         GROUP BY song_id, song_title, artist_id, artist_name
+                     )
+                     SELECT *, COUNT(*) OVER() AS total_count
+                     FROM grouped
+                     ORDER BY ${orderClause}
+                     ${limitClause}`;
+
+        const result = await pool.query(sql, params);
+        const totalCount = result.rows[0]?.total_count ? parseInt(result.rows[0].total_count, 10) : 0;
+        res.json({ rows: result.rows, totalCount, limit, offset });
+    } catch (err) {
+        logger.error(err.message);
+        res.status(500).json({ error: "Failed to retrieve annual top songs." });
+    }
+});
+
 //get a signed Apple Music developer token (MusicKit JS uses this to authorize the end user client-side)
 
-app.get("/apple-music/developer-token", (req, res) => {
+app.get("/apple-music/developer-token", appleMusicDeveloperTokenLimiter, (req, res) => {
     if (!appleMusicPrivateKey) {
         return res.status(503).json({ error: "Apple Music integration is not configured." });
     }
