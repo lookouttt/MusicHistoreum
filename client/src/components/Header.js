@@ -60,6 +60,11 @@ const Header = () => {
                                 </NavLink>
                             </NavItem>
                             <NavItem>
+                                <NavLink className='nav-link' to='/AnnualTopSongs' id='bottomNavItems2b'>
+                                    Top Songs by Year
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
                                 <NavLink className='nav-link' to='/Features' id='bottomNavItems3'>
                                     Future Features
                                 </NavLink>

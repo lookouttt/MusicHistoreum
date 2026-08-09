@@ -12,6 +12,7 @@ import ArtistPage from './pages/ArtistPage';
 import FeaturesPage from './pages/FeaturesPage';
 import AboutPage from './pages/AboutPage';
 import KnownIssuesPage from './pages/KnownIssues';
+import AnnualTopSongsPage from './pages/AnnualTopSongsPage';
 import fetchChartList from './services/fetchChartList';
 import './features/chartMenu/chartsMenusSlice.js'
 import { updateLastDate } from './features/chartMenu/chartsMenusSlice.js';
@@ -62,6 +63,7 @@ function App() {
             <Routes>
                 <Route path='/' element={<HomePage />}/>
                 <Route path='/Chart' element={<ChartPage />}/>
+                <Route path='/AnnualTopSongs' element={<AnnualTopSongsPage />}/>
                 <Route path='/Artist/:artist' element={<ArtistPage />}/>
                 <Route path='/Features' element={<FeaturesPage />}/>
                 <Route path='/About' element={<AboutPage />}/>

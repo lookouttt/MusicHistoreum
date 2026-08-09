@@ -4,11 +4,24 @@ import CreatePlaylistModal from './CreatePlaylistModal';
 
 const TOP_N_PRESETS = [50, 75, 100];
 
-const AppleMusicPlaylistToolbar = ({ data, selectedIds, onSelectTopN, onClear, defaultPlaylistName }) => {
+const AppleMusicPlaylistToolbar = ({
+    data, selectedIds, onSelectTopN, onClear, defaultPlaylistName,
+    showTopNPresets = true, onSelectAll, selectAllLoading = false,
+}) => {
     const [customN, setCustomN] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
 
-    const selectedSongs = data.filter((row) => selectedIds.has(String(row.song_id)));
+    // a song can appear on more than one row (e.g. multiple years/charts on the
+    // annual top songs page) -- dedupe by song_id so it's only added to the
+    // playlist once, keeping whichever row is encountered first.
+    const selectedSongsById = new Map();
+    data.forEach((row) => {
+        const id = String(row.song_id);
+        if (selectedIds.has(id) && !selectedSongsById.has(id)) {
+            selectedSongsById.set(id, row);
+        }
+    });
+    const selectedSongs = Array.from(selectedSongsById.values());
 
     const applyCustomN = () => {
         const n = parseInt(customN, 10);
@@ -18,23 +31,32 @@ const AppleMusicPlaylistToolbar = ({ data, selectedIds, onSelectTopN, onClear, d
 
     return (
         <div className='appleMusicToolbar' style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0' }}>
-            <span>Select top:</span>
-            {TOP_N_PRESETS.map((n) => (
-                <Button key={n} size='sm' outline onClick={() => onSelectTopN(n)}>
-                    {n}
+            {showTopNPresets && (
+                <>
+                    <span>Select top:</span>
+                    {TOP_N_PRESETS.map((n) => (
+                        <Button key={n} size='sm' outline onClick={() => onSelectTopN(n)}>
+                            {n}
+                        </Button>
+                    ))}
+                    <input
+                        type='number'
+                        min='1'
+                        placeholder='Custom'
+                        value={customN}
+                        onChange={(e) => setCustomN(e.target.value)}
+                        style={{ width: '70px' }}
+                        className='form-control form-control-sm'
+                    />
+                    <Button size='sm' outline onClick={applyCustomN}>Apply</Button>
+                </>
+            )}
+            {onSelectAll && (
+                <Button size='sm' outline disabled={selectAllLoading} onClick={onSelectAll}>
+                    {selectAllLoading ? 'Selecting all…' : 'Select all'}
                 </Button>
-            ))}
-            <input
-                type='number'
-                min='1'
-                placeholder='Custom'
-                value={customN}
-                onChange={(e) => setCustomN(e.target.value)}
-                style={{ width: '70px' }}
-                className='form-control form-control-sm'
-            />
-            <Button size='sm' outline onClick={applyCustomN}>Apply</Button>
-            <Button size='sm' outline onClick={onClear}>Clear selection</Button>
+            )}
+            <Button size='sm' outline onClick={onClear}>Deselect all</Button>
             <span>Selected: {selectedIds.size} song{selectedIds.size === 1 ? '' : 's'}</span>
             <Button
                 size='sm'

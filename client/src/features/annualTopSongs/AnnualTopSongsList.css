@@ -1,0 +1,100 @@
+.annualTopSongsControls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.annualTopSongsControls__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.annualTopSongsControls__label {
+    font-weight: bold;
+}
+
+.annualTopSongsControls__count {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.annualTopSongsControls__checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+.annualTopSongsControls__yearInput {
+    width: 90px;
+}
+
+.annualTopSongsListHeader,
+.annualTopSongsRow {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr 1fr 16rem;
+    align-items: start;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #ddd;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.annualTopSongsListHeader {
+    align-items: center;
+    font-weight: bold;
+}
+
+.annualTopSongsRow--loading {
+    color: #888;
+}
+
+.annualTopSongsRow__title,
+.annualTopSongsRow__artist {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.annualTopSongsRow__artist {
+    cursor: pointer;
+    color: #483d8b;
+    text-decoration: underline;
+    align-self: start;
+}
+
+.annualTopSongsRow__appearances {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-self: start;
+    min-width: 0;
+}
+
+.annualTopSongsRow__appearanceLine {
+    display: grid;
+    grid-template-columns: 1fr 3.5rem 3rem;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 22px;
+    height: 22px;
+}
+
+.annualTopSongsRow__appearanceChart,
+.annualTopSongsRow__appearanceYear,
+.annualTopSongsRow__appearanceRank {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.annualTopSongsRow__appearanceRank {
+    font-weight: bold;
+}
