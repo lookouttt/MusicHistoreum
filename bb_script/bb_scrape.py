@@ -1,8 +1,11 @@
 import billboard
 import time
 import datetime
+import os
 import psycopg2
 import logging
+
+from annual_top_songs import populate_annual_top_songs
 
 logging.basicConfig(filename='billboard.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 default_date = '1950-01-01'
@@ -12,6 +15,10 @@ DB_CONN_STRING = "dbname=BillboardData user=postgres password=1202ThurnRidge"
 conn = psycopg2.connect(DB_CONN_STRING)
 retrieve_Ids = False
 active_lists = []
+# optional comma-separated chart_name filter for a one-off scoped run, e.g.
+# BB_SCRAPE_ONLY="christian-airplay,jazz-songs" python bb_scrape.py
+# unset (the normal/automatic case) processes every included=true chart, same as always
+TARGET_CHARTS = set(os.environ['BB_SCRAPE_ONLY'].split(',')) if os.environ.get('BB_SCRAPE_ONLY') else None
 
 
 def ensure_connection():
@@ -66,7 +73,7 @@ def getChartList():
     cur.execute(list_query)
     chartRows = cur.fetchall()
     for row in chartRows:
-        if (row[3]):
+        if row[3] and (TARGET_CHARTS is None or row[1] in TARGET_CHARTS):
             add_row = (row[0], row[1], row[2])
             active_lists.append(add_row)
     cur.close()
@@ -200,6 +207,14 @@ def updateChartList(ucdate, ucndate, ucid):
     cur.execute(chart_list_query, chart_entry)
     conn.commit()
 
+def updateNextDate(undate, unid):
+    # Advances only the resume cursor (next_date), leaving last_date untouched -- used when a
+    # week comes back empty so we don't claim real data coverage through a date that had none.
+    cur = conn.cursor()
+    next_date_query = """ UPDATE chart_list SET next_date = %s WHERE chart_id = %s """
+    cur.execute(next_date_query, (undate, unid))
+    conn.commit()
+
 def updateChartDateItemCount(cdateid):
     cur = conn.cursor()
     count_query = """ SELECT count(*) FROM chart_entries WHERE chart_id = %s """
@@ -248,6 +263,8 @@ else:
                 getSong = False
                 getAlbum = True
             last_date = False
+            consecutive_empty = 0
+            EMPTY_WEEK_RETRY_LIMIT = 8  # tolerate a handful of isolated missing weeks before giving up on this chart for the run
             while not last_date:
                 skip_chart = False
                 entries_entered = 0
@@ -301,13 +318,26 @@ else:
                     print ("%d entries entered for %s chart for the date %s" % (entries_entered, chart_name, chart_date))
 
                     if items_in_chart == 0:
-                        # Billboard has no entries for this date yet (e.g. not published), as
-                        # opposed to entries_entered==0 meaning they were all duplicates of
-                        # already-scraped data. Don't advance the cursor past a chart with no
-                        # real data - retry this same date on the next run.
-                        print ("No entries found for %s on %s - not yet published, will retry later" % (chart_name, chart_date))
-                        last_date = True
+                        # Billboard has no entries for this date. This is usually genuinely
+                        # not-yet-published (chart_date is near today), but can also be an
+                        # isolated one-off gap in Billboard's own archive for an otherwise-fine
+                        # chart -- confirmed 2026-08-07: alternative-airplay returned 0 items for
+                        # 2025-07-19 specifically, while every surrounding week (including weeks
+                        # before AND after) had 40 items. Retry a few subsequent weeks before
+                        # concluding this chart is really caught up, so one missing week doesn't
+                        # permanently wall off everything after it. Deliberately does NOT call
+                        # updateChartList here -- that would set last_date to a date with no real
+                        # data, misrepresenting how far this chart's actual coverage extends.
+                        consecutive_empty += 1
+                        if consecutive_empty > EMPTY_WEEK_RETRY_LIMIT:
+                            print ("No entries found for %s on %s after %d consecutive empty weeks - not yet published, will retry later" % (chart_name, chart_date, EMPTY_WEEK_RETRY_LIMIT))
+                            last_date = True
+                        else:
+                            next_attempt = chart_date + datetime.timedelta(days=7)
+                            print ("No entries found for %s on %s - trying %s next (%d/%d empty weeks so far)" % (chart_name, chart_date, next_attempt, consecutive_empty, EMPTY_WEEK_RETRY_LIMIT))
+                            updateNextDate(next_attempt, current_chart_id)
                     else:
+                        consecutive_empty = 0
                         try:
                             if ((hasattr(chart, 'nextDate')) and (chart.nextDate == '')) or (not hasattr(chart, 'nextDate')):
                                 print ("This is the last chart for %s" % chart_name)
@@ -321,6 +351,7 @@ else:
                             last_date = True
                     time.sleep(10)
             last_chart_date = True;
+    populate_annual_top_songs(conn)
 conn.close()
 
 

@@ -54,6 +54,15 @@ FULL_REFRESH_TABLES = {
         "chart_id", "chart_name", "first_date", "last_date", "next_date", "chart_type", "included", "online"
     ],
     "my_artist_id": ["artist_id"],
+    # annual_top_songs.py deletes and reinserts rows per (chart_id, year) rather than only ever
+    # appending, so this rides the same truncate+reload path as chart_list/my_artist_id -- cheap
+    # since the table is small (~16-21k rows), not the batched-resume path used for the big
+    # append-only tables above.
+    "annual_top_songs": [
+        "annual_top_songs_id", "chart_id", "chart_name", "year", "year_rank", "song_id",
+        "song_title", "artist_id", "artist_name", "peak", "points", "weeks",
+        "is_year_complete", "generated_at",
+    ],
 }
 
 
