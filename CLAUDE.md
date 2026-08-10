@@ -86,6 +86,8 @@ Adding a new chart timeframe or query means adding/matching a corresponding SQL 
 
 **Aiven storage note:** the Aiven Postgres plan has a real, fairly tight disk quota — the service automatically flips to read-only when it's exceeded (confirmed 2026-08-10: adding a ~107MB index on `chart_entries`, a ~4.85M-row table, was enough to trigger this). Check the service's disk usage in the Aiven console before adding any sizeable index or bulk data to production.
 
+There are deliberately no foreign key constraints anywhere in this schema (`bb_scrape.py`'s lookup-or-insert flow depends on that friction-free insert path — see `docs/aiven-migration-notes.md`). `db/queries/orphan_row_audit.sql` is a manual substitute: run it periodically (e.g. after a scrape run) to check for orphaned rows the database itself wouldn't catch. Every query in it should return zero rows in a healthy database.
+
 ### Client: feature-sliced Redux Toolkit app
 
 - `src/features/<domain>/` — one Redux slice + its UI per domain (`chart`, `chartMenu`, `artist`, `contact`, `counter`). Slices are combined in `src/app/store.js`.
