@@ -1,7 +1,7 @@
 SavedFiles
 Other_Files
 client/build.zip
-server/mh_server.log
+server/*.log
 .vscode/settings.json
 bb_script/__pycache__/
 bb_script/billboard.log

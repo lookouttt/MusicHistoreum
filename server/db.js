@@ -8,7 +8,8 @@ const pool = new Pool({
     host: process.env.PG_HOST,
     port: process.env.PG_PORT,
     database: process.env.PG_DATABASE,
-    ssl: process.env.PG_SSL === 'true' ? { rejectUnauthorized: false } : false
+    ssl: process.env.PG_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    statement_timeout: 10000,
 });
 
 pool.on('error', (err) => {

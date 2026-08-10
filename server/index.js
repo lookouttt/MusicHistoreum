@@ -2,17 +2,20 @@ require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 const cors = require("cors");
+const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const nodemailer = require("nodemailer");
 const winston = require("winston");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
-const { combine, timestamp, json } = winston.format;
+const { combine, timestamp, json, splat } = winston.format;
 
 const app = express();
 const pool = require("./db");
 const dayjs = require("dayjs");
+const customParseFormat = require("dayjs/plugin/customParseFormat");
+dayjs.extend(customParseFormat);
 
 const corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
@@ -24,13 +27,14 @@ const corsOrigins = process.env.CORS_ORIGIN
 // edge/proxy address) when this app runs behind Vercel's serverless platform.
 app.set('trust proxy', 1);
 
+app.use(helmet());
 app.use(cors({ origin: corsOrigins }));
 app.use(express.json()); //req.body
 app.use("/", router);
 
 const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'info',
-    format: combine(timestamp(), json()),
+    format: combine(splat(), timestamp(), json()),
     transports: [
         new winston.transports.File({
             filename: 'mh_server.log',
@@ -121,6 +125,20 @@ const appleMusicDeveloperTokenLimiter = rateLimit({
     },
 });
 
+// Shared limiter for the public, unauthenticated DB-backed read routes (chart list, artist
+// lookups, chart data, annual top songs) - generous enough not to bother a real browsing
+// session, just a ceiling against unbounded scripted scraping.
+const publicReadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+        logger.warn(`Rate limit exceeded for ${req.path} from ${req.ip}`);
+        res.status(429).json({ error: "Too many requests. Please try again later." });
+    },
+});
+
 // A real visitor submits this form at most once or twice; there's no legitimate caller that
 // needs more than a handful of submissions per hour, so this is stricter than the dev-token
 // limiter above and has no shared-secret bypass.
@@ -176,7 +194,7 @@ app.get("/testConnect", (req, res) => {
 
 
 
-app.get("/chartList", async(req, res) => {
+app.get("/chartList", publicReadLimiter, async(req, res) => {
     try {
         const allCharts = await pool.query("SELECT * FROM chart_list where online=true");
         res.json(allCharts.rows);
@@ -186,7 +204,7 @@ app.get("/chartList", async(req, res) => {
     }
 });
 
-app.get("/artist/list/:start_char", async(req, res) => {
+app.get("/artist/list/:start_char", publicReadLimiter, async(req, res) => {
     try {
         const startChar = req.params.start_char;
         logger.info('trying to get artist list: ', startChar);
@@ -202,10 +220,13 @@ app.get("/artist/list/:start_char", async(req, res) => {
 
 //get artist chart history
 
-app.get("/artist/:dartist/:dtype", async(req, res) => {
+app.get("/artist/:dartist/:dtype", publicReadLimiter, async(req, res) => {
     try {
         const artistName = req.params.dartist;
         const queryType = req.params.dtype;
+        if (queryType !== 'songs' && queryType !== 'albums') {
+            return res.status(422).json({ error: "Invalid artist data type. Must be 'songs' or 'albums'." });
+        }
         logger.info(req.params);
         let artist;
         if (queryType === 'songs')
@@ -221,33 +242,42 @@ app.get("/artist/:dartist/:dtype", async(req, res) => {
 
 //get a specific chart for a given range
 
-app.get("/chart/:cid/:ctype/:ctf/:cdate", async(req, res) => {
+const WEEKLY_CHART_FUNCTIONS = { Song: 'get_weekly_song_chart', Album: 'get_weekly_album_chart' };
+const RANGE_CHART_FUNCTIONS = { Song: 'get_range_song_chart', Album: 'get_range_album_chart' };
+
+app.get("/chart/:cid/:ctype/:ctf/:cdate", publicReadLimiter, async(req, res) => {
     try {
         const chartId = req.params.cid;
         const chartType = req.params.ctype;
         const chartTime = req.params.ctf;
         const chartDate = req.params.cdate;
+
+        if (!dayjs(chartDate, 'YYYY-MM-DD', true).isValid()) {
+            return res.status(422).json({ error: "Invalid chart date. Date must be in YYYY-MM-DD format." });
+        }
         const startDate = dayjs(chartDate);
         logger.info(req.params);
         if (chartType === 'Song' || chartType === 'Album') {
+            const weeklyFn = WEEKLY_CHART_FUNCTIONS[chartType];
+            const rangeFn = RANGE_CHART_FUNCTIONS[chartType];
             if (chartTime === 'Week') {
-                const chart = await pool.query(`SELECT get_weekly_${chartType}_chart($1, $2)`, [chartId, chartDate]);
+                const chart = await pool.query(`SELECT ${weeklyFn}($1, $2)`, [chartId, chartDate]);
                 res.json(chart.rows);
             }
             else if (chartTime === 'Month') {
                 const endDate = dayjs(startDate).endOf('month');
-                const chart = await pool.query(`SELECT get_range_${chartType}_chart($1, $2, $3)`, [chartId, startDate, endDate]);
+                const chart = await pool.query(`SELECT ${rangeFn}($1, $2, $3)`, [chartId, startDate, endDate]);
                 res.json(chart.rows);
             }
             else if (chartTime === 'Year') {
                 const endDate = dayjs(startDate).endOf('year');
-                const chart = await pool.query(`SELECT get_range_${chartType}_chart($1, $2, $3)`, [chartId, startDate, endDate]);
+                const chart = await pool.query(`SELECT ${rangeFn}($1, $2, $3)`, [chartId, startDate, endDate]);
                 res.json(chart.rows);
             }
             else if (chartTime === 'Decade') {
                 const endOfYear = dayjs(startDate).endOf('year');
                 const endDate = dayjs(endOfYear).add(9,'year');
-                const chart = await pool.query(`SELECT get_range_${chartType}_chart($1, $2, $3)`, [chartId, startDate, endDate]);
+                const chart = await pool.query(`SELECT ${rangeFn}($1, $2, $3)`, [chartId, startDate, endDate]);
                 res.json(chart.rows);
             }
             else {
@@ -283,7 +313,7 @@ const ANNUAL_TOP_SONGS_SORT_COLUMNS = {
     title: ['song_title', 'artist_name'],
 };
 
-app.get("/annual-top-songs", async (req, res) => {
+app.get("/annual-top-songs", publicReadLimiter, async (req, res) => {
     try {
         const requestedCharts = req.query.chart
             ? String(req.query.chart).split(',').filter((c) => c in ANNUAL_TOP_SONGS_CHARTS)
