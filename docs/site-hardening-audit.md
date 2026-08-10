@@ -310,6 +310,42 @@ framing as aspirational, not current state.
   references via repo-wide grep) as future candidates; CRA only bundles what's referenced, so
   bundled image payload dropped from ~1.28MB to ~406KB. Verified with a real production build.
 
+### Done this pass (Phase 7)
+- U14. Added reactstrap's `NavbarToggler` + `Collapse` (local `isOpen` state) to both `<Navbar>`s
+  in `Header.js`. Also added `dark` to the bottom nav (previously undeclared) so its toggler icon
+  renders in white against the `#483d8b` background instead of Bootstrap's default dark icon.
+- U13. Fixed the two root causes: `ChartCard.js`'s `hiddenColumns` decision now reads from a real
+  `isNarrowScreen` state kept in sync by a `resize` listener (with cleanup) instead of reading
+  `window.innerWidth` once at render time — it now actually reacts to rotation/resize, which was
+  the concrete bug. Added real `@media` breakpoints for the other verified narrow-viewport
+  problems found by direct inspection: `App.css`'s `background-attachment: fixed` (known to be
+  unreliable/laggy on mobile Safari) falls back to `scroll` under 768px; `Header.css`'s site-title
+  shrinks under 480px so "Music Historeum" doesn't overflow its fixed-height banner;
+  `ArtistCard.css`'s hardcoded `min-width: 340px` (wider than a 320px-class phone viewport) drops
+  under 400px.
+- U7. Removed `ChartPage.js`'s `window.onresize`/`largeScreen` re-navigation hack entirely rather
+  than just preserving state before navigating — it existed only to force a re-render so
+  `ChartCard` would recompute `hiddenColumns` at the new width, which U13's fix now does directly
+  and correctly. No workaround needed once the root cause was fixed.
+- U15. `Table.js`'s `<table>` is now wrapped in a `<div style={{ overflowX: 'auto' }}>`, so wide
+  chart tables scroll horizontally on narrow viewports instead of overflowing the page.
+- U16. Added a `@media (max-width: 768px)` override in `AnnualTopSongsList.css` that shrinks the
+  grid's fixed `16rem` last column to `minmax(7rem, 10rem)` (and the appearance sub-grid to
+  match) — kept the same row structure/height on purpose, since the virtualized list
+  (`AnnualTopSongsListBody.js`) computes row heights in JS to match this CSS exactly; changing
+  the layout to stack vertically instead would have required duplicating that breakpoint logic
+  in JS too.
+- U25. Removed `usePagination` from `Table.js` entirely — dropped the page-size dropdown and
+  page-flip button row, and the now-dead `.pagination`/`.pagination2` CSS from `ChartStyles.js`/
+  `ArtistStyles.js`. Rows now render directly from react-table's unpaginated `rows`. One
+  dependency found and preserved during implementation, not called out in the original finding:
+  `HomePage.js`'s two chart previews relied on `usePagination`'s `pageSize` as a side-channel
+  "show only the first N rows" cap (`bPage={false}` just hid the controls, but the slice still
+  applied) — replaced with an explicit `maxRows` prop on `Table.js` so the homepage previews
+  still cap to 10 rows without reintroducing pagination machinery to do it.
+- U21. Moot per the plan's own note — table pagination buttons no longer exist after U25, so
+  there's nothing left to resize for touch targets.
+
 ### Navigation & Information Architecture
 
 High
@@ -333,24 +369,9 @@ Medium
   is the only way to retrace navigation between chart and artist views.
 - U5. `/Issues` (Known Issues) is a real route but reachable only via a link buried inside the
   Features page, not the header nav — most users won't find it.
-- U25. Regular chart tables (`Table.js`, used by `ChartCard`/`ArtistCard`) require picking a
-  page size from a "Show 10/20/30/40/50" dropdown and manually flipping through pages, unlike
-  the newer Annual Top Songs page's continuous-scroll list — raised directly during live-site
-  review as an inconsistency worth evaluating. Regular chart datasets are already fetched in
-  full in one response and are far smaller than Annual Top Songs' (Weekly ≤100 rows, even
-  Decade ranges are at most a few hundred to low-thousands of unique songs — nowhere near
-  Annual Top Songs' ~16-21k), so matching Annual Top Songs' full `react-window` virtualization
-  isn't necessary to fix this: rendering the complete already-fetched result set as one
-  continuously scrollable list would remove the manual "how many to show" decision and give one
-  consistent browsing pattern site-wide, without the added complexity server-side pagination
-  would require for a dataset this size.
 - U6. Search/filter (`Table.js`'s per-column filters) is invisible on the homepage
   (`bFilter={false}`) — no indication a search/filter feature exists until a user is already
   viewing a chart.
-
-Low
-- U7. `ChartPage.js`'s `window.onresize` force-navigates back to `/Chart` on breakpoint
-  crossing, which can silently reset in-progress filter/pagination state.
 
 ### Accessibility
 
@@ -361,24 +382,7 @@ screen-reader and sighted mouse users can tell it's interactive.
 
 ### Responsive Design
 
-High
-- U13. Zero `@media` queries exist anywhere in the client (confirmed via repo-wide search). The
-  only screen-size handling is two one-off `window.innerWidth` checks (`ChartCard.js`,
-  `ChartPage.js`) that run once at mount and never react to resize/rotation — this contradicts
-  CLAUDE.md's "mobile layout is an ongoing effort" note; whatever that effort produced isn't
-  reflected in the CSS today.
-- U14. `Header.js`'s `<Navbar expand='md'>` never pairs with a `NavbarToggler`/`Collapse`
-  (confirmed: neither is imported or used anywhere in the file) — reactstrap has no way to
-  collapse the nav below the `md` breakpoint, so on a phone all nav items (Charts dropdown,
-  Artists, Top Songs by Year, Features, About) render inline/stacked permanently rather than
-  behind a hamburger menu.
-- U15. `Table.js` renders a plain `<table>` with no horizontal-scroll wrapper — a 7-9 column
-  chart table has no way to be usable on a narrow viewport other than overflowing with no
-  visible scroll cue.
-
-Medium
-- U16. `AnnualTopSongsList`'s CSS grid (`AnnualTopSongsList.css`) uses fixed-width columns
-  (including a fixed `16rem` last column) with no narrow-screen fallback.
+All findings from this section (U13, U14, U15, U16) are done — see "Done this pass" above.
 
 ### Feedback States & Forms
 
@@ -396,8 +400,6 @@ Medium
 Low
 - U20. `CreatePlaylistModal`'s post-run unmatched-songs list shows only titles, with no reason
   each one failed to match.
-- U21. Table pagination controls (`«`, `‹`, `›`, `»`) are small, unstyled buttons with no
-  touch-target sizing considered for mobile.
 
 **Strengths worth preserving:** `ChartCard`/`ArtistCard`/`AnnualTopSongsList`/
 `CreatePlaylistModal` all handle loading, error, and empty states explicitly rather than

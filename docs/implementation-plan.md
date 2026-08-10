@@ -30,7 +30,12 @@ U27's background-direction decision was delegated to an Opus 5 subagent per the 
 choice, working in an isolated git worktree; its result was reviewed and merged in directly. Two
 findings turned out worse under direct measurement than the original audit guessed: U8's
 `aria-label` fix (react-datepicker doesn't actually forward that prop) and U12's nav-hover
-contrast (2.18:1 measured, not just the `#888` gray the audit flagged as "likely").
+contrast (2.18:1 measured, not just the `#888` gray the audit flagged as "likely"). **Phase 7 is
+complete** (`U14`, `U13`, `U7`, `U15`, `U16`, `U25`, `U21` all done) — verified via a real
+production build. U25's pagination removal surfaced one real dependency the original finding
+didn't call out: `HomePage.js`'s chart previews were using `usePagination`'s `pageSize` as an
+undocumented "cap to N rows" mechanism, which needed an explicit replacement (`maxRows`) rather
+than just deleting the pagination code outright.
 
 ## How to use this
 
@@ -82,7 +87,6 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 7 | Responsive design | U14, U13, U7, U15, U16, U25, U21 |
 | 8 | Navigation/IA & forms polish | U2, U24, U3, U4, U5, U6, U17, U18, C10, U19, U20, U23 |
 
 Phases 1-4 (server/DB/Python) touch systems only you can access (Aiven, credentials) or
@@ -308,35 +312,36 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
   shares `vinyl-1595847.jpg` with the other data/chart pages in `App.css`, closing the missing-rule
   gap. Bundled image payload dropped from ~1.28MB to ~406KB as a side effect of the consolidation.
   Verified with a real production build (`npm run build`, no new warnings).
-- **U14** *(Phase 7, do first in this phase)* — Add reactstrap's `NavbarToggler` + `Collapse`
-  (with local `isOpen` state) to both `<Navbar>`s in `Header.js` — standard reactstrap
-  collapsible-navbar pattern, no new dependency needed.
-- **U13** *(Phase 7)* — Add real `@media` breakpoints (e.g. `768px`) starting with `Header.css`,
-  `App.css`, and the chart/artist table styles. Where JS currently branches on
-  `window.innerWidth` once at mount (`ChartCard.js`, `ChartPage.js`), prefer moving that logic
-  into CSS (e.g. hide columns via a class + media query instead of excluding them in JS); if it
-  has to stay in JS, add a `resize` listener with cleanup so it reacts to rotation/resize.
-- **U7** *(Phase 7, sequence after U13)* — `ChartPage.js`'s `window.onresize` re-navigation to
-  `/Chart` was likely a workaround for the exact problem U13 fixes properly — re-evaluate once
-  U13 lands; if still needed, make it preserve current filter/pagination state before
-  navigating instead of discarding it.
-- **U15** *(Phase 7)* — Wrap `Table.js`'s `<table>` in a `<div style={{overflowX: 'auto'}}>` (or
-  equivalent CSS class) so wide tables scroll horizontally on narrow viewports.
-- **U16** *(Phase 7)* — Add a narrow-viewport `@media` override in `AnnualTopSongsList.css` that
-  switches the fixed-width grid columns to a flexible layout (`minmax()`/`fr` units, or stacking
-  the appearance sub-grid vertically below a breakpoint).
-- **U25** *(Phase 7)* — In `Table.js`, remove `usePagination` and the "Show 10/20/30/40/50"
-  page-size dropdown + page-flip button row; render the full fetched row set directly instead
-  of the paginated `page` slice react-table currently exposes. Keep `useFilters`/
-  `useGlobalFilter` as-is — they already operate on the full dataset regardless of pagination.
-  Verify the largest realistic case (a full Decade range chart) still renders smoothly with no
-  page-size ceiling, and confirm nothing else (e.g. `ChartCard.js`'s `hiddenColumns` logic)
-  depends on `pageIndex`/`pageSize` state being present. Sequenced here, before **U21**, since
-  it removes the pagination buttons U21 would otherwise resize.
-- **U21** *(Phase 7, skip if U25 above is implemented)* — Increase `Table.js`'s pagination
-  button `min-width`/`min-height`/padding to roughly 44×44px (standard minimum touch target),
-  especially for mobile. This becomes moot once U25 lands, since there are no pagination
-  buttons left to size — only do this one if U25 is deferred or rejected.
+- **U14** *(Phase 7, done)* — Added reactstrap's `NavbarToggler` + `Collapse` (local `isOpen`
+  state) to both `<Navbar>`s in `Header.js`. Also added `dark` to the bottom nav, which was
+  previously undeclared, so its toggler icon renders in white against the `#483d8b` background.
+- **U13** *(Phase 7, done)* — Fixed both root-cause pieces: `ChartCard.js`'s `hiddenColumns`
+  decision now comes from real React state (`isNarrowScreen`) kept current by a `resize`
+  listener with cleanup, instead of reading `window.innerWidth` once per render. Added real
+  `@media` breakpoints for the other concrete narrow-viewport problems found by direct
+  inspection: `App.css` (`background-attachment: fixed` → `scroll` under 768px, since fixed
+  attachment is known to be unreliable on mobile Safari), `Header.css` (site-title font-size
+  shrinks under 480px so it doesn't overflow its fixed-height banner), `ArtistCard.css`
+  (`min-width: 340px` — wider than a 320px-class phone viewport — drops under 400px).
+- **U7** *(Phase 7, done)* — Once U13 fixed the actual bug, `ChartPage.js`'s `window.onresize`/
+  `largeScreen` re-navigation hack had no remaining purpose (it only existed to force a
+  re-render at the new width) — removed entirely rather than preserving state before navigating.
+- **U15** *(Phase 7, done)* — `Table.js`'s `<table>` now wrapped in a
+  `<div style={{ overflowX: 'auto' }}>`.
+- **U16** *(Phase 7, done)* — Added a `@media (max-width: 768px)` override in
+  `AnnualTopSongsList.css` switching the grid's fixed `16rem` last column (and its appearance
+  sub-grid) to `minmax()` units. Kept the same row structure/height rather than stacking
+  vertically, since `AnnualTopSongsListBody.js`'s virtualized list computes row heights in JS to
+  match this CSS exactly — stacking would have required duplicating the breakpoint logic there.
+- **U25** *(Phase 7, done)* — Removed `usePagination` from `Table.js`; rows now render directly
+  from react-table's unpaginated `rows`, with the dead `.pagination`/`.pagination2` CSS removed
+  from `ChartStyles.js`/`ArtistStyles.js`. Found and preserved one real dependency during
+  implementation that the original finding didn't call out: `HomePage.js`'s two chart previews
+  relied on `usePagination`'s `pageSize` as a side-channel "show only the first N rows" cap
+  (`bPage={false}` just hid the controls, the slice still applied) — replaced with an explicit
+  `maxRows` prop on `Table.js` so the previews still cap to 10 rows without pagination machinery.
+- **U21** *(Phase 7, done — moot)* — No longer applicable: U25 removed the pagination buttons
+  entirely, so there's nothing left to resize for touch targets.
 - **U2** *(Phase 8)* — Add brief helper text above `ChartMenu.js`'s accordion (e.g. "Pick a
   chart type, then a specific chart, then a timeframe") — copy-only change, no structural work.
 - **U24** *(Phase 8, quick win)* — Don't just append `#bottomNavItems2b` to `Header.css`'s
