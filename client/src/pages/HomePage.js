@@ -87,21 +87,21 @@ const HomePage = () => {
                                             <Container style={{paddingRight: '0.2vw', paddingLeft: '0.2vw'}}>
                                                 <Row>
                                                     <Col style={{paddingRight: '0.4vw', paddingLeft: '0.4vw'}}>
-                                                        <ChartCard 
-                                                            chart={songChart} 
-                                                            bIncludeNav={false} 
-                                                            pageSize={10} 
-                                                            bPage={false} 
-                                                            bFilter={false}
+                                                        <ChartCard
+                                                            chart={songChart}
+                                                            bIncludeNav={false}
+                                                            pageSize={10}
+                                                            bPage={false}
+                                                            bFilter={true}
                                                         />
                                                     </Col>
                                                     <Col style={{paddingRight: '0.4vw', paddingLeft: '0.4vw'}}>
-                                                        <ChartCard 
-                                                            chart={albumChart} 
-                                                            bIncludeNav={false} 
-                                                            pageSize={10} 
-                                                            bPage={false} 
-                                                            bFilter={false}
+                                                        <ChartCard
+                                                            chart={albumChart}
+                                                            bIncludeNav={false}
+                                                            pageSize={10}
+                                                            bPage={false}
+                                                            bFilter={true}
                                                         />
                                                     </Col>
                                                 </Row>

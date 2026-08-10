@@ -39,6 +39,8 @@ const ChartMenu = () => {
     };
 
     return(
+        <>
+        <p className='chartMenuHelperText'>Pick a chart type, then a specific chart, then a timeframe.</p>
         <Accordion flush open={mainOpen} toggle={mainToggle}>
             <AccordionItem>
                 <AccordionHeader targetId='1' id='songHeader'>
@@ -61,6 +63,7 @@ const ChartMenu = () => {
                 </AccordionBody>
             </AccordionItem>
         </Accordion>
+        </>
     )
 }
 
