@@ -31,7 +31,14 @@ const AppleMusicPlaylistToolbar = ({
     };
 
     return (
-        <div className='appleMusicToolbar' style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0' }}>
+        <div
+            className='appleMusicToolbar'
+            style={{
+                display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem',
+                padding: '0.5rem 0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                borderRadius: '0.3rem',
+            }}
+        >
             {showTopNPresets && (
                 <>
                     <span>Select top:</span>
@@ -46,7 +53,7 @@ const AppleMusicPlaylistToolbar = ({
                         placeholder='Custom'
                         value={customN}
                         onChange={(e) => setCustomN(e.target.value)}
-                        style={{ width: '70px' }}
+                        style={{ width: '90px' }}
                         className='form-control form-control-sm'
                     />
                     <Button size='sm' outline onClick={applyCustomN}>Apply</Button>
