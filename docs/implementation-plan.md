@@ -17,7 +17,9 @@ for the latest relevant commit actually includes `master` before assuming someth
 live on both the local and Aiven databases; DB/schema changes have no separate "deploy" step,
 unlike server code) and is no longer listed in the phase table below. One new item, `B10`, was
 added as a deferred decision (not a phase-blocking task) from a finding B4's rewrite surfaced —
-see its entry in the Database section.
+see its entry in the Database section. **Phase 4 is complete too** (`P2`, `P3`, `P9`, `P4`,
+`P6`, `P7`, `P5`), verified via a real scoped scrape run and a real full sync run rather than
+just a syntax check — also no longer in the phase table.
 
 ## How to use this
 
@@ -64,7 +66,6 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 4 | Python ingestion reliability | P2, P3, P9, P4, P6, P7, P5 |
 | 5 | Client correctness & efficiency | C2, C3, C8, C9, C1, C7, C4, C6*, C5*, C11* |
 | 6 | Accessibility & visual consistency | U1, U8, U9, U10, U11, U12, U22, U27*, U26 |
 | 7 | Responsive design | U14, U13, U7, U15, U16, U25, U21 |
@@ -187,29 +188,36 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
   USER`) and Aiven (via the Aiven console's password reset, not raw SQL, since Aiven manages
   that credential centrally) — both verified working, and production re-confirmed live against
   the server's real Vercel deployment after the required redeploy.
-- **P2** *(Phase 4)* — Wrap the per-chart-entry insert block (`getArtistId`/`insertSong`/
-  `insertAlbum`/`insertChartEntry`) in try/except, log-and-continue per item on failure, so one
-  bad row or a transient DB error doesn't crash the whole scrape run — matches the tolerance
-  philosophy already used for the empty-week retry logic.
-- **P3** *(Phase 4)* — Wrap each of the 13 unclosed `conn.cursor()` call sites in
-  `with conn.cursor() as cur:` (psycopg2 cursors support the context-manager protocol).
-  Mechanical find-and-wrap, low risk.
-- **P9** *(Phase 4)* — Same fix as P3, applied to `retrieveChartIds`'s file handle too: wrap the
-  `open(...)` in `with open(...) as f:` and its cursor in `with conn.cursor() as cur:`.
-- **P4** *(Phase 4)* — Introduce `SCRAPE_DELAY_SECONDS = 10` near the top of `bb_scrape.py`
-  (alongside the existing `EMPTY_WEEK_RETRY_LIMIT` constant pattern) and replace the three
-  `time.sleep(10)` call sites.
-- **P6** *(Phase 4)* — Add a shared allow-list constant (e.g. `KNOWN_TABLES`) checked before any
-  f-string SQL interpolation in `sync_to_aiven.py`/`migrate_chart_entries.py`/
-  `annual_top_songs.py`, so a future change can't silently make a table/column name
-  attacker-influenced without tripping an assertion first.
-- **P7** *(Phase 4)* — Switch `weekly_update.bat`'s log from unbounded `>>` append to a rotation
-  scheme (simplest: have the batch file rename/trim the log past a size threshold before
-  appending). Also replace the hardcoded `C:\Users\looko\...` path with `%USERPROFILE%` so the
-  script isn't tied to one specific machine/user.
-- **P5** *(Phase 4, ongoing/opportunistic)* — Add docstrings to the main functions, replace
-  redundant `print()` + `logging.info()` pairs with just the logger call. Lower priority — fine
-  to do incrementally alongside other `bb_scrape.py` edits rather than as its own pass.
+- **P2** *(Phase 4, done)* — The per-chart-entry insert block (`getArtistId`/`insertSong`/
+  `insertAlbum`/`insertChartEntry`) is now wrapped in try/except, log-and-continue (plus
+  rollback + reconnect) on a `psycopg2.Error`, matching the empty-week retry logic's tolerance
+  philosophy. Verified via a real `BB_SCRAPE_ONLY`-scoped run against two real historical weeks
+  on the local database.
+- **P3 / P9** *(Phase 4, done)* — All **17** `conn.cursor()` call sites (the original count of
+  13 didn't hold up under a direct recount) now use `with conn.cursor() as cur:`, and
+  `retrieveChartIds`'s file handle uses `with open(...) as f:` too. Verified via the same real
+  scoped test run — every cursor site got exercised for real (including the duplicate-conflict
+  path) with no `InterfaceError`, and the chart's resume state ended up back exactly where it
+  started.
+- **P4** *(Phase 4, done)* — `SCRAPE_DELAY_SECONDS = 10` added near the top of `bb_scrape.py`,
+  replacing all three `time.sleep(10)` call sites.
+- **P6** *(Phase 4, done — scope corrected)* — Only `sync_to_aiven.py` actually interpolates
+  table/column names into SQL via f-strings; `migrate_chart_entries.py`/`annual_top_songs.py`
+  only use f-strings for log messages (verified directly, contrary to the original finding's
+  broader claim). Added `KNOWN_TABLES`/`KNOWN_COLUMNS` allow-lists and an
+  `_assert_known_identifiers` check before every f-string-built query in `sync_to_aiven.py`.
+  Verified: correctly raises on a SQL-injection-shaped table name and an unknown column name,
+  and a real full sync run against Aiven completed normally with the guard in place.
+- **P7** *(Phase 4, done)* — `weekly_update.bat`'s hardcoded `C:\Users\looko\...` replaced with
+  `%USERPROFILE%`; added a 5MB size check that rotates the log to `.log.old` before a run
+  starts if it's grown past that. Verified both branches (rotates when oversized, doesn't when
+  small) with a throwaway test harness.
+- **P5** *(Phase 4, done)* — Added a module docstring and per-function docstrings to
+  `bb_scrape.py`. `logging.basicConfig` now logs to both the file and console, which let the
+  one genuinely duplicate `print()`/`logging.info()` pair (identical message) collapse into a
+  single logging call — the other print/logging pairs in the file were left alone since their
+  messages actually differ in content (terse console vs. detailed file record), so consolidating
+  them would have lost information rather than just deduplicating it.
 
 ## Client (`client/src/**`)
 

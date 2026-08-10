@@ -106,30 +106,41 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
   reset via the Aiven console (not raw SQL, since Aiven manages that credential centrally),
   `bb_script/.env`'s `TARGET_SERVICE_URI` updated, and production re-verified live against
   `GET /chartList` on the server's actual Vercel deployment after the required redeploy.
-
-### High
 - P2. `bb_scrape.py`'s per-item insert loop (`getArtistId`/`insertSong`/`insertAlbum`/
-  `insertChartEntry`) has no exception handling — only the chart-date fetch is wrapped, so a
-  DB error mid-chart (e.g. a dropped connection) crashes the whole scrape run uncaught.
-
-### Medium
-- P3. 13 of 15 `conn.cursor()` calls in `bb_scrape.py` are never closed (no
-  `with`/context managers anywhere) — cursor-leak risk in a long-running loop processing
-  millions of rows.
-
-### Low
-- P4. *(carried forward)* `time.sleep(10)` repeated 3x as an unnamed magic number.
-- P5. *(carried forward)* No docstrings/type hints; redundant `print(...)` +
-  `logging...(...)` pairs throughout instead of relying on the logger alone.
-- P6. `sync_to_aiven.py`/`migrate_chart_entries.py`/`annual_top_songs.py` interpolate
-  table/column names into SQL via f-strings rather than parameterizing — safe today since
-  values only come from hardcoded dicts, but a latent injection-shaped pattern if a table
-  name ever becomes configurable.
-- P7. `weekly_update.bat` (untracked) hardcodes absolute local paths including the Windows
-  username; appends to `logs\weekly_update.log` indefinitely with no rotation.
-- P9. `bb_scrape.py`'s `retrieveChartIds` opens `billboard.txt` and a cursor with no
-  `finally`/close-on-error handling — leaks the file handle if `billboard.charts()` or the DB
-  insert raises.
+  `insertChartEntry`) had no exception handling — only the chart-date fetch was wrapped, so a
+  DB error mid-chart (e.g. a dropped connection) crashed the whole scrape run uncaught. Fixed:
+  wrapped the per-item block in try/except, log-and-continue (plus a rollback + reconnect) on a
+  `psycopg2.Error`, matching the tolerance philosophy already used for the empty-week retry
+  logic. Verified via a real scoped run (`BB_SCRAPE_ONLY`) against two real historical weeks.
+- P3 / P9. `bb_scrape.py` had **17** unclosed `conn.cursor()` calls (not 13 as originally
+  counted — corrected via direct count), and `retrieveChartIds` also leaked its `billboard.txt`
+  file handle on error. Fixed: every cursor now uses `with conn.cursor() as cur:`, and the file
+  handle uses `with open(...) as f:`. Verified via the same real scoped test run above — every
+  cursor site got real exercise (lookups, inserts, updates, and the duplicate-conflict path)
+  with no `InterfaceError`/crashes, and the chart's `next_date`/`last_date` ended up back at
+  their exact pre-test values.
+- P4. `time.sleep(10)` was repeated 3x as an unnamed magic number. Fixed: introduced
+  `SCRAPE_DELAY_SECONDS = 10` near the top of `bb_scrape.py`, replacing all three call sites.
+- P6. Of the three files named, only `sync_to_aiven.py` actually interpolates table/column
+  names into SQL via f-strings (verified directly: `migrate_chart_entries.py` and
+  `annual_top_songs.py` only use f-strings for log/print messages, not SQL — the original
+  finding overstated the scope). Fixed: added `KNOWN_TABLES`/`KNOWN_COLUMNS` allow-lists
+  (derived from the existing `APPEND_ONLY_TABLES`/`FULL_REFRESH_TABLES` dicts) and an
+  `_assert_known_identifiers` check before every f-string-built query. Verified: rejects a
+  SQL-injection-shaped table name and an unknown column name with an `AssertionError`, and a
+  real full sync run against Aiven completed normally afterward.
+- P7. `weekly_update.bat` hardcoded `C:\Users\looko\...` and appended to
+  `logs\weekly_update.log` indefinitely with no rotation. Fixed: replaced the hardcoded path
+  with `%USERPROFILE%`, and added a size check (5MB threshold) that rotates the log to
+  `.log.old` before a run starts if it's grown past that. Verified both branches directly
+  (oversized log rotates, small log doesn't) with a throwaway test harness.
+- P5. Added a module docstring and per-function docstrings to `bb_scrape.py`'s previously
+  undocumented functions. Also switched `logging.basicConfig` to log to both the file and
+  console (`StreamHandler`) and removed the one genuinely duplicate `print()`/`logging.info()`
+  pair (identical "Now starting %s" message) in favor of the single logging call — the other
+  print/logging pairs in the file were left alone since their messages actually differ (print
+  gives terse console feedback, logging captures full exception detail), so they aren't truly
+  redundant.
 
 ## Database (`db/functions/*.sql`, `db/tables/*.sql`)
 
