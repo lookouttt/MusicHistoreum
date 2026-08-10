@@ -19,9 +19,10 @@ unlike server code) and is no longer listed in the phase table below. One new it
 added as a deferred decision (not a phase-blocking task) from a finding B4's rewrite surfaced —
 see its entry in the Database section. **Phase 4 is complete too** (`P2`, `P3`, `P9`, `P4`,
 `P6`, `P7`, `P5`), verified via a real scoped scrape run and a real full sync run rather than
-just a syntax check — also no longer in the phase table. **Phase 5 is complete except C10**
-(`C1`-`C9`, `C11` all done; C10 stays deferred to Phase 8 as originally planned, alongside
-U19) — verified via real production builds, not just syntax checks. C5's font-awesome swap
+just a syntax check — also no longer in the phase table. **Phase 5 is now fully complete**
+(`C1`-`C11` all done; C10 was deliberately deferred to Phase 8 alongside U19, per the original
+plan, and is now done there too) — verified via real production builds, not just syntax checks.
+C5's font-awesome swap
 happened on Sonnet rather than Opus, since its actual footprint (5 icons) turned out small
 enough to not need the extra reasoning depth; the larger styling-consolidation question that
 *would* warrant Opus was explicitly deferred, not decided. **Phase 6 is complete** (`U1`, `U8`,
@@ -35,7 +36,17 @@ complete** (`U14`, `U13`, `U7`, `U15`, `U16`, `U25`, `U21` all done) — verifie
 production build. U25's pagination removal surfaced one real dependency the original finding
 didn't call out: `HomePage.js`'s chart previews were using `usePagination`'s `pageSize` as an
 undocumented "cap to N rows" mechanism, which needed an explicit replacement (`maxRows`) rather
-than just deleting the pagination code outright.
+than just deleting the pagination code outright. **Phase 8 is complete** (`U2`, `U24`, `U3`,
+`U4`, `U5`, `U6`, `U17`, `U18`, `C10`, `U19`, `U20`, `U23` all done) — verified via a real
+production build. All three flagged decisions (U3, U4, U6) went with the lighter/recommended
+option in each case. One correction surfaced during U17/U18: Formik's `validateOnBlur`/
+`validateOnChange` were already both `true` by default, so the "validates only on submit" half
+of that finding didn't hold up under direct inspection — the real gap was just the missing
+required-field indicators and the two feedback-state issues U18 flagged. This closes out every
+numbered item in the original audit. Two things remain open by deliberate choice, not oversight:
+**B10** (the pointFactor rounding question from Phase 3 — see the Database section) and the
+larger bootstrap/reactstrap/styled-components consolidation question C5 explicitly deferred in
+Phase 5 (neither has its own audit ID; both are prose-only deferred decisions).
 
 ## How to use this
 
@@ -85,13 +96,11 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 ## Suggested execution order
 
+All 8 phases are complete — see each area's detail section above for what changed and how it
+was verified. Nothing remains in the phase table below.
+
 | Phase | Focus | Items |
 |---|---|---|
-| 8 | Navigation/IA & forms polish | U2, U24, U3, U4, U5, U6, U17, U18, C10, U19, U20, U23 |
-
-Phases 1-4 (server/DB/Python) touch systems only you can access (Aiven, credentials) or
-review for correctness risk (SQL rewrites) — do those first regardless of client/usability
-work. Phases 5-8 (client) can proceed independently and in any order relative to 1-4.
 
 ---
 
@@ -342,52 +351,46 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
   `maxRows` prop on `Table.js` so the previews still cap to 10 rows without pagination machinery.
 - **U21** *(Phase 7, done — moot)* — No longer applicable: U25 removed the pagination buttons
   entirely, so there's nothing left to resize for touch targets.
-- **U2** *(Phase 8)* — Add brief helper text above `ChartMenu.js`'s accordion (e.g. "Pick a
-  chart type, then a specific chart, then a timeframe") — copy-only change, no structural work.
-- **U24** *(Phase 8, quick win)* — Don't just append `#bottomNavItems2b` to `Header.css`'s
-  existing ID selector list (same fragility next time a nav item is added or reordered).
-  Instead, add a shared class (e.g. `bottomNavItem`) to all five `NavLink`s in `Header.js`, and
-  update `Header.css` to target `.bottomNavItem`/`.bottomNavItem:hover` in place of the five
-  hardcoded `#bottomNavItemsN` selectors — fixes the immediate inconsistency and removes the
-  pattern that caused it.
-- **U3** *(Phase 8, decision)* — Replace the `/Artist/ABCXYZ` sentinel with a real dedicated
-  route (e.g. `/Artists`), updating `ArtistPage.js`/`ArtistCard.js` to key off the route instead
-  of a magic string. If a full route change is out of scope right now, at minimum extract
-  `ABCXYZ` into a named, documented constant shared between `Header.js` and `ArtistPage.js`.
-- **U4** *(Phase 8, decision)* — Add a small breadcrumb or "Back to chart" link when arriving at
-  an artist page from a chart click. Needs a design decision first: how to carry the originating
-  chart context through navigation (e.g. React Router route state) since today's navigation
-  doesn't retain it at all — scope this as its own small design pass before implementing.
-- **U5** *(Phase 8)* — Add a `NavItem`/`NavLink` to `/Issues` in `Header.js`, matching the
-  existing nav item pattern.
-- **U6** *(Phase 8, decision)* — Either enable `bFilter` on the homepage's chart preview table,
-  or add a one-line hint that filtering/search becomes available once a chart is open — decide
-  how prominent to make it.
-- **U17 / U18** *(Phase 8, sequence after S11)* — Tune Formik's `validateOnBlur`/
-  `validateOnChange` in the contact form for earlier feedback than submit-only, add
-  required-field indicators next to labels, disable the submit `<Button>` while
-  `isSubmitting`, and show a brief success confirmation before closing the modal instead of
-  closing silently. Lower priority until **S11** lands — polishing the submit experience of a
-  form that always errors out isn't worth much yet.
-- **C10** *(moved here from Phase 5 — must be done with U19 below)* — In `ArtistCard.js`,
-  change `setSongItems(() => [{...}])`/`setAlbumItems(() => [{...}])` to
-  `setSongItems([{...}])`/`setAlbumItems([{...}])` — plain arrays, not zero-arg functions.
-  Behavior is unchanged (verified in the audit); this only removes the confusing indirection.
-  Do this in the same edit as U19, since both touch the exact same lines.
-- **U19** *(Phase 8)* — Replace `ArtistCard`'s fake `Chrono` timeline entry for "no results" with
-  a plain conditional render (e.g. a `<p>No songs found for this artist.</p>` instead of feeding
-  a fake item into `<Chrono items={songItems}>`). Pairs directly with **C10** above.
-- **U20** *(Phase 8)* — Have `songMatcher.js` return a reason per unmatched song (e.g. "no
-  catalog match found" vs. "ambiguous match, skipped") and display it alongside each title in
-  `CreatePlaylistModal.js`'s post-run summary.
-- **U23** *(Phase 8)* — Replace `AppleMusicPlaylistToolbar.js`'s `TOP_N_PRESETS` button row +
-  separate custom `<input>` + `Apply` button with a single dropdown/select (`50 / 75 / 100 /
-  All / Custom…`), revealing one inline number input only when "Custom…" is chosen. Cuts the
-  row from five discrete controls down to one or two and removes the "which button vs. which
-  box" ambiguity flagged directly from live-site review. Trade-off: a custom value now takes an
-  extra click (open dropdown → Custom → type) instead of being always-visible — acceptable
-  given how cramped the current row is. Sequence after **U22** (background fix) so the reworked
-  control isn't styled against the same washed-out background.
+- **U2** *(Phase 8, done)* — Added a one-line hint above `ChartMenu.js`'s accordion: "Pick a
+  chart type, then a specific chart, then a timeframe."
+- **U24** *(Phase 8, done, quick win)* — Replaced the hardcoded `#bottomNavItemsN` ID selector
+  list in `Header.css` with a shared `.bottomNavItem` class on every nav item in `Header.js`,
+  including the previously-orphaned `Top Songs by Year` and the new `/Issues` link (U5).
+- **U3** *(Phase 8, done — decision: real dedicated route)* — Added a real `/Artists` route in
+  `App.js`; `ArtistPage.js` now branches on whether `:artist` is present in the route instead of
+  comparing against an `'ABCXYZ'` sentinel duplicated in `Header.js` and `ArtistPage.js`.
+- **U4** *(Phase 8, done — decision: simple browser-back, not full breadcrumb)* — Added a
+  "← Back" button to `ArtistCard.js` calling `navigate(-1)` — no route-state plumbing needed,
+  works regardless of how the user arrived at the artist page.
+- **U5** *(Phase 8, done)* — Added a `NavItem`/`NavLink` to `/Issues` in `Header.js` (labeled
+  "Known Issues"), done together with U24 since both touch the same nav-item list.
+- **U6** *(Phase 8, done — decision: enable filtering)* — Set `bFilter={true}` on the homepage's
+  two chart preview tables. Filtering runs on the full fetched chart before the preview's
+  existing `maxRows` cap slices it to 10, so it searches the whole chart, not just what's shown.
+- **U17 / U18** *(Phase 8, done)* — Added required-field indicators (`*`) to the four fields
+  `validateContactForm.js` actually requires; the submit button now disables and reads
+  "Sending…" while `isSubmitting` (switched `<Formik>` to its render-prop form to read it, and
+  `handleSubmit` calls `setSubmitting(false)` in a `finally` block); a success state now shows a
+  confirmation message with an explicit Close button instead of silently closing. Correction
+  found during implementation: Formik's `validateOnBlur`/`validateOnChange` were already both
+  `true` by default — nothing in this form overrode them — so the "validates only on submit"
+  half of the original finding didn't hold up; the real gaps were just the missing indicators
+  and the two feedback-state issues U18 flagged.
+- **C10** *(done alongside U19 below, as planned)* — `ArtistCard.js`'s `setSongItems`/
+  `setAlbumItems` now set a plain `[]` for "no results" instead of a zero-arg function returning
+  a fake entry.
+- **U19** *(Phase 8, done)* — `ArtistCard.js` now renders a plain
+  `<p>No songs found for this artist.</p>` (or albums) when the array from C10 above is empty,
+  instead of feeding a fake item into `<Chrono items={songItems}>`.
+- **U20** *(Phase 8, done)* — `songMatcher.js` already computed a per-song unmatch reason
+  (from Phase 5's C1 cache work) but discarded it before returning. Threaded it through
+  `unmatched` → `createAppleMusicPlaylist.js` → `CreatePlaylistModal.js`'s post-run list, which
+  now shows the reason alongside each unmatched title.
+- **U23** *(Phase 8, done)* — Replaced `AppleMusicPlaylistToolbar.js`'s three preset buttons +
+  separate custom input + Apply button with a single `<select>` (`50 / 75 / 100 / All /
+  Custom…`) that only reveals the custom input + Apply button when "Custom…" is chosen. "All"
+  calls the existing `onSelectTopN` callback with `Infinity`, which the existing
+  `row.song_rank <= n` filter already handles correctly with no other changes needed.
 
 ## Verification
 

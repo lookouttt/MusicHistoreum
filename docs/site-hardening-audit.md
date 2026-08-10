@@ -98,14 +98,11 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
   it at all). Since it's a real open research question (which day of week Billboard used
   pre-1962), not something safely resolvable without that research, the commented-out
   `FirstDate` values in `SONG_CHARTS.js` stay as a placeholder for whenever it's resolved.
-
-### Low
-- C10. `ArtistCard.js`'s "no songs/albums found" branches call `setSongItems`/`setAlbumItems`
-  with a zero-arg function instead of the array directly — works today only because React's
-  functional-updater form happens to invoke it and use the return value; fragile/confusing,
-  worth simplifying to a plain array. (Verified this does *not* currently break rendering,
-  contrary to the initial research pass's read of it.) **Not done this pass** — deliberately
-  deferred to Phase 8, where it's done alongside U19 since both touch the exact same lines.
+- C10. *(Phase 8, done alongside U19 — both touched the same lines)* `ArtistCard.js`'s "no
+  songs/albums found" branches called `setSongItems`/`setAlbumItems` with a zero-arg function
+  instead of the array directly — worked only because React's functional-updater form happens to
+  invoke it and use the return value. Fixed: now sets a plain `[]` directly, which doubles as the
+  "no results" signal for U19's empty-state rendering below.
 
 ## Python ingestion (`bb_script/`)
 
@@ -346,32 +343,58 @@ framing as aspirational, not current state.
 - U21. Moot per the plan's own note — table pagination buttons no longer exist after U25, so
   there's nothing left to resize for touch targets.
 
+### Done this pass (Phase 8)
+- U2. Added a one-line hint above `ChartMenu.js`'s accordion: "Pick a chart type, then a
+  specific chart, then a timeframe."
+- U24. Replaced the hardcoded `#bottomNavItems1`-`#bottomNavItems4` ID selector list in
+  `Header.css` with a shared `.bottomNavItem` class applied to all nav items in `Header.js`
+  (including the previously-orphaned `Top Songs by Year` and the new `/Issues` link from U5) —
+  removes the "forgot to add a new item to the list" failure mode entirely.
+- U3. *(decision: add a real dedicated route, not just a named constant)* Added a real
+  `/Artists` route in `App.js` for the browse view; `ArtistPage.js` now shows `<ArtistList/>`
+  when there's no `:artist` route param and `<ArtistCard/>` when there is, instead of branching
+  on an `'ABCXYZ'` sentinel string duplicated in both `Header.js` and `ArtistPage.js`. `/Artists`
+  is now a real, meaningful, bookmarkable URL.
+- U4. *(decision: a simple browser-back link, not full breadcrumb/route-state plumbing)* Added a
+  "← Back" button to `ArtistCard.js` that calls `navigate(-1)`. Deliberately lighter than
+  carrying the originating chart through React Router route state — works for any entry path
+  (chart click, Annual Top Songs, alphabet browse) with no plumbing changes elsewhere.
+- U5. Added a `NavItem`/`NavLink` to `/Issues` in `Header.js`, matching the existing nav pattern
+  (labeled "Known Issues" to match the page's own title) — done together with U24 since both
+  touch the same nav-item list.
+- U6. *(decision: enable filtering, not just a hint)* Set `bFilter={true}` on both of the
+  homepage's chart preview tables. Filtering still operates on the full fetched chart (via
+  `useFilters`/`useGlobalFilter`) before the preview's existing `maxRows` cap slices it down to
+  10, so a homepage search correctly matches against the whole chart, not just the visible rows.
+- U17 / U18. Added required-field indicators (`*`) next to the four required labels
+  (`validateContactForm.js` confirms exactly firstName/lastName/email/commentText are required);
+  the submit `<Button>` now disables and reads "Sending…" while `isSubmitting` (switched
+  `<Formik>` to the render-prop form to access it, and `handleSubmit` now explicitly calls
+  `setSubmitting(false)` in a `finally` block); and a success state now shows "Thanks! Your
+  message has been sent." with an explicit Close button instead of silently closing the modal.
+  Formik's `validateOnBlur`/`validateOnChange` were already both `true` by default (the audit's
+  premise that the form "validates only on submit" didn't hold up under direct inspection — no
+  code here overrides those defaults) — the real gap was just the missing required-field
+  indicators and the two feedback-state issues (U18), not validation timing.
+- C10 / U19. See C10 in the Client section above — fixed together since both touch the same
+  `ArtistCard.js` lines. `setSongItems`/`setAlbumItems` now set a plain `[]` for "no results"
+  instead of the fake `Chrono` timeline entry, and the JSX renders a plain
+  `<p>No songs found for this artist.</p>` (or albums) when the array is empty, instead of
+  feeding a fake item into the timeline component.
+- U20. `songMatcher.js`'s `matchSongsToAppleMusic` already computed a per-song unmatch reason
+  (added in Phase 5's C1 cache work) but discarded it before returning — `unmatched` was just
+  the bare song list. Threaded the reason through `unmatched` → `createAppleMusicPlaylist.js`'s
+  return value → `CreatePlaylistModal.js`'s post-run list, which now shows e.g. "Song — Artist —
+  No catalog match found for this song/artist." instead of just the title.
+- U23. Replaced `AppleMusicPlaylistToolbar.js`'s three preset buttons + separate custom input +
+  Apply button with a single `<select>` (`50 / 75 / 100 / All / Custom…`) that only reveals the
+  custom number input + Apply button when "Custom…" is chosen. "All" calls the existing
+  `onSelectTopN` callback with `Infinity`, which the existing `row.song_rank <= n` filter already
+  handles correctly with no changes needed elsewhere.
+
 ### Navigation & Information Architecture
 
-High
-- U2. The chart picker (`ChartMenu.js` → `SingleChartMenu.js` → `TimeFrameMenu.js`) is three
-  nested accordions with no explanatory text — a new user must click through blind to learn
-  the structure (Song/Album → specific chart → Week/Month/Year/Decade).
-- U24. Confirmed via screenshot: the header's five bottom-nav items (`Charts`, `Artists`,
-  `Top Songs by Year`, `Future Features`, `About the Site`) all render via the same
-  `NavLink className='nav-link'` in `Header.js`, but the boxed-button look (white text, border,
-  padding, hover color) is applied entirely through a hardcoded CSS ID selector list in
-  `Header.css` (`#bottomNavItems1, #bottomNavItems2, #bottomNavItems3, #bottomNavItems4`).
-  `Top Songs by Year` was given `id='bottomNavItems2b'` (to slot between Artists=2 and
-  Features=3) — which isn't in that selector list — so it silently falls back to reactstrap's
-  plain blue link style instead of matching its four siblings.
-
-Medium
-- U3. The "Artists" nav link (`components/Header.js`) routes to a magic sentinel value
-  (`/Artist/ABCXYZ`) rather than a real listing route — works today, but the URL is meaningless
-  if bookmarked or shared, and the pattern isn't documented anywhere in the code.
-- U4. No breadcrumb or "you are here" indicator beyond the current chart's title — browser back
-  is the only way to retrace navigation between chart and artist views.
-- U5. `/Issues` (Known Issues) is a real route but reachable only via a link buried inside the
-  Features page, not the header nav — most users won't find it.
-- U6. Search/filter (`Table.js`'s per-column filters) is invisible on the homepage
-  (`bFilter={false}`) — no indication a search/filter feature exists until a user is already
-  viewing a chart.
+All findings from this section (U2, U3, U4, U5, U6, U24) are done — see "Done this pass" above.
 
 ### Accessibility
 
@@ -386,20 +409,7 @@ All findings from this section (U13, U14, U15, U16) are done — see "Done this 
 
 ### Feedback States & Forms
 
-Medium
-- U17. The contact form validates only on submit, not as-you-type/on-blur, and has no
-  required-field indicators — a user gets no feedback until they hit Submit.
-- U18. The contact form's submit button never disables while sending, and success closes the
-  modal silently with no confirmation message — a user can't tell whether their message
-  actually sent, or double-submit.
-- U19. `ArtistCard`'s "no songs/albums found" state is injected as a fake entry into the
-  `Chrono` timeline component (`{cardTitle: 'No songs found'}` rendered as a timeline item)
-  rather than shown as a normal empty-state message — likely reads as a broken/empty timeline
-  card rather than a clear "nothing here" message.
-
-Low
-- U20. `CreatePlaylistModal`'s post-run unmatched-songs list shows only titles, with no reason
-  each one failed to match.
+All findings from this section (U17, U18, U19, U20) are done — see "Done this pass" above.
 
 **Strengths worth preserving:** `ChartCard`/`ArtistCard`/`AnnualTopSongsList`/
 `CreatePlaylistModal` all handle loading, error, and empty states explicitly rather than
@@ -417,12 +427,5 @@ above.
 ### Apple Music Playlist Toolbar
 
 Found via direct visual review of the live chart page (screenshot), not code inspection alone
-— confirmed against `AppleMusicPlaylistToolbar.js` afterward. U22 (the High item from this
-section) is done — see "Done this pass" above.
-
-Medium
-- U23. The "Select top" control cluster (three preset buttons + a separate custom number input
-  + a separate "Apply" button) packs five discrete controls into one row with no visual
-  grouping, making it unclear which control does what at a glance. Recommend consolidating into
-  a single dropdown (`50 / 75 / 100 / All / Custom…`) that reveals one inline number input only
-  when "Custom…" is selected.
+— confirmed against `AppleMusicPlaylistToolbar.js` afterward. Both findings from this section
+(U22, U23) are done — see "Done this pass" above.
