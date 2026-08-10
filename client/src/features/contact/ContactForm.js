@@ -3,6 +3,7 @@ import { Button, Modal, ModalHeader, ModalBody, FormGroup, Label } from 'reactst
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import validateContactForm from '../../utils/validateContactForm';
 import fetchContactForm from '../../services/fetchContactForm';
+import Icon from '../../components/Icon';
 import '../../App.css';
 
 const ContactForm = () => {
@@ -37,7 +38,7 @@ const ContactForm = () => {
                     style={{ textDecoration: 'none', background: 'none', border: 'none', padding: 0, color: 'inherit' }}
                     onClick={() => { setSubmitError(false); setModalOpen(true); }}
                 >
-                    <i className='fa fa-comment' /> Contact
+                    <Icon name='comment' /> Contact
                 </button>
             </span>
             <Modal isOpen={modalOpen} className='modalStyle'>

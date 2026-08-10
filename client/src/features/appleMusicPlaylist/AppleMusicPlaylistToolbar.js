@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from 'reactstrap';
 import CreatePlaylistModal from './CreatePlaylistModal';
+import Icon from '../../components/Icon';
 
 const TOP_N_PRESETS = [50, 75, 100];
 
@@ -64,7 +65,7 @@ const AppleMusicPlaylistToolbar = ({
                 style={{ backgroundColor: '#483d8b', color: 'white', border: 'none' }}
                 onClick={() => setModalOpen(true)}
             >
-                <i className='fa fa-music' /> Create Apple Music Playlist
+                <Icon name='music' /> Create Apple Music Playlist
             </Button>
             <CreatePlaylistModal
                 isOpen={modalOpen}

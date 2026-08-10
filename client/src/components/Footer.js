@@ -1,6 +1,7 @@
 import { Container, Row, Col } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import ContactForm from '../features/contact/ContactForm';
+import Icon from './Icon';
 import './Footer.css';
 
 const Footer = () => {
@@ -11,10 +12,10 @@ const Footer = () => {
                 <h5>Links</h5>
                 <ul className='list-unstyled' id='footer-links'>
                     <li>
-                        <Link className='fa fa-home' to='/'> Home</Link>
+                        <Link to='/'><Icon name='home' /> Home</Link>
                     </li>
                     <li>
-                        <Link className='fa fa-address-book' to='/About'> About</Link>
+                        <Link to='/About'><Icon name='info' /> About</Link>
                     </li>
                     <li>
                         <ContactForm />

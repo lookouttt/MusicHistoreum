@@ -14,6 +14,7 @@ import { NavLink } from 'react-router-dom';
 import ChartMenu from '../features/chartMenu/ChartMenu';
 import './Header.css';
 import ContactForm from '../features/contact/ContactForm';
+import Icon from './Icon';
 
 const Header = () => {
     const [dropdownOpen, setdropdownOpen] = useState(false);
@@ -26,7 +27,7 @@ const Header = () => {
                     <Navbar dark expand='md' id='topNav'>
                         <Nav className='ms-auto' navbar>
                             <NavItem>
-                                <NavLink className='nav-link fa fa-home p-3' to='/'> Home</NavLink>
+                                <NavLink className='nav-link p-3' to='/'><Icon name='home' /> Home</NavLink>
                             </NavItem>
                         </Nav>
                         <ContactForm />
