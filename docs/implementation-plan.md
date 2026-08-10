@@ -7,7 +7,10 @@ doc exactly — cross-reference there for the original finding/severity/rational
 just the "how."
 
 `D1` (`/apple-music/developer-token` rate limiting) is already implemented and isn't repeated
-here.
+here. `S1`, `S4`, `P8`, and `P1` (the rest of Phase 1 besides S11) have since been implemented
+too and are no longer listed in the phase table below — see their entries in the Server/Python
+detail sections for what changed. `S11` has been implemented in code (Gmail SMTP transport) but
+isn't live yet — one manual credential-setup step remains; see its entry for exactly what.
 
 ## How to use this
 
@@ -54,7 +57,7 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 1 | Security-critical — live/committed credentials, external abuse vectors, a dead feature | S11*, P8, P1, S1, S4 |
+| 1 | Security-critical — live/committed credentials, external abuse vectors, a dead feature | S11* (code done, needs credentials) |
 | 2 | Server hardening & input validation | S2, S3, S5, S6, S7, S8, S9, S10 |
 | 3 | Database integrity & performance | B1, B6, B5, B3, B4, B8, B2*, B7*, B9 |
 | 4 | Python ingestion reliability | P2, P3, P9, P4, P6, P7, P5 |
@@ -73,33 +76,25 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
 
 ## Server (`server/index.js`, `db.js`)
 
-- **S11** *(Phase 1, do first — S1/U17/U18 below depend on this, decision)* — Pick a working
-  mail transport to replace the dead A2 Hosting account behind `mail.musichistoreum.com` and
-  `MAIL_USER`/`MAIL_PASSWORD`. Two options:
-  - **(a) Gmail SMTP with an App Password.** Minimal change — swap `host`/`auth` in the
-    existing `nodemailer.createTransport({...})` call at `server/index.js:44` to Gmail's SMTP
-    (`smtp.gmail.com:465`) with a Google Account App Password as `MAIL_PASSWORD`. Free, no new
-    dependency, plenty of headroom for contact-form-sized volume.
-  - **(b) A transactional email API (Resend, SendGrid, etc.).** Better deliverability
-    tracking/dashboards for a live site, but requires replacing the SMTP transport with an API
-    call (a new dependency, e.g. `resend` or `@sendgrid/mail`) and verifying a sending domain
-    with the provider before it'll send from `@musichistoreum.com`.
-
-  Either way, `MAIL_USER`/`MAIL_PASSWORD` need updating in **both** `server/.env` (local) and
-  Vercel's project environment variables (production) — updating one without the other leaves
-  one environment still pointed at the dead account. Confirm the fix by re-running the same
-  local repro that found this: start `server/index.js` and watch `contactEmail.verify()` log
-  success instead of an `ESOCKET` timeout, then submit the contact form end-to-end.
-- **S1** *(Phase 1, sequence after S11)* — Rate-limit `POST /contact`. Reuse the
-  `express-rate-limit` pattern already in `server/index.js` for `/apple-music/developer-token`:
-  a second limiter instance scoped to this route only, stricter threshold (e.g. 5 requests/hour
-  per IP, since it's a form a real user submits at most once or twice), same JSON 429 handler
-  style. No shared-secret bypass needed — there's no legitimate non-browser caller for this
-  route. Low value before S11 lands — there's nothing to protect on an endpoint that can't send
-  mail regardless of how many times it's hit.
-- **S4** *(Phase 1)* — Stop logging the raw contact payload. Replace
-  `logger.info(req.body)` in the `/contact` handler with either nothing, or logging only
-  non-PII fields (`topic`, timestamp) if some visibility into traffic is still wanted.
+- **S11** *(Phase 1, done in code — decision: Gmail SMTP App Password, chosen over a
+  transactional email API)* — `server/index.js`'s `nodemailer.createTransport({...})` now
+  points at `smtp.gmail.com:465` (`secure: true`) instead of the dead
+  `mail.musichistoreum.com`, and the outgoing `mail.from` was changed from a bare display name
+  to `` `"${name}" <${MAIL_USER}>` `` — Gmail's relay requires the From address to match the
+  authenticated account/alias, which the old transport didn't need. **Remaining manual step**:
+  set `MAIL_USER` to a real Gmail (or Google Workspace) address you control and `MAIL_PASSWORD`
+  to a Google Account App Password for it (Google Account → Security → 2-Step Verification →
+  App passwords; requires 2-Step Verification to be enabled first) — in **both**
+  `server/.env` (local) and Vercel's project environment variables (production). Confirm by
+  restarting `server/index.js` locally and watching `contactEmail.verify()` log success instead
+  of an `ESOCKET` timeout, then submit the contact form end-to-end.
+- **S1** *(Phase 1, done)* — `POST /contact` now has its own `express-rate-limit` instance
+  (`contactFormLimiter`, 5 requests/hour/IP, same JSON 429 handler style as D1's dev-token
+  limiter, no shared-secret bypass). Still low-value until S11's credentials are live, but
+  already in place.
+- **S4** *(Phase 1, done)* — The raw-payload `logger.info(req.body)` call in the `/contact`
+  handler was removed entirely (no replacement logging added — nothing non-PII was judged worth
+  keeping).
 - **S2** *(Phase 2)* — Rate-limit the remaining public read routes (`/chartList`,
   `/artist/list/:start_char`, `/artist/:dartist/:dtype`, `/chart/:cid/:ctype/:ctf/:cdate`,
   `/annual-top-songs`). One shared, more generous limiter (e.g. 100 req/15min/IP) applied via
@@ -173,16 +168,17 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
 
 ## Python ingestion (`bb_script/`)
 
-- **P8** *(Phase 1, do first — P1 below depends on it)* — Extract the correct `load_env` (the
-  one in `annual_top_songs.py`, which strips quotes) into a small shared module (e.g.
-  `bb_script/env_utils.py`), imported by `sync_to_aiven.py` and `annual_top_songs.py` in place
-  of their separate copies. Doing this before P1 means `bb_scrape.py` can import the same
-  shared helper from day one instead of introducing a third, slightly-different variant.
-- **P1** *(Phase 1)* — Move the hardcoded password out of `bb_scrape.py`'s `DB_CONN_STRING`
-  into `bb_script/.env` (already gitignored), read via the shared `load_env` helper from **P8**
-  above. Separately, as an infra step: **rotate the actual Postgres password** on both the
-  local instance and Aiven, since the old value is already committed to git history and
-  changing the code alone doesn't invalidate it.
+- **P8** *(Phase 1, done)* — The quote-stripping `load_env` (the one from
+  `annual_top_songs.py`) is now in a shared `bb_script/env_utils.py`, imported by
+  `sync_to_aiven.py` and `annual_top_songs.py` in place of their separate copies.
+- **P1** *(Phase 1, done — including the password rotation)* — `bb_scrape.py` no longer
+  hardcodes `DB_CONN_STRING`; it now reads `SOURCE_SERVICE_URI` from `bb_script/.env` via the
+  shared `env_utils.load_env` helper (**P8** above) — no new env var was needed since
+  `bb_script/.env` already had this exact connection string for `sync_to_aiven.py`. The
+  committed password has also been rotated on both the local Postgres instance (via `ALTER
+  USER`) and Aiven (via the Aiven console's password reset, not raw SQL, since Aiven manages
+  that credential centrally) — both verified working, and production re-confirmed live against
+  the server's real Vercel deployment after the required redeploy.
 - **P2** *(Phase 4)* — Wrap the per-chart-entry insert block (`getArtistId`/`insertSong`/
   `insertAlbum`/`insertChartEntry`) in try/except, log-and-continue per item on failure, so one
   bad row or a transient DB error doesn't crash the whole scrape run — matches the tolerance

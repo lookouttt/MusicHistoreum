@@ -11,20 +11,23 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
   real Apple-private-key-signed credential — fixed with per-IP rate limiting, an optional
   shared-secret bypass for the future native app, and `trust proxy` so IP-based limiting
   works correctly behind Vercel.
-
-### High
-- S11. The contact form's outbound mail is completely dead, not just unhardened. `mail
-  .musichistoreum.com` resolves to `216.198.79.1` (Vercel's apex IP, not a mail server) — the
-  A2 Hosting account that `MAIL_USER`/`MAIL_PASSWORD` and that hostname depended on is no
-  longer active. Confirmed by running `server/index.js` locally against real `.env`
-  credentials: `contactEmail.verify()`/`sendMail()` (`server/index.js:44`) time out after
-  ~21s with `ESOCKET` — no SMTP greeting ever arrives. `POST /contact` (`server/index.js:366`)
-  therefore always fails in production; the client (`ContactForm.js`) does show its error
-  state, just slowly enough that it reads as "clicking submit does nothing." This is a fully
-  broken user-facing feature, not a hardening gap.
-- S1. `POST /contact` has no rate limiting — a script can loop it to spam outbound mail
-  through `mail.musichistoreum.com`, risking that domain's deliverability/blacklist status.
-  (Moot until S11 is fixed — a dead mail transport can't be abused for spam either.)
+- S11. The contact form's outbound mail was completely dead (the A2 Hosting account behind
+  `mail.musichistoreum.com` was no longer active — see prior finding text below for the full
+  repro). Fixed: switched the nodemailer transport (`server/index.js`) from
+  `mail.musichistoreum.com` to Gmail SMTP (`smtp.gmail.com:465`, `secure: true`), and corrected
+  the outgoing `from` field to include a real address matching the authenticated account
+  (`"${name}" <${MAIL_USER}>` instead of a bare display name) — Gmail's relay requires the
+  From address to match the authenticated account/alias, which the old A2 transport didn't
+  enforce. **Not yet live**: `MAIL_USER`/`MAIL_PASSWORD` still need to be set to a real Gmail
+  (or Google Workspace) address and a Google Account App Password for it, in both
+  `server/.env` and Vercel's project env vars — that credential setup is a manual step outside
+  this session. Confirm by re-running the original repro (`contactEmail.verify()` should log
+  success instead of `ESOCKET`) once real credentials are in place.
+- S1. `POST /contact` had no rate limiting. Fixed: added a dedicated `express-rate-limit`
+  instance (5 requests/hour/IP, same pattern as D1's dev-token limiter, no shared-secret
+  bypass since there's no legitimate non-browser caller for this route).
+- S4. `/contact` logged the raw payload (`logger.info(req.body)`) — name/email/message
+  persisted in plaintext to `mh_server.log` indefinitely. Fixed: removed the log line entirely.
 
 ### Medium
 - S2. No rate limiting on any other public DB-backed read route (`/chartList`,
@@ -33,8 +36,6 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
 - S3. `db.js`'s `pg` Pool sets no `statement_timeout`/`query_timeout` — a slow/pathological
   query can hold a connection indefinitely; combined with S2, a few concurrent expensive
   requests could exhaust the pool.
-- S4. *(carried forward)* `/contact` logs the raw payload (`logger.info(req.body)`) —
-  name/email/message persisted in plaintext to `mh_server.log` indefinitely, no redaction.
 - S5. No baseline security headers (`helmet()` or equivalent).
 
 ### Low
@@ -87,11 +88,24 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
 
 ## Python ingestion (`bb_script/`)
 
+### Done this pass
+- P8. `sync_to_aiven.py`'s `load_env` didn't strip quotes from values, unlike
+  `annual_top_songs.py`'s near-duplicate implementation. Fixed: extracted the quote-stripping
+  version into a shared `bb_script/env_utils.py`, imported by both `sync_to_aiven.py` and
+  `annual_top_songs.py` in place of their separate copies.
+- P1. Hardcoded plaintext Postgres password in `bb_scrape.py`'s `DB_CONN_STRING` — the file is
+  git-tracked (not ignored), so the credential was committed to history; the same password is
+  also duplicated in `bb_script/.env`. Fixed: `bb_scrape.py` now reads `SOURCE_SERVICE_URI`
+  from `bb_script/.env` via the shared `env_utils.load_env` helper (P8 above) instead of a
+  hardcoded string — no new env var introduced, since `bb_script/.env` already had this exact
+  connection string for `sync_to_aiven.py`. The old committed password is now fully rotated:
+  the local `postgres` role's password was changed via `ALTER USER` and confirmed working
+  end-to-end (`server/.env`, `bb_script/.env` updated), and the Aiven `avnadmin` password was
+  reset via the Aiven console (not raw SQL, since Aiven manages that credential centrally),
+  `bb_script/.env`'s `TARGET_SERVICE_URI` updated, and production re-verified live against
+  `GET /chartList` on the server's actual Vercel deployment after the required redeploy.
+
 ### High
-- P1. *(carried forward, expanded)* Hardcoded plaintext Postgres password in `bb_scrape.py`'s
-  `DB_CONN_STRING` — the file is git-tracked (not ignored), so the credential is committed to
-  history; the same password is also duplicated in `bb_script/.env`. Move to an env var and
-  rotate the credential, since it's already been committed.
 - P2. `bb_scrape.py`'s per-item insert loop (`getArtistId`/`insertSong`/`insertAlbum`/
   `insertChartEntry`) has no exception handling — only the chart-date fetch is wrapped, so a
   DB error mid-chart (e.g. a dropped connection) crashes the whole scrape run uncaught.
@@ -111,8 +125,6 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
   name ever becomes configurable.
 - P7. `weekly_update.bat` (untracked) hardcodes absolute local paths including the Windows
   username; appends to `logs\weekly_update.log` indefinitely with no rotation.
-- P8. `sync_to_aiven.py`'s `load_env` doesn't strip quotes from values, unlike
-  `annual_top_songs.py`'s near-duplicate implementation — inconsistent parsing between the two.
 - P9. `bb_scrape.py`'s `retrieveChartIds` opens `billboard.txt` and a cursor with no
   `finally`/close-on-error handling — leaks the file handle if `billboard.charts()` or the DB
   insert raises.
