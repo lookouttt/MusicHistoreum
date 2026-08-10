@@ -44,7 +44,8 @@ const chartsSlice = createSlice({
         updatePendingType: (state, action) => {
             const chartType = CHART_TYPE_BY_ID[action.payload];
             if (!chartType) {
-                console.warn('updatePendingType: unrecognized chart type id', action.payload);
+                if (process.env.NODE_ENV !== 'production')
+                    console.warn('updatePendingType: unrecognized chart type id', action.payload);
                 return;
             }
             state.pendingChart = {
@@ -55,7 +56,8 @@ const chartsSlice = createSlice({
         updatePendingTimeframe: (state, action) => {
             const chartTimeframe = CHART_TIMEFRAME_BY_ID[action.payload];
             if (!chartTimeframe) {
-                console.warn('updatePendingTimeframe: unrecognized timeframe id', action.payload);
+                if (process.env.NODE_ENV !== 'production')
+                    console.warn('updatePendingTimeframe: unrecognized timeframe id', action.payload);
                 return;
             }
             state.pendingChart = {

@@ -55,16 +55,26 @@ async function findBestMatch(instance, song, { preferClean = true } = {}) {
     );
 
     if (artistMatches.length === 0)
-        return null;
+        return { appleMusicId: null, reason: 'No catalog match found for this song/artist.' };
 
     if (preferClean) {
         const cleanMatch = artistMatches.find((candidate) => candidate?.attributes?.contentRating !== 'explicit');
         if (cleanMatch)
-            return cleanMatch.id;
+            return { appleMusicId: cleanMatch.id, reason: null };
     }
 
-    return artistMatches[0].id;
+    return { appleMusicId: artistMatches[0].id, reason: null };
 }
+
+// Keyed by normalized title+artist so the same song appearing multiple times in one batch
+// (common across years/charts on the Annual Top Songs page) only triggers one catalog search.
+// Persists across calls for the lifetime of the page, not just within a single batch. Stores
+// the unmatch reason alongside the id (not just the matched result) so a future per-song
+// "why didn't this match" UI can look it up regardless of which occurrence actually made the
+// network call - otherwise that reason would only reflect the first occurrence and silently go
+// stale for deduped lookups.
+const matchCache = new Map();
+const cacheKey = (song) => `${normalize(song.song_title)}::${normalize(song.artist_name)}`;
 
 export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5, preferClean = true, onProgress } = {}) {
     // Indexed by each song's original position so chart order survives concurrent,
@@ -78,14 +88,20 @@ export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5,
             const index = nextIndex;
             nextIndex += 1;
             const song = songs[index];
+            const key = cacheKey(song);
 
-            try {
-                const appleMusicId = await findBestMatch(instance, song, { preferClean });
-                resultsByIndex[index] = appleMusicId ? { song, appleMusicId } : null;
-            } catch (err) {
-                console.warn(`Apple Music search failed for "${song.song_title}" by ${song.artist_name}:`, err);
-                resultsByIndex[index] = null;
+            let outcome = matchCache.get(key);
+            if (!outcome) {
+                try {
+                    outcome = await findBestMatch(instance, song, { preferClean });
+                } catch (err) {
+                    if (process.env.NODE_ENV !== 'production')
+                        console.warn(`Apple Music search failed for "${song.song_title}" by ${song.artist_name}:`, err);
+                    outcome = { appleMusicId: null, reason: 'Apple Music search failed for this song.' };
+                }
+                matchCache.set(key, outcome);
             }
+            resultsByIndex[index] = outcome.appleMusicId ? { song, appleMusicId: outcome.appleMusicId } : null;
 
             completed += 1;
             if (onProgress)

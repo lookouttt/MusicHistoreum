@@ -25,15 +25,20 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
     const chartList = useSelector(selectChartsMenu(chartType));
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
 
-    window.onbeforeunload = () => {
-        sessionStorage.setItem('chartType', (chartType==='Song' ? '1' : '2'));
-        sessionStorage.setItem('chartId', chartId);
-        sessionStorage.setItem('chartTimeframe', (chartTimeframe === 'Week' ? '1' : 
-                                                    (chartTimeframe === 'Month' ? '2' : 
-                                                    (chartTimeframe === 'Year' ? '3' : '4'))));
-        sessionStorage.setItem('chartDate', chartDate);
-        sessionStorage.setItem('reloadPage', 'yes');
-    }
+    useEffect(() => {
+        window.onbeforeunload = () => {
+            sessionStorage.setItem('chartType', (chartType==='Song' ? '1' : '2'));
+            sessionStorage.setItem('chartId', chartId);
+            sessionStorage.setItem('chartTimeframe', (chartTimeframe === 'Week' ? '1' :
+                                                        (chartTimeframe === 'Month' ? '2' :
+                                                        (chartTimeframe === 'Year' ? '3' : '4'))));
+            sessionStorage.setItem('chartDate', chartDate);
+            sessionStorage.setItem('reloadPage', 'yes');
+        }
+        return () => {
+            window.onbeforeunload = null;
+        };
+    }, [chartType, chartId, chartTimeframe, chartDate]);
 
     let hiddenColumns;
     
@@ -69,18 +74,25 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
     };
 
     useEffect(() => {
+        let cancelled = false;
         const fetchData = async () => {
             try {
                 const chartData = await fetchChartData({chart});
-                setData(chartData);
-                setFetchError(false);
+                if (!cancelled) {
+                    setData(chartData);
+                    setFetchError(false);
+                }
             } catch (err) {
-                setFetchError(true);
+                if (!cancelled)
+                    setFetchError(true);
             }
         }
 
         fetchData();
         setSelectedIds(new Set());
+        return () => {
+            cancelled = true;
+        };
     }, [chart]);
 
     const toggleRow = (songId) => {

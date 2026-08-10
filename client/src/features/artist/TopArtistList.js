@@ -9,9 +9,8 @@ const TopArtistList = () => {
 
     return (artistList.map((artist, index) => {
         return (
-            <li>
+            <li key={index}>
             <Link to={`/Artist/${encodeURIComponent(artist.ArtistName)}`}
-                key={index}
                 className="artistListName"
                 onClick={(e) => {
                     e.preventDefault();

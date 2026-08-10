@@ -15,15 +15,18 @@ function ArtistCard(artist) {
     };
 
     useEffect(() => {
+        let cancelled = false;
         const fetchData = async () => {
           try {
             const artistSongData = await fetchArtistData(artist.artist, 'songs');
+            if (cancelled)
+                return;
             if (artistSongData != null) {
                 const tempSongItems = artistSongData.map(({ song_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
                     const formattedDate = format(new Date(dayjs(first_date)), 'MMM yyyy');
                     const weeksText = (weeks > 1) ? 'weeks' : 'week';
                     const peakText = (peak_weeks > 1) ? 'weeks' : 'week';
-    
+
                     return {
                         title: formattedDate,
                         cardTitle: song_title,
@@ -44,12 +47,14 @@ function ArtistCard(artist) {
 
 
             const artistAlbumData = await fetchArtistData(artist.artist, 'albums');
+            if (cancelled)
+                return;
             if (artistAlbumData != null) {
                 const tempAlbumItems = artistAlbumData.map(({ album_title, artist_name, peak, first_date, weeks, peak_weeks }) => {
                     const formattedDate = format(new Date(dayjs(first_date)), 'MMM yyyy');
                     const weeksText = (weeks > 1) ? 'weeks' : 'week';
                     const peakText = (peak_weeks > 1) ? 'weeks' : 'week';
-    
+
                     return {
                         title: formattedDate,
                         cardTitle: album_title,
@@ -69,11 +74,15 @@ function ArtistCard(artist) {
             }
             setFetchError(false);
           } catch (err) {
-            setFetchError(true);
+            if (!cancelled)
+                setFetchError(true);
           }
         }
 
         fetchData();
+        return () => {
+            cancelled = true;
+        };
     }, [artist.artist]);
 
     if (fetchError) {

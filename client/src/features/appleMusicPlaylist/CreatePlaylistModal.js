@@ -4,6 +4,26 @@ import createAppleMusicPlaylist from './createAppleMusicPlaylist';
 import getAuthorizedMusicKitInstance from './musicKitAuth';
 import fetchLibraryPlaylists from './fetchLibraryPlaylists';
 
+// Our own code already crafts a friendly message for these specific cases (musicKitLoader.js,
+// musicKitAuth.js, fetchAppleMusicDeveloperToken.js) - pass those through as-is. Anything else
+// is either a raw network failure or an unvetted MusicKit/Apple SDK internal error message, so
+// fall back to a generic message rather than showing that directly to the user.
+const KNOWN_FRIENDLY_MESSAGES = [
+    'Failed to load Apple MusicKit JS.',
+    'Apple Music sign-in was cancelled or failed.',
+];
+
+function getFriendlyErrorMessage(err) {
+    const message = err?.message || '';
+    if (KNOWN_FRIENDLY_MESSAGES.some((known) => message.includes(known)))
+        return message;
+    if (message.includes('developer token request failed'))
+        return "Couldn't reach Music Historeum's server to authorize with Apple Music. Please try again later.";
+    if (err?.name === 'TypeError' || /network|fetch/i.test(message))
+        return "Couldn't reach Apple Music. Check your connection and try again.";
+    return 'Something went wrong talking to Apple Music. Please try again.';
+}
+
 const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => {
     const [mode, setMode] = useState('new'); // 'new' | 'existing'
     const [playlistName, setPlaylistName] = useState(defaultPlaylistName || '');
@@ -51,7 +71,7 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
             setResult(summary);
             setStatus('done');
         } catch (err) {
-            setErrorMessage(err.message || 'Something went wrong saving the playlist.');
+            setErrorMessage(getFriendlyErrorMessage(err));
             setStatus('error');
         }
     };
