@@ -9,9 +9,10 @@ import '../../App.css';
 const ContactForm = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [submitError, setSubmitError] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
     const FormTopics = ['Default','Chart Question', 'Feature Request', 'Other' ];
 
-    const handleSubmit = async (values) => {
+    const handleSubmit = async (values, { setSubmitting, resetForm }) => {
         const comment = {
             firstName: values.firstName,
             lastName: values.lastName,
@@ -23,9 +24,12 @@ const ContactForm = () => {
         try {
             await fetchContactForm(comment);
             setSubmitError(false);
-            setModalOpen(false);
+            setSubmitSuccess(true);
+            resetForm();
         } catch (err) {
             setSubmitError(true);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -36,7 +40,7 @@ const ContactForm = () => {
                     type='button'
                     className='nav-link'
                     style={{ textDecoration: 'none', background: 'none', border: 'none', padding: 0, color: 'inherit' }}
-                    onClick={() => { setSubmitError(false); setModalOpen(true); }}
+                    onClick={() => { setSubmitError(false); setSubmitSuccess(false); setModalOpen(true); }}
                 >
                     <Icon name='comment' /> Contact
                 </button>
@@ -46,6 +50,13 @@ const ContactForm = () => {
                     Contact Us
                 </ModalHeader>
                 <ModalBody>
+                    {submitSuccess ? (
+                        <>
+                            <p role='status' aria-live='polite'>Thanks! Your message has been sent.</p>
+                            <Button onClick={() => setModalOpen(false)}>Close</Button>
+                        </>
+                    ) : (
+                    <>
                     {submitError && <p className='text-danger' role='alert' aria-live='assertive'>Sorry, your message couldn't be sent. Please try again.</p>}
                     <Formik
                         initialValues={
@@ -60,29 +71,30 @@ const ContactForm = () => {
                         onSubmit={handleSubmit}
                         validate={validateContactForm}
                         >
+                        {({ isSubmitting }) => (
                         <Form>
                             <FormGroup>
-                                <Label htmlFor='firstName'>First Name</Label>
+                                <Label htmlFor='firstName'>First Name <span className='text-danger'>*</span></Label>
                                 <Field
                                     name='firstName'
                                     placeholder='First Name'
                                     className='form-control'
                                 />
                                 <ErrorMessage name='firstName'>
-                                    {(msg) => <p className='text-danger'>{msg}</p>} 
+                                    {(msg) => <p className='text-danger'>{msg}</p>}
                                 </ErrorMessage>
-                                <Label htmlFor='lastName'>Last Name</Label>
+                                <Label htmlFor='lastName'>Last Name <span className='text-danger'>*</span></Label>
                                 <Field
                                     name='lastName'
                                     placeholder='Last Name'
                                     className='form-control'
                                 />
                                 <ErrorMessage name='lastName'>
-                                    {(msg) => <p className='text-danger'>{msg}</p>} 
-                                </ErrorMessage>          
+                                    {(msg) => <p className='text-danger'>{msg}</p>}
+                                </ErrorMessage>
                             </FormGroup>
                             <FormGroup>
-                                <Label htmlFor='email'>Email</Label>
+                                <Label htmlFor='email'>Email <span className='text-danger'>*</span></Label>
                                 <Field
                                     name='email'
                                     placeholder='Email'
@@ -91,7 +103,7 @@ const ContactForm = () => {
                                 <ErrorMessage name='email'>
                                     {(msg) => <p className='text-danger'>{msg}</p>}
                                 </ErrorMessage>
-                            </FormGroup>    
+                            </FormGroup>
                             <FormGroup>
                                 <Label htmlFor='topic' style={{ paddingRight:10 }}>Topic</Label>
                                 <Field as='select' name='topic'>
@@ -100,9 +112,9 @@ const ContactForm = () => {
                                     <option value='2'>Feature Request</option>
                                     <option value='3'>Other</option>
                                 </Field>
-                            </FormGroup>                     
+                            </FormGroup>
                             <FormGroup>
-                                <Label htmlFor='commentText'>Comment</Label>
+                                <Label htmlFor='commentText'>Comment <span className='text-danger'>*</span></Label>
                                 <Field
                                     name='commentText'
                                     as='textarea'
@@ -110,15 +122,22 @@ const ContactForm = () => {
                                     className='form-control'
                                 />
                                 <ErrorMessage name='commentText'>
-                                    {(msg) => <p className='text-danger'>{msg}</p>} 
-                                </ErrorMessage>         
+                                    {(msg) => <p className='text-danger'>{msg}</p>}
+                                </ErrorMessage>
                             </FormGroup>
 
-                            <Button type='submit' style={{backgroundColor:"#483d8b", color:"white", margin: "5%", boxShadow: "3px 3px 1px rgba(46, 46, 46, 0.62)"}}>
-                                Submit
+                            <Button
+                                type='submit'
+                                disabled={isSubmitting}
+                                style={{backgroundColor:"#483d8b", color:"white", margin: "5%", boxShadow: "3px 3px 1px rgba(46, 46, 46, 0.62)"}}
+                            >
+                                {isSubmitting ? 'Sending…' : 'Submit'}
                             </Button>
                         </Form>
+                        )}
                     </Formik>
+                    </>
+                    )}
                 </ModalBody>
             </Modal>
         </>
