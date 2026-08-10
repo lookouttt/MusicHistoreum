@@ -13,9 +13,10 @@ the phase table below — see their entries in the Server/Python detail sections
 Note: this whole effort had been sitting on an unmerged feature branch for weeks before Phase 1
 was pushed to `master` — if picking this back up after a gap, confirm `git branch --contains`
 for the latest relevant commit actually includes `master` before assuming something is live.
-Phase 3 is partway done too: `B1`, `B6`, `B5`, `B2`, `B7`, `B9` are all done and live on both
-the local and Aiven databases (DB/schema changes have no separate "deploy" step, unlike server
-code) — only `B3`/`B4` (in progress) and `B8` remain, also no longer listed in the phase table.
+Phase 3 is almost done too: `B1`, `B6`, `B5`, `B2`, `B7`, `B9`, `B3`, `B4` are all done and live
+on both the local and Aiven databases (DB/schema changes have no separate "deploy" step, unlike
+server code) — only `B8` remains, and a new deferred decision item, `B10`, was added from a
+finding B4's rewrite surfaced. Neither is in the phase table below.
 
 ## How to use this
 
@@ -62,7 +63,7 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 3 | Database integrity & performance | B3, B4 (in progress, Opus 5 subagent), B8 |
+| 3 | Database integrity & performance | B8 |
 | 4 | Python ingestion reliability | P2, P3, P9, P4, P6, P7, P5 |
 | 5 | Client correctness & efficiency | C2, C3, C8, C9, C1, C7, C4, C6*, C5*, C11* |
 | 6 | Accessibility & visual consistency | U1, U8, U9, U10, U11, U12, U22, U27*, U26 |
@@ -138,15 +139,23 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
   Verified via `EXPLAIN ANALYZE`: Seq Scan → Bitmap Index Scan for the existing
   `LIKE`/`similar to` filters, no query changes needed. Also addresses the CLAUDE.md-documented
   known issue that artist search is "plain text matching."
-- **B3 / B4** *(Phase 3, delegated to an Opus 5 subagent — in progress)* — Rewriting
-  `peak_weeks` in `get_albums_by_artist.sql`/`get_songs_by_artist.sql` (B3) and the full
-  cursor-loop point-scoring logic in `get_range_album_chart.sql`/`get_range_song_chart.sql`
-  (B4) as set-based window-function queries. Per the Model recommendations above, this is the
-  plan's highest-stakes correctness work, so it was handed to an Opus 5 subagent with the full
-  business-logic breakdown (peak_weeks definition, the point-scoring tiers/thresholds, the
-  `bonusPoints` dead-code finding, tie-breaking order) rather than done on the default model.
-  Required to verify old-vs-new output on real data (local first, then Aiven) before treating
-  either as correct.
+- **B3 / B4** *(Phase 3, done — delegated to an Opus 5 subagent)* — `peak_weeks` in
+  `get_albums_by_artist.sql`/`get_songs_by_artist.sql` (B3) and the full cursor-loop
+  point-scoring logic in `get_range_album_chart.sql`/`get_range_song_chart.sql` (B4) rewritten
+  as set-based window-function queries and deployed to Aiven. Verification: 646 test cases /
+  138,747 rows total, zero value differences vs. the originals, plus 5 deliberately-planted
+  "plausible wrong rewrite" mutants that the verification suite correctly caught — worth
+  trusting this one. Incidentally 2.2–4.9x faster. See `docs/site-hardening-audit.md`'s B3/B4
+  entries for the two things this surfaced: the `pointFactor` integer-rounding quirk (now
+  tracked as **B10**, a deferred decision) and one deliberate behavior change (a stable
+  `song_id`/`album_id` tie-breaker added to the rank ordering, since the original's tie order
+  wasn't actually stable/well-defined).
+- **B10** *(Phase 3, new, decision — deferred, not urgent)* — See the audit doc for the full
+  writeup and exact repro steps. Short version: build a temporary version of
+  `get_range_song_chart`/`get_range_album_chart` with `point_factor` as `numeric` using the
+  real 1/0.6/0.4 weights (thresholds differ between songs and albums - see audit entry), run it
+  against the same chart/date-range as production, and diff `points`/rank output. User wants to
+  see that comparison before deciding whether to actually change production behavior.
 - **B8** *(Phase 3, still pending — do right after B3/B4 land)* — Replace
   `CREATE TEMP TABLE ... ON COMMIT DROP` + populate + `SELECT *` with a single
   `WITH ... AS (...) SELECT ...` CTE in each of the six JSON-returning functions. Mechanical,

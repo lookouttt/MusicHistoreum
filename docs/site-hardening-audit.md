@@ -168,18 +168,53 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
   `chart_entries.source_id` → `song_list`/`album_list` split). Run against Aiven and confirmed
   zero orphans currently exist.
 - B3. `get_albums_by_artist.sql`/`get_songs_by_artist.sql` computed `peak_weeks` via a per-row
-  correlated subquery (N+1 pattern) instead of a windowed/aggregate query. Rewrite delegated to
-  an Opus 5 subagent (in progress — see B4 below for why).
+  correlated subquery (N+1 pattern) instead of a windowed/aggregate query. Fixed: rewritten as
+  a single set-based query (`min(rank) over (partition by ...)` + `count(*) filter (where rank
+  = peak)`), delegated to an Opus 5 subagent given the correctness stakes. Verified: 517 test
+  cases / 50,344 rows compared against the original, zero value differences; deployed to Aiven.
 - B4. `get_range_album_chart.sql`/`get_range_song_chart.sql` used nested cursor loops (outer
   per charted item, inner per week) doing row-by-row arithmetic against `chart_entries`, the
-  largest table, instead of a set-based query. This is the plan's highest-stakes correctness
-  work (a subtle ordering/tie-breaking bug could slip through silently), so it was delegated to
-  an Opus 5 subagent alongside B3 rather than done on the default model — in progress.
+  largest table, instead of a set-based query. Fixed: rewritten as one query using
+  `row_number()` for the chronological occurrence counter and a single `sum()` of CASE terms
+  for the point-scoring algorithm. Verified extensively (Opus 5 subagent): 129 test cases /
+  88,423 rows across Month/Year/Decade ranges, threshold-crossing charts, and edge cases
+  (empty/inverted/single-day ranges, nonexistent chart ids), zero value differences; a 5-mutant
+  test (deliberately reintroducing plausible wrong rewrites) confirmed the verification suite
+  would have caught each one. Deployed to Aiven; incidentally 2.2–4.9x faster.
+  - **Found during the rewrite, deliberately preserved as-is (see B10 below):** the original
+    `pointFactor` was declared as PL/pgSQL `integer`, so assigning `0.6`/`0.4` to it rounded to
+    `1`/`0` — the "reduced weight for smaller charts" logic has always been a binary 1-or-0
+    switch in production, not the tiered 1/0.6/0.4 the code visually suggests. The rewrite
+    reproduces this exact behavior (with an explanatory comment in the SQL) rather than
+    silently correcting it, since fixing it would shift point totals/rankings for every range
+    chart ever computed.
+  - **One deliberate behavior change:** added a final `song_id`/`album_id` tie-breaker to the
+    `ORDER BY`. The original's rank for fully-tied rows (`points`, `peak`, `weeks` all equal)
+    was confirmed to depend on the query's execution plan (verified: changed under
+    `enable_hashagg=off`/different `work_mem`) - not a stable, well-defined output to begin
+    with. This matters because `bb_script/annual_top_songs.py` persists `song_rank` as
+    `year_rank` and cuts at `song_rank <= top_n`, so an unstable rank could churn which tied
+    song makes the cut on a rerun. Already-completed `annual_top_songs` years are frozen and
+    may still reflect an old, differently-tied-broken order until recomputed
+    (`populate_annual_top_songs(conn, force=True)`).
 
 ### Low
 - B8. All six JSON-returning functions `CREATE TEMP TABLE ... ON COMMIT DROP` per invocation
   instead of a CTE — minor catalog churn under load. Sequenced right after B3/B4 land, since
   it touches the same functions.
+
+### Decision (deferred)
+- B10. *(new, found during B4's rewrite)* The `pointFactor` integer-rounding quirk above (1/1/0
+  instead of the visually-intended 1/0.6/0.4) is live production behavior, not a rewrite bug —
+  preserved as-is for now. User wants to compare old-vs-new point totals/rankings with the
+  correct fractional weights before deciding whether to actually change it. To reproduce the
+  "corrected" version for comparison: in `get_range_song_chart`/`get_range_album_chart`'s
+  `point_factor` CASE expression, change the type from implicit integer to `numeric` and use
+  the real values instead of the current 1/1/0: songs' thresholds are `item_count >=75 → 1`,
+  `>=50 → 0.6`, else `0.4`; albums' are different, `item_count >=150 → 1`, `>=100 → 0.6`, else
+  `0.4`. Run both versions (e.g. one as a temporary differently-named function) against the
+  same chart/range and diff `points`/rank output before deciding whether to replace production
+  behavior.
 
 ---
 
