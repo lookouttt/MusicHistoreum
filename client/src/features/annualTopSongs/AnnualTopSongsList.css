@@ -98,3 +98,17 @@
 .annualTopSongsRow__appearanceRank {
     font-weight: bold;
 }
+
+@media (max-width: 768px) {
+    .annualTopSongsListHeader,
+    .annualTopSongsRow {
+        grid-template-columns: 2rem minmax(0, 1fr) minmax(0, 1fr) minmax(7rem, 10rem);
+        gap: 0.35rem;
+        padding: 0.4rem 0.35rem;
+    }
+
+    .annualTopSongsRow__appearanceLine {
+        grid-template-columns: minmax(0, 1fr) 2.5rem 2rem;
+        gap: 0.35rem;
+    }
+}
