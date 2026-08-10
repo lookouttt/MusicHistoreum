@@ -31,28 +31,30 @@ div.container-fluid {
     padding-right: 0;
 }
 
-[data-urltype='ChartPage']::before {
+/* Page backgrounds are grouped by section, not chosen per-page. There are exactly two
+   treatments: one for the data/chart pages and one for the informational pages. When adding a
+   new page, add its `data-urltype` to whichever of the two groups below it belongs to — do not
+   introduce a third image without a deliberate reason. Both images are pre-optimized 16:9 and
+   dark enough to keep white content text legible under the shared brightness(50%) overlay.
+
+   Other images in app/assets/img/ (rock/pop/country/billboard_200/r_b_hip_hop/christian_gospel/
+   hd-wallpaper/vinyl-1894855) are intentionally unreferenced: they are either too light, too
+   busy, too low-resolution, or multi-megabyte unoptimized originals. Any of them would need a
+   resize/compression pass before being used as a full-viewport background. */
+
+/* Data / chart pages */
+[data-urltype='HomePage']::before,
+[data-urltype='ChartPage']::before,
+[data-urltype='ArtistPage']::before,
+[data-urltype='AnnualTopSongsPage']::before {
     background-image: url(./app/assets/img/vinyl-1595847.jpg);
 }
 
-[data-urltype='HomePage']::before {
-    background-image: url(./app/assets/img/vinyl-1894855_960_720.jpg);
-}
-
-[data-urltype='ArtistPage']::before {
-    background-image: url(./app/assets/img/concert-316464.jpg);
-}
-
-[data-urltype='FeaturesPage']::before {
-    background-image: url(./app/assets/img/rock.jpg);
-}
-
-[data-urltype='AboutPage']::before {
-    background-image: url(./app/assets/img/pop.jpg);
-}
-
+/* Informational pages */
+[data-urltype='AboutPage']::before,
+[data-urltype='FeaturesPage']::before,
 [data-urltype='KnownIssuesPage']::before {
-    background-image: url(./app/assets/img/country.jpg);
+    background-image: url(./app/assets/img/concert-316464.jpg);
 }
 
 .mh-background::before {
