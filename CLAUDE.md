@@ -33,7 +33,7 @@ There is no configured server test script (`npm test` in `server/` just exits wi
 
 `server/index.js` requires a `server/.env` (gitignored) with:
 - `PG_USER`, `PG_PASSWORD`, `PG_HOST`, `PG_PORT`, `PG_DATABASE` — connection info for the PostgreSQL database holding the Billboard chart data (`db.js`). The DB has been migrated to a hosted Aiven Postgres instance (see `bb_script/` below); set `PG_SSL=true` to have `db.js` connect with `ssl: { rejectUnauthorized: false }` for that case.
-- `MAIL_USER`, `MAIL_PASSWORD` — SMTP creds for the contact form's nodemailer transport (`mail.musichistoreum.com`)
+- `MAIL_USER`, `MAIL_PASSWORD` — SMTP creds for the contact form's nodemailer transport. `MAIL_USER` must be a Gmail (or Google Workspace) address, and `MAIL_PASSWORD` a Google Account App Password for it (not the account's login password) — the transport is `smtp.gmail.com`, not `mail.musichistoreum.com` (the old A2 Hosting mail account behind that host was cancelled; see `docs/site-hardening-audit.md` S11).
 - `API_PORT` — port the Express app listens on (only used when running via `node index.js`; not needed on Vercel, see Deployment below)
 - `CORS_ORIGIN` — optional comma-separated list of allowed CORS origins; defaults to `http://localhost:3000` if unset
 - `LOG_LEVEL` — optional winston log level; defaults to `info`
@@ -64,7 +64,7 @@ The server is prepped for Vercel serverless deployment alongside its original st
 - `server/index.js` only calls `app.listen(...)` when run directly (`require.main === module`), so requiring it from `api/index.js` skips binding a port and lets Vercel's Node runtime treat the app as a `(req, res)` handler.
 - On Vercel, use `APPLE_PRIVATE_KEY` (inline PEM) instead of `APPLE_PRIVATE_KEY_PATH`, and set `PG_SSL=true` to reach the hosted Aiven database over SSL.
 
-The production site is live at `https://www.musichistoreum.com` (client), with the bare apex `musichistoreum.com` set to permanently redirect to `www` via Vercel's domain settings. DNS for `musichistoreum.com` is registered/hosted at hosting.com (not on Vercel's nameservers) — the `www` CNAME and apex `A` record point at Vercel individually, chosen specifically so the domain's existing mail DNS (`mail.musichistoreum.com`, backing `MAIL_USER`/`MAIL_PASSWORD`) isn't disturbed. Production `CORS_ORIGIN` and `REACT_APP_API_BASE_URL` are set to match this domain.
+The production site is live at `https://www.musichistoreum.com` (client), with the bare apex `musichistoreum.com` set to permanently redirect to `www` via Vercel's domain settings. DNS for `musichistoreum.com` is registered/hosted at hosting.com (not on Vercel's nameservers) — the `www` CNAME and apex `A` record point at Vercel individually. This split was originally chosen to avoid disturbing the domain's mail DNS (`mail.musichistoreum.com`), but that mail account (A2 Hosting) has since been cancelled and the contact form's transport now runs over Gmail SMTP instead (see `MAIL_USER`/`MAIL_PASSWORD` above) — the split no longer protects anything mail-related, though it's still harmless to leave as-is. Production `CORS_ORIGIN` and `REACT_APP_API_BASE_URL` are set to match this domain.
 
 ## Architecture
 

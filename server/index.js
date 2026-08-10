@@ -42,8 +42,9 @@ const logger = winston.createLogger({
 });
 
 const contactEmail = nodemailer.createTransport({
-    host: 'mail.musichistoreum.com',
+    host: 'smtp.gmail.com',
     port: 465,
+    secure: true,
     auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD
@@ -117,6 +118,20 @@ const appleMusicDeveloperTokenLimiter = rateLimit({
     handler: (req, res) => {
         logger.warn(`Rate limit exceeded for /apple-music/developer-token from ${req.ip}`);
         res.status(429).json({ error: "Too many requests. Please try again later." });
+    },
+});
+
+// A real visitor submits this form at most once or twice; there's no legitimate caller that
+// needs more than a handful of submissions per hour, so this is stricter than the dev-token
+// limiter above and has no shared-secret bypass.
+const contactFormLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+        logger.warn(`Rate limit exceeded for /contact from ${req.ip}`);
+        res.status(429).json({ status: "ERROR", errors: ["Too many requests. Please try again later."] });
     },
 });
 
@@ -363,9 +378,7 @@ app.get("/apple-music/developer-token", appleMusicDeveloperTokenLimiter, (req, r
 });
 
 
-router.post("/contact", (req, res) => {
-    logger.info(req.body)
-
+router.post("/contact", contactFormLimiter, (req, res) => {
     const validationErrors = validateContactPayload(req.body);
     if (validationErrors.length > 0) {
         return res.status(422).json({ status: "ERROR", errors: validationErrors });
@@ -374,7 +387,10 @@ router.post("/contact", (req, res) => {
     const { firstName, lastName, email, text, topic } = req.body;
     const name = `${firstName} ${lastName}`;
     const mail = {
-        from: name,
+        // Gmail's SMTP relay requires the From address to match the authenticated account
+        // (or a verified alias) - a bare display name with no address, which the old A2
+        // Hosting transport tolerated, gets rejected here.
+        from: `"${name}" <${process.env.MAIL_USER}>`,
         to: process.env.MAIL_USER,
         subject: `Music Historeum Contact Form Submission - ${topic}`,
         html: `<p>Name: ${escapeHtml(name)}</p>
