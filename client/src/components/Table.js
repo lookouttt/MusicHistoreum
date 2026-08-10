@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useFilters, useGlobalFilter, usePagination, useTable } from "react-table";
+import { useFilters, useGlobalFilter, useTable } from "react-table";
 import { useNavigate } from 'react-router-dom';
 import {matchSorter} from 'match-sorter';
 
@@ -37,8 +37,7 @@ export default function Table({
                             data,
                             hiddenColumns = [],
                             onCloseModal,
-                            tablePageSize,
-                            bPage,
+                            maxRows,
                             bFilter,
                             selectable = false,
                             selectedIds,
@@ -77,30 +76,20 @@ export default function Table({
     getTableProps, // table props from react-table
     getTableBodyProps, // table body props from react-table
     headerGroups, // headerGroups, if your table has groupings
-    // rows, // rows for the table based on the data passed
+    rows, // rows for the table based on the data passed (post-filter, unpaginated)
     prepareRow, // Prepare the row (this function needs to be called for each row before getting the row props)
     setHiddenColumns,
-    page,
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
-    pageCount,
-    gotoPage,
-    nextPage,
-    previousPage,
-    setPageSize,
-    state: { pageIndex, pageSize },
   } = useTable({
         columns,
         data,
-        initialState: { pageIndex: 0, pageSize: tablePageSize},
         defaultColumn,
         filterTypes,
     },
     useFilters,
-    useGlobalFilter,
-    usePagination
+    useGlobalFilter
   );
+
+  const displayRows = typeof maxRows === 'number' ? rows.slice(0, maxRows) : rows;
 
   useEffect(() => {
     // const prevHiddenColumns = () => [];
@@ -120,69 +109,12 @@ export default function Table({
         }
     }
 
-    const TablePagination = () => {
-        return (
-            <div className="pagination">
-                <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-                {'<<'}
-                </button>{' '}
-                <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-                {'<'}
-                </button>{' '}
-                <button onClick={() => nextPage()} disabled={!canNextPage}>
-                {'>'}
-                </button>{' '}
-                <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-                {'>>'}
-                </button>{' '}
-                {' '}
-                <select
-                    style={{marginLeft: '1em'}}
-                    value={pageSize}
-                    onChange={e => {
-                        setPageSize(Number(e.target.value))
-                    }}
-                >
-                    {[10, 20, 30, 40, 50].map(pageSize => (
-                        <option key={pageSize} value={pageSize}>
-                        Show {pageSize}
-                        </option>
-                    ))}
-                </select>
-            </div>
-        )
-    }
-
-    const TablePagination2 = () => {
-        return (
-            <div className="pagination2">
-                <span style={{ paddingTop: '0.2em', paddingRight:'0.4em' }}>
-                    Page{' '}
-                    <strong>
-                        {pageIndex + 1} of {pageOptions.length}
-                    </strong>{' '}
-                </span>
-                <span style={{ paddingRight: '0.2em' }}>
-                    | Go to page:{' '}
-                    <input
-                        type="number"
-                        defaultValue={pageIndex + 1}
-                        onChange={e => {
-                        const page = e.target.value ? Number(e.target.value) - 1 : 0
-                        gotoPage(page)
-                        }}
-                        style={{ width: '70px' }}
-                    />
-                </span>
-            </div>
-        )
-    }
-  /* 
+  /*
     Render the UI for your table
     - react-table doesn't have UI, it's headless. We just need to put the react-table props from the Hooks, and it will do its magic automatically
   */
   return (
-    <>
+    <div style={{ overflowX: 'auto' }}>
         <table {...getTableProps()}>
         <thead>
             {headerGroups.map(headerGroup => (
@@ -197,7 +129,7 @@ export default function Table({
             ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-            {page.map((row, i) => {
+            {displayRows.map((row, i) => {
             prepareRow(row);
             return (
                 <tr {...row.getRowProps()}>
@@ -238,8 +170,6 @@ export default function Table({
             })}
         </tbody>
         </table>
-        { (bPage) && <TablePagination />}
-        { (bPage) && <TablePagination2 />}
-    </>
+    </div>
   );
 }
