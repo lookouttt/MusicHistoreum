@@ -217,6 +217,7 @@ export default function Table({
                     return (
                         <td
                             {...cell.getCellProps()}
+                            className="artist-link-cell"
                             role="button"
                             tabIndex={0}
                             style={{ cursor: 'pointer' }}

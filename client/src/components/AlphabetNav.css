@@ -6,4 +6,6 @@
 .alphaItem {
     margin-left: 12px;
     margin-right: 12px;
+    border: none;
+    background: none;
 }

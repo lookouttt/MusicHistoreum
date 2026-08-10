@@ -14,9 +14,9 @@ const KnownIssuesPage = () => {
                                 <Col>
                                     <Card id='issues-card'>
                                         <CardHeader>
-                                            <h1 id="issues-title">
+                                            <h2 id="issues-title">
                                                 Known Issues
-                                            </h1>
+                                            </h2>
                                         </CardHeader>
                                         <CardBody id='issues-content'>
                                             <h3>Current site improvements being worked on:</h3>

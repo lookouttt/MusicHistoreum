@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import {
-    Navbar, 
+    Navbar,
     Nav,
     NavItem,
 } from 'reactstrap';
-import { NavLink } from 'react-router-dom';
 import './AlphabetNav.css';
 import ArtistModal from "./ArtistModal";
 
@@ -14,11 +13,11 @@ const AlphabetNav = () => {
 
     const alphaChars = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
          'S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9','*'];
-    
+
     const AlphaNavItems = () => {
         return (
             <NavItem >
-                {alphaChars.map((alphaChar, index) => (<NavLink key={index} className='nav-link alphaItem' to='#' onClick={() => setPassChar(alphaChar)}>{alphaChar}</NavLink>))}
+                {alphaChars.map((alphaChar, index) => (<button key={index} type='button' className='nav-link alphaItem' onClick={() => setPassChar(alphaChar)}>{alphaChar}</button>))}
             </NavItem>
         );
     }

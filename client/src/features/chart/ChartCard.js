@@ -129,7 +129,7 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
         <>
         <Card className='chartCard'>
             <CardHeader className='chartHeader'>
-                { bIncludeNav ? <h1>{chartTitle()}</h1> : <h3>{chartTitle()}</h3> }
+                { bIncludeNav ? <h2>{chartTitle()}</h2> : <h3>{chartTitle()}</h3> }
             </CardHeader>
             <CardBody className='chartBody'>
                 { bIncludeNav && <ChartNav chart={chart}/> }

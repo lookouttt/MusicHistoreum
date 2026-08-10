@@ -12,7 +12,9 @@ const WeekPicker = ({ firstDate, lastDate }) => {
 
     return (
         <DatePickerStyles>
+            <label className="visually-hidden" htmlFor="week-picker-input">Select a chart date</label>
             <DatePicker
+                id="week-picker-input"
                 selected={startDate}
                 onChange={onChange}
                 minDate={new Date(firstDate)}

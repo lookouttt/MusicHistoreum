@@ -10,7 +10,9 @@ const YearPicker = ({ firstDate, lastDate }) => {
 
     return (
         <DatePickerStyles>
+            <label className="visually-hidden" htmlFor="year-picker-input">Select a year</label>
             <DatePicker
+                id="year-picker-input"
                 selected={startDate}
                 onChange={onChange}
                 minDate={new Date(firstDate)}

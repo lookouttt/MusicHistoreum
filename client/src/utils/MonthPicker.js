@@ -10,7 +10,9 @@ const MonthPicker = ({ firstDate, lastDate }) => {
 
     return (
         <DatePickerStyles>
+            <label className="visually-hidden" htmlFor="month-picker-input">Select a month</label>
             <DatePicker
+                id="month-picker-input"
                 selected={startDate}
                 onChange={onChange}
                 minDate={new Date(firstDate)}

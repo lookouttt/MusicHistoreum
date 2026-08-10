@@ -159,7 +159,7 @@ function AnnualTopSongsList() {
     return (
         <Card className='annualTopSongsCard'>
             <CardHeader>
-                <h1>Top Songs by Year</h1>
+                <h2>Top Songs by Year</h2>
             </CardHeader>
             <CardBody>
                 <div className='annualTopSongsControls'>

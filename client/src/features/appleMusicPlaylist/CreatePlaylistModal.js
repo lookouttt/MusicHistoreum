@@ -169,7 +169,7 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                 )}
 
                 {status === 'working' && (
-                    <p>
+                    <p role='status' aria-live='polite'>
                         {progress?.stage === 'adding'
                             ? `Adding to playlist (${progress.completed} of ${progress.total})…`
                             : `Searching Apple Music${progress ? ` (${progress.completed} of ${progress.total})` : '…'}`}
@@ -178,7 +178,7 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
 
                 {status === 'error' && (
                     <>
-                        <p className='text-danger'>{errorMessage}</p>
+                        <p className='text-danger' role='alert' aria-live='assertive'>{errorMessage}</p>
                         <Button onClick={handleCreate}>Try Again</Button>
                     </>
                 )}

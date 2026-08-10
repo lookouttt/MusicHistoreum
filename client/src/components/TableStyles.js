@@ -42,6 +42,16 @@ const TableStyles = styled.div`
                 border-right: 0;
             }
         }
+
+        td.artist-link-cell {
+            color: #f0e6ff;
+            text-decoration: underline;
+
+            :hover,
+            :focus {
+                color: white;
+            }
+        }
     }
 `
 

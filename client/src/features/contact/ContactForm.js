@@ -46,7 +46,7 @@ const ContactForm = () => {
                     Contact Us
                 </ModalHeader>
                 <ModalBody>
-                    {submitError && <p className='text-danger'>Sorry, your message couldn't be sent. Please try again.</p>}
+                    {submitError && <p className='text-danger' role='alert' aria-live='assertive'>Sorry, your message couldn't be sent. Please try again.</p>}
                     <Formik
                         initialValues={
                             {

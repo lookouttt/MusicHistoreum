@@ -14,9 +14,9 @@ const AboutPage = () => {
                                 <Col>
                                     <Card id='about-card'>
                                         <CardHeader>
-                                            <h1 id="about-title">
+                                            <h2 id="about-title">
                                                 About Music Historeum
-                                            </h1>
+                                            </h2>
                                         </CardHeader>
                                         <CardBody>
                                             <p id="about-content">

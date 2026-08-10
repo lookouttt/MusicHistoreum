@@ -49,9 +49,9 @@ const HomePage = () => {
                                 <Col>
                                     <Card id='home-card'>
                                         <CardHeader>
-                                            <h1 id="home-title">
+                                            <h2 id="home-title">
                                                 Welcome to Music Historeum
-                                            </h1>
+                                            </h2>
                                         </CardHeader>
                                         <CardBody>
                                             <p id="home-content">
@@ -81,7 +81,7 @@ const HomePage = () => {
                                 <Col>
                                     <Card className='homeChartCard'>
                                         <CardHeader className='homeChartHeader'>
-                                            <h1>Most Recent Top Charts</h1>
+                                            <h2>Most Recent Top Charts</h2>
                                         </CardHeader>
                                         <CardBody className='homeChartBody'>
                                             <Container style={{paddingRight: '0.2vw', paddingLeft: '0.2vw'}}>

@@ -98,7 +98,7 @@ function ArtistCard(artist) {
     return songItems && albumItems && (
         <Card className='artistCard'>
             <CardHeader className='artistHeader'>
-                <h1>{artistTitle()}</h1>
+                <h2>{artistTitle()}</h2>
             </CardHeader>
             <CardBody className='artistBody'>
                 <Container style={{paddingRight: '1vw', paddingLeft: '1vw'}}>

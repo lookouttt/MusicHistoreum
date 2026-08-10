@@ -9,7 +9,7 @@ function ArtistList() {
         <>
         <Card className='artistListCard'>
             <CardHeader className='artistListHeader'>
-                <h1>All-Time Best Selling Artists</h1>
+                <h2>All-Time Best Selling Artists</h2>
             </CardHeader>
             <CardBody className='artistListBody'>
                 <ul className="topArtistList"><TopArtistList/></ul>

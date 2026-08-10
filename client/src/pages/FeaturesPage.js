@@ -17,9 +17,9 @@ const FeaturesPage = () => {
                                 <Col>
                                     <Card id='features-card'>
                                         <CardHeader>
-                                            <h1 id="features-title">
+                                            <h2 id="features-title">
                                                 Future Features
-                                            </h1>
+                                            </h2>
                                         </CardHeader>
                                         <CardBody id='features-content'>
                                             <h3>This growing list includes the following:</h3>

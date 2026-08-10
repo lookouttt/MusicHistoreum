@@ -15,7 +15,9 @@ const DecadePicker = ({ firstDate, lastDate }) => {
 
     return (
         <DatePickerStyles>
+            <label className="visually-hidden" htmlFor="decade-picker-input">Select year in desired decade</label>
             <DatePicker
+                id="decade-picker-input"
                 selected={startDate}
                 onChange={onChange}
                 minDate={new Date(firstDate)}
