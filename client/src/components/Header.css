@@ -54,3 +54,14 @@
 span {
     padding-right: 20px;
 }
+
+@media (max-width: 480px) {
+    #mainTitle {
+        min-height: auto;
+        padding: 0.5rem 0;
+    }
+
+    #mainTitle > h1 {
+        font-size: 1.5rem;
+    }
+}
