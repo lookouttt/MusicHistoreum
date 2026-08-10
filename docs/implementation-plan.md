@@ -13,6 +13,9 @@ the phase table below — see their entries in the Server/Python detail sections
 Note: this whole effort had been sitting on an unmerged feature branch for weeks before Phase 1
 was pushed to `master` — if picking this back up after a gap, confirm `git branch --contains`
 for the latest relevant commit actually includes `master` before assuming something is live.
+Phase 3 is partway done too: `B1`, `B6`, `B5`, `B2`, `B7`, `B9` are all done and live on both
+the local and Aiven databases (DB/schema changes have no separate "deploy" step, unlike server
+code) — only `B3`/`B4` (in progress) and `B8` remain, also no longer listed in the phase table.
 
 ## How to use this
 
@@ -59,7 +62,7 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 3 | Database integrity & performance | B1, B6, B5, B3, B4, B8, B2*, B7*, B9 |
+| 3 | Database integrity & performance | B3, B4 (in progress, Opus 5 subagent), B8 |
 | 4 | Python ingestion reliability | P2, P3, P9, P4, P6, P7, P5 |
 | 5 | Client correctness & efficiency | C2, C3, C8, C9, C1, C7, C4, C6*, C5*, C11* |
 | 6 | Accessibility & visual consistency | U1, U8, U9, U10, U11, U12, U22, U27*, U26 |
@@ -121,49 +124,43 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
 
 ## Database (`db/functions/*.sql`, `db/tables/*.sql`)
 
-- **B1** *(Phase 3, do first)* — `CREATE INDEX idx_chart_dates_chart_id_date ON chart_dates
-  (chart_id, chart_date);` — matches the exact filter used by every `get_weekly_*`/`get_range_*`
-  /`get_artist_list` function. Highest-leverage single change in this whole plan; every chart
-  page load benefits. Apply on Aiven directly, then update the tracked `db/tables/chart_dates.sql`
-  snapshot to match (per the existing tracked-snapshot convention).
-- **B6** *(Phase 3)* — Add a supporting index, `CREATE INDEX idx_chart_entries_chart_id ON
-  chart_entries (chart_id);` (or a covering `(chart_id, source_id)` index). Don't reorder the
-  existing `chart_entries_unique_row UNIQUE(source_id, chart_id)` constraint — uniqueness is
-  symmetric regardless of column order, so reordering it wouldn't change lookup performance;
-  a separate index is the actual fix. Do this alongside B1 since both serve the same join path.
-- **B5** *(Phase 3)* — Enable `pg_trgm` (`CREATE EXTENSION IF NOT EXISTS pg_trgm;` — confirm
-  availability on Aiven first, the same way `pldbgapi`/`fuzzystrmatch` were checked during the
-  original migration per `docs/aiven-migration-notes.md`), add a GIN trigram index on
-  `artist_list.artist_name` (`USING gin (artist_name gin_trgm_ops)`), then the existing
-  `LIKE`/`similar to` filters in `get_artist_list`/`get_albums_by_artist`/`get_songs_by_artist`
-  can use it as-is (Postgres will pick the index for `LIKE '%...%'` once it exists). This also
-  directly addresses the CLAUDE.md-documented known issue that artist search is "plain text
-  matching."
-- **B3** *(Phase 3, consider Opus 5)* — Rewrite `peak_weeks` in `get_albums_by_artist.sql`/
-  `get_songs_by_artist.sql` as a window function (`COUNT(*) FILTER (...) OVER (PARTITION BY
-  ...)`, or a pre-aggregated CTE joined once) instead of a per-row correlated subquery. Verify
-  by comparing output for a handful of known artists against the current function before/after.
-- **B4** *(Phase 3, largest single item in this plan, consider Opus 5)* — Rewrite `get_range_album_chart.sql`/
-  `get_range_song_chart.sql` as set-based queries: replace the nested cursor loops with one
-  query using window functions (`MIN`/`MAX`/`COUNT` over `PARTITION BY source_id`) to compute
-  peak/points/weeks across the range in a single pass. Budget real time for this one — verify
-  output against the current cursor-based version across several chart/date-range combinations,
-  since ordering/tie-breaking differences are easy to introduce silently.
-- **B8** *(Phase 3)* — Replace `CREATE TEMP TABLE ... ON COMMIT DROP` + populate + `SELECT *`
-  with a single `WITH ... AS (...) SELECT ...` CTE in each of the six JSON-returning functions.
-  Mechanical, low-risk — done here, right after B3/B4, since you're already editing these files.
-- **B2** *(Phase 3, decision)* — No FK constraints anywhere is a deliberate tradeoff already
-  documented in `docs/aiven-migration-notes.md` (app does lookup-or-insert, not DB-enforced
-  relations). Recommend **not** adding enforced FKs blindly, since `bb_scrape.py`'s insert flow
-  assumes no FK friction. Decide between: (a) leave as-is, add a periodic orphan-row audit
-  query instead, or (b) add FKs only after confirming `bb_scrape.py`'s insert order can never
-  violate them. Needs your call, not a mechanical fix.
-- **B7** *(Phase 3, decision)* — `usp_SEL_ChartEntriesByChart` is unreachable and broken against
-  the current schema. Recommend dropping it (`DROP FUNCTION ...` on the DB, delete
-  `db/functions/usp_SEL_ChartEntriesByChart.sql`) rather than fixing something nothing calls —
-  confirm before deleting, since it's a live DB object.
-- **B9** *(Phase 3)* — Moot if B7 is chosen (deletion). Otherwise, rename to
-  `get_chart_entries_by_chart` for naming consistency with the rest of the `get_*` functions.
+- **B1** *(Phase 3, done)* — `idx_chart_dates_chart_id_date` on `chart_dates(chart_id,
+  chart_date)` applied to both local and Aiven; `db/tables/chart_dates.sql` regenerated.
+  Verified via `EXPLAIN ANALYZE`: ~297ms Parallel Seq Scan → ~0.2ms Index Scan.
+- **B6** *(Phase 3, done)* — `idx_chart_entries_chart_id_source` on `chart_entries(chart_id,
+  source_id)` (a covering index, not just `chart_id` alone), applied alongside B1 to both
+  databases. This index is ~107MB (`chart_entries` has ~4.85M rows) — combined with B1, it
+  exhausted Aiven's storage quota mid-session and required a plan upgrade (see CLAUDE.md's
+  "Database schema tracking" section) before B5 below could proceed. Existing
+  `chart_entries_unique_row UNIQUE(source_id, chart_id)` constraint left untouched.
+- **B5** *(Phase 3, done)* — `pg_trgm` confirmed available and enabled on both local and Aiven;
+  GIN trigram index `idx_artist_list_artist_name_trgm` added on `artist_list.artist_name`.
+  Verified via `EXPLAIN ANALYZE`: Seq Scan → Bitmap Index Scan for the existing
+  `LIKE`/`similar to` filters, no query changes needed. Also addresses the CLAUDE.md-documented
+  known issue that artist search is "plain text matching."
+- **B3 / B4** *(Phase 3, delegated to an Opus 5 subagent — in progress)* — Rewriting
+  `peak_weeks` in `get_albums_by_artist.sql`/`get_songs_by_artist.sql` (B3) and the full
+  cursor-loop point-scoring logic in `get_range_album_chart.sql`/`get_range_song_chart.sql`
+  (B4) as set-based window-function queries. Per the Model recommendations above, this is the
+  plan's highest-stakes correctness work, so it was handed to an Opus 5 subagent with the full
+  business-logic breakdown (peak_weeks definition, the point-scoring tiers/thresholds, the
+  `bonusPoints` dead-code finding, tie-breaking order) rather than done on the default model.
+  Required to verify old-vs-new output on real data (local first, then Aiven) before treating
+  either as correct.
+- **B8** *(Phase 3, still pending — do right after B3/B4 land)* — Replace
+  `CREATE TEMP TABLE ... ON COMMIT DROP` + populate + `SELECT *` with a single
+  `WITH ... AS (...) SELECT ...` CTE in each of the six JSON-returning functions. Mechanical,
+  low-risk — sequenced here since B3/B4 already touch four of those six files.
+- **B2** *(Phase 3, done — decision: leave as-is, add detection)* — Added
+  `db/queries/orphan_row_audit.sql`, covering all five implicit parent/child relationships in
+  the schema (including the non-obvious `chart_entries.chart_id` → `chart_dates.chart_date_id`
+  mapping and the chart-type-dependent `chart_entries.source_id` split between `song_list`/
+  `album_list`). Run against Aiven and confirmed zero orphans currently. No FK constraints
+  added — `bb_scrape.py`'s insert flow still assumes friction-free inserts.
+- **B7 / B9** *(Phase 3, done — decision: drop, not fix/rename)* — `usp_SEL_ChartEntriesByChart`
+  dropped from both the local and Aiven databases (`DROP PROCEDURE`), and
+  `db/functions/usp_SEL_ChartEntriesByChart.sql` deleted. B9 (the rename option) is moot since
+  the procedure no longer exists.
 
 ## Python ingestion (`bb_script/`)
 

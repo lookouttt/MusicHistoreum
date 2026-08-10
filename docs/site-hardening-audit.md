@@ -133,40 +133,53 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
 
 ## Database (`db/functions/*.sql`, `db/tables/*.sql`)
 
-### High
-- B1. `chart_dates` has a PK only on `chart_date_id`; no index on `chart_id`/`chart_date`, yet
+### Done this pass
+- B1. `chart_dates` had a PK only on `chart_date_id`; no index on `chart_id`/`chart_date`, yet
   every chart function (`get_weekly_*`, `get_range_*`, `get_artist_list`) filters on exactly
-  those columns — forces a full scan of `chart_dates` on every chart request, cascading into
-  the join against the much larger `chart_entries` table. Verified directly against
-  `get_weekly_song_chart.sql`'s `WHERE chart_dates.chart_id = ... AND chart_dates.chart_date = ...`.
-
-### Medium
+  those columns. Fixed: `idx_chart_dates_chart_id_date` on `(chart_id, chart_date)`. Verified
+  via `EXPLAIN ANALYZE`: the weekly chart lookup went from a ~297ms Parallel Seq Scan on both
+  `chart_dates` and `chart_entries` to a ~0.2ms Index Scan, both locally and on Aiven.
+- B6. `chart_entries_unique_row UNIQUE(source_id, chart_id)` was the only multi-column index on
+  the biggest table, but its leading column was `source_id`, not `chart_id` — the frequent join
+  from `chart_dates.chart_date_id` couldn't use it efficiently. Fixed: added
+  `idx_chart_entries_chart_id_source` on `(chart_id, source_id)`, applied alongside B1 since
+  both serve the same join path (confirmed together in the same `EXPLAIN ANALYZE` above). This
+  index is ~107MB on `chart_entries`'s ~4.85M rows — large enough that, combined with B1,
+  it exhausted Aiven's disk quota mid-session and required a plan upgrade before B5 below could
+  proceed (see CLAUDE.md's "Database schema tracking" section).
+- B5. `get_artist_list`/`get_albums_by_artist`/`get_songs_by_artist` filtered
+  `artist_list.artist_name` with leading-wildcard `LIKE '%..%'`/`similar to`, which can't use a
+  btree index. Fixed: enabled `pg_trgm` and added a GIN trigram index,
+  `idx_artist_list_artist_name_trgm`. Verified via `EXPLAIN ANALYZE`: the planner now uses a
+  Bitmap Index Scan instead of a Seq Scan for this pattern.
+- B7. `usp_SEL_ChartEntriesByChart.sql` referenced `chart_entries.song_id`/`song_rank`, columns
+  that don't exist in the current schema (actual columns are `source_id`/`rank`) — unreachable
+  dead/broken legacy code (verified: nothing in the app called it). Fixed (decision: drop it):
+  `DROP PROCEDURE` on both the local and Aiven databases, and deleted
+  `db/functions/usp_SEL_ChartEntriesByChart.sql`.
+- B9. Moot — the procedure it would have renamed no longer exists (see B7).
 - B2. No FK constraints anywhere (`chart_entries`→`chart_dates`,
-  `album_list`/`song_list`.`artist_id`→`artist_list`, `chart_dates.chart_id`→`chart_list`) —
-  a deliberate tradeoff already documented in `docs/aiven-migration-notes.md` (app does
-  lookup-or-insert instead of DB-enforced relations), but worth re-flagging since an orphaned
-  row would silently corrupt chart output with nothing to catch it.
-- B3. `get_albums_by_artist.sql`/`get_songs_by_artist.sql` compute `peak_weeks` via a per-row
-  correlated subquery (N+1 pattern) instead of a windowed/aggregate query.
-- B4. `get_range_album_chart.sql`/`get_range_song_chart.sql` use nested cursor loops (outer
+  `album_list`/`song_list`.`artist_id`→`artist_list`, `chart_dates.chart_id`→`chart_list`) — a
+  deliberate tradeoff already documented in `docs/aiven-migration-notes.md` (app does
+  lookup-or-insert instead of DB-enforced relations). Fixed (decision: leave as-is, add
+  detection): added `db/queries/orphan_row_audit.sql`, a manual/periodic query covering all
+  five of the schema's implicit parent/child relationships (including the non-obvious
+  `chart_entries.chart_id` → `chart_dates.chart_date_id` mapping, and the type-dependent
+  `chart_entries.source_id` → `song_list`/`album_list` split). Run against Aiven and confirmed
+  zero orphans currently exist.
+- B3. `get_albums_by_artist.sql`/`get_songs_by_artist.sql` computed `peak_weeks` via a per-row
+  correlated subquery (N+1 pattern) instead of a windowed/aggregate query. Rewrite delegated to
+  an Opus 5 subagent (in progress — see B4 below for why).
+- B4. `get_range_album_chart.sql`/`get_range_song_chart.sql` used nested cursor loops (outer
   per charted item, inner per week) doing row-by-row arithmetic against `chart_entries`, the
-  largest table, instead of a set-based query.
-- B5. `get_artist_list`/`get_albums_by_artist`/`get_songs_by_artist` filter
-  `artist_list.artist_name` with leading-wildcard `LIKE '%..%'`/`similar to`, which can't use
-  a btree index even if one existed.
-- B6. `chart_entries_unique_row UNIQUE(source_id, chart_id)` is the only multi-column index on
-  the biggest table, but its leading column is `source_id`, not `chart_id` — the frequent join
-  from `chart_dates.chart_date_id` can't use it efficiently either.
+  largest table, instead of a set-based query. This is the plan's highest-stakes correctness
+  work (a subtle ordering/tie-breaking bug could slip through silently), so it was delegated to
+  an Opus 5 subagent alongside B3 rather than done on the default model — in progress.
 
 ### Low
-- B7. `usp_SEL_ChartEntriesByChart.sql` references `chart_entries.song_id`/`song_rank`,
-  columns that don't exist in the current schema (actual columns are `source_id`/`rank`) —
-  would error if ever executed, but nothing in the app calls it (verified: only self-reference
-  in its own file), so it's unreachable dead/broken legacy code, not an active risk.
 - B8. All six JSON-returning functions `CREATE TEMP TABLE ... ON COMMIT DROP` per invocation
-  instead of a CTE — minor catalog churn under load.
-- B9. `usp_SEL_ChartEntriesByChart` uses Sybase/SQL-Server-style `usp_`/PascalCase naming,
-  inconsistent with snake_case `get_*` elsewhere.
+  instead of a CTE — minor catalog churn under load. Sequenced right after B3/B4 land, since
+  it touches the same functions.
 
 ---
 
