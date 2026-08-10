@@ -7,10 +7,12 @@ doc exactly — cross-reference there for the original finding/severity/rational
 just the "how."
 
 `D1` (`/apple-music/developer-token` rate limiting) is already implemented and isn't repeated
-here. `S1`, `S4`, `P8`, and `P1` (the rest of Phase 1 besides S11) have since been implemented
-too and are no longer listed in the phase table below — see their entries in the Server/Python
-detail sections for what changed. `S11` has been implemented in code (Gmail SMTP transport) but
-isn't live yet — one manual credential-setup step remains; see its entry for exactly what.
+here. **Phases 1 and 2 are both fully complete and confirmed live in production** (`S1`, `S4`,
+`S11`, `P8`, `P1`, `S2`, `S3`, `S5`, `S6`, `S7`, `S8`, `S9`, `S10`) and are no longer listed in
+the phase table below — see their entries in the Server/Python detail sections for what changed.
+Note: this whole effort had been sitting on an unmerged feature branch for weeks before Phase 1
+was pushed to `master` — if picking this back up after a gap, confirm `git branch --contains`
+for the latest relevant commit actually includes `master` before assuming something is live.
 
 ## How to use this
 
@@ -28,11 +30,11 @@ their own area's schedule — e.g. **C10** sits in Phase 8 next to **U19**, not 
 both touch the exact same lines in `ArtistCard.js`. Each is cross-referenced at both ends so
 it's not a surprise either way you encounter it.
 
-**S11** (the contact form's mail transport is completely dead, not just unhardened) is the
-highest-priority item in the whole plan for that reason — it's a fully broken user-facing
-feature, not a hardening gap. **S1** and **U17/U18** both assume the form works at all, so
-they're marked to sequence after S11 lands rather than being done on their own phase's normal
-schedule.
+**S11** (the contact form's mail transport was completely dead, not just unhardened) was the
+highest-priority item in the whole plan for that reason — it was a fully broken user-facing
+feature, not a hardening gap — and is now done (see above). **U17/U18** (Phase 8) were marked
+to sequence after S11 since they assume the form works at all; that's no longer a blocker now
+that S11 is live.
 
 ## Model recommendations
 
@@ -57,8 +59,6 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 1 | Security-critical — live/committed credentials, external abuse vectors, a dead feature | S11* (code done, needs credentials) |
-| 2 | Server hardening & input validation | S2, S3, S5, S6, S7, S8, S9, S10 |
 | 3 | Database integrity & performance | B1, B6, B5, B3, B4, B8, B2*, B7*, B9 |
 | 4 | Python ingestion reliability | P2, P3, P9, P4, P6, P7, P5 |
 | 5 | Client correctness & efficiency | C2, C3, C8, C9, C1, C7, C4, C6*, C5*, C11* |
@@ -76,49 +76,48 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
 
 ## Server (`server/index.js`, `db.js`)
 
-- **S11** *(Phase 1, done in code — decision: Gmail SMTP App Password, chosen over a
-  transactional email API)* — `server/index.js`'s `nodemailer.createTransport({...})` now
-  points at `smtp.gmail.com:465` (`secure: true`) instead of the dead
-  `mail.musichistoreum.com`, and the outgoing `mail.from` was changed from a bare display name
-  to `` `"${name}" <${MAIL_USER}>` `` — Gmail's relay requires the From address to match the
-  authenticated account/alias, which the old transport didn't need. **Remaining manual step**:
-  set `MAIL_USER` to a real Gmail (or Google Workspace) address you control and `MAIL_PASSWORD`
-  to a Google Account App Password for it (Google Account → Security → 2-Step Verification →
-  App passwords; requires 2-Step Verification to be enabled first) — in **both**
-  `server/.env` (local) and Vercel's project environment variables (production). Confirm by
-  restarting `server/index.js` locally and watching `contactEmail.verify()` log success instead
-  of an `ESOCKET` timeout, then submit the contact form end-to-end.
+- **S11** *(Phase 1, done — decision: Gmail SMTP App Password, chosen over a transactional
+  email API)* — `server/index.js`'s `nodemailer.createTransport({...})` now points at
+  `smtp.gmail.com:465` (`secure: true`) instead of the dead `mail.musichistoreum.com`, and the
+  outgoing `mail.from` was changed from a bare display name to `` `"${name}" <${MAIL_USER}>` ``
+  — Gmail's relay requires the From address to match the authenticated account/alias, which the
+  old transport didn't need. `MAIL_USER`/`MAIL_PASSWORD` set to a real Gmail address and App
+  Password in both `server/.env` and Vercel, deployed, and confirmed via a real `POST /contact`
+  against production that delivered to the inbox.
 - **S1** *(Phase 1, done)* — `POST /contact` now has its own `express-rate-limit` instance
   (`contactFormLimiter`, 5 requests/hour/IP, same JSON 429 handler style as D1's dev-token
-  limiter, no shared-secret bypass). Still low-value until S11's credentials are live, but
-  already in place.
+  limiter, no shared-secret bypass).
 - **S4** *(Phase 1, done)* — The raw-payload `logger.info(req.body)` call in the `/contact`
   handler was removed entirely (no replacement logging added — nothing non-PII was judged worth
   keeping).
-- **S2** *(Phase 2)* — Rate-limit the remaining public read routes (`/chartList`,
+- **S2** *(Phase 2, done)* — The remaining public read routes (`/chartList`,
   `/artist/list/:start_char`, `/artist/:dartist/:dtype`, `/chart/:cid/:ctype/:ctf/:cdate`,
-  `/annual-top-songs`). One shared, more generous limiter (e.g. 100 req/15min/IP) applied via
-  `app.use()` ahead of these routes, same `rateLimit()` shape as S1/D1.
-- **S3** *(Phase 2)* — Add `statement_timeout` (e.g. `10000`) to the `Pool` config in
-  `server/db.js`. Config-only change, no query changes needed.
-- **S5** *(Phase 2)* — `npm install helmet` in `server/`, `app.use(helmet())` near the other
-  middleware. This is a pure JSON API (no HTML served from Express), so helmet's defaults are
-  safe as-is — no CSP tuning needed.
-- **S6** *(Phase 2)* — Replace the `get_weekly_${chartType}_chart`/`get_range_${chartType}_chart`
-  string interpolation with an explicit lookup object (e.g.
-  `{ Song: 'get_weekly_song_chart', Album: 'get_weekly_album_chart' }`, same for the range
-  variant), looked up before use in the `/chart/:cid/:ctype/:ctf/:cdate` route.
-- **S7** *(Phase 2)* — Add `winston.format.splat()` into the `combine(...)` chain in the logger
-  config — one-line fix that covers every existing multi-arg `logger.info('label', value)` call
-  site at once. Spot-check a couple of call sites afterward to confirm they now log as intended.
-- **S8** *(Phase 2)* — Change the `.gitignore` entry from `server/mh_server.log` to
-  `server/*.log` (confirmed no other tracked log files would be affected).
-- **S9** *(Phase 2)* — Validate `:dtype` in `/artist/:dartist/:dtype`: explicit
-  `dtype === 'songs' || dtype === 'albums'` check, else `422`, matching the existing
-  `chartType`/`chartTime` validation pattern already in the chart route.
-- **S10** *(Phase 2)* — Validate `:cdate` with strict parsing (`dayjs(chartDate, 'YYYY-MM-DD',
-  true).isValid()`) before proceeding; `422` on failure, consistent with the route's existing
-  422 responses.
+  `/annual-top-songs`) each now carry a shared `publicReadLimiter` instance (100 req/15min/IP)
+  applied per-route rather than via a single `app.use()`, since those five paths don't share a
+  common prefix that `app.use()` could target cleanly — same net effect, same `rateLimit()`
+  shape as S1/D1. Verified via `RateLimit-*` response headers on a local run.
+- **S3** *(Phase 2, done)* — `statement_timeout: 10000` added to the `Pool` config in
+  `server/db.js`.
+- **S5** *(Phase 2, done)* — `helmet` installed in `server/` and `app.use(helmet())` added
+  ahead of the other middleware. Verified locally: `Content-Security-Policy`,
+  `Strict-Transport-Security`, `X-Content-Type-Options`, and `X-Frame-Options` all present on
+  responses.
+- **S6** *(Phase 2, done)* — `get_weekly_${chartType}_chart`/`get_range_${chartType}_chart`
+  string interpolation replaced with explicit `WEEKLY_CHART_FUNCTIONS`/`RANGE_CHART_FUNCTIONS`
+  lookup objects keyed by `Song`/`Album`, looked up before use in the
+  `/chart/:cid/:ctype/:ctf/:cdate` route. Verified both Song and Album weekly/range lookups
+  still return correct data.
+- **S7** *(Phase 2, done)* — `winston.format.splat()` added into the logger's `combine(...)`
+  chain.
+- **S8** *(Phase 2, done)* — `.gitignore` entry widened from `server/mh_server.log` to
+  `server/*.log` (confirmed no other tracked log files were affected).
+- **S9** *(Phase 2, done)* — `/artist/:dartist/:dtype` now explicitly checks
+  `dtype === 'songs' || dtype === 'albums'`, `422` otherwise. Verified: invalid `dtype` → 422,
+  valid → 200.
+- **S10** *(Phase 2, done)* — `/chart/.../:cdate` now validates strictly via
+  `dayjs(chartDate, 'YYYY-MM-DD', true).isValid()` (using dayjs's bundled `customParseFormat`
+  plugin, newly extended in `server/index.js`) before proceeding, `422` on failure. Verified:
+  malformed/non-existent dates → 422, valid dates → 200.
 
 ## Database (`db/functions/*.sql`, `db/tables/*.sql`)
 

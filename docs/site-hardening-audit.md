@@ -18,38 +18,40 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
   the outgoing `from` field to include a real address matching the authenticated account
   (`"${name}" <${MAIL_USER}>` instead of a bare display name) — Gmail's relay requires the
   From address to match the authenticated account/alias, which the old A2 transport didn't
-  enforce. **Not yet live**: `MAIL_USER`/`MAIL_PASSWORD` still need to be set to a real Gmail
-  (or Google Workspace) address and a Google Account App Password for it, in both
-  `server/.env` and Vercel's project env vars — that credential setup is a manual step outside
-  this session. Confirm by re-running the original repro (`contactEmail.verify()` should log
-  success instead of `ESOCKET`) once real credentials are in place.
+  enforce. **Confirmed live in production**: `MAIL_USER`/`MAIL_PASSWORD` set to a real Gmail
+  address and App Password in both `server/.env` and Vercel, deployed, and verified via a real
+  `POST /contact` against production that delivered to the inbox.
 - S1. `POST /contact` had no rate limiting. Fixed: added a dedicated `express-rate-limit`
   instance (5 requests/hour/IP, same pattern as D1's dev-token limiter, no shared-secret
   bypass since there's no legitimate non-browser caller for this route).
 - S4. `/contact` logged the raw payload (`logger.info(req.body)`) — name/email/message
   persisted in plaintext to `mh_server.log` indefinitely. Fixed: removed the log line entirely.
-
-### Medium
 - S2. No rate limiting on any other public DB-backed read route (`/chartList`,
   `/artist/list/:start_char`, `/artist/:dartist/:dtype`, `/chart/:cid/:ctype/:ctf/:cdate`,
-  `/annual-top-songs`) — fully open, no cost ceiling.
-- S3. `db.js`'s `pg` Pool sets no `statement_timeout`/`query_timeout` — a slow/pathological
-  query can hold a connection indefinitely; combined with S2, a few concurrent expensive
-  requests could exhaust the pool.
-- S5. No baseline security headers (`helmet()` or equivalent).
-
-### Low
-- S6. *(carried forward)* `get_weekly_${chartType}_chart`/`get_range_${chartType}_chart`
-  build the function name by string interpolation of `chartType`; safe today only because of
-  the earlier `Song`/`Album` guard — should become an explicit allow-list lookup.
-- S7. *(carried forward)* Winston's `logger.info('label', value)` multi-arg calls likely
-  silently drop the second argument — the format chain has no `splat()`.
-- S8. *(carried forward)* Root `.gitignore` only ignores the literal `server/mh_server.log`,
-  not a `*.log` wildcard.
-- S9. `/artist/:dartist/:dtype` silently treats any `dtype` other than exactly `'songs'` as an
-  albums request instead of validating/rejecting unrecognized values.
-- S10. `/chart/.../:cdate` doesn't validate `cdate` parses to a real date before hitting
-  `dayjs`/Postgres — malformed input surfaces as a generic 500 instead of a 422.
+  `/annual-top-songs`). Fixed: added a shared `express-rate-limit` instance (100 requests/15min
+  per IP) applied directly to each of those five routes.
+- S3. `db.js`'s `pg` Pool set no `statement_timeout`/`query_timeout`. Fixed: added
+  `statement_timeout: 10000` to the `Pool` config.
+- S5. No baseline security headers. Fixed: `app.use(helmet())` added ahead of the other
+  middleware; confirmed via a local response showing `Content-Security-Policy`,
+  `Strict-Transport-Security`, `X-Content-Type-Options`, and `X-Frame-Options` all present.
+- S6. `get_weekly_${chartType}_chart`/`get_range_${chartType}_chart` built the function name by
+  string interpolation of `chartType`. Fixed: replaced with explicit
+  `WEEKLY_CHART_FUNCTIONS`/`RANGE_CHART_FUNCTIONS` lookup objects keyed by `Song`/`Album`.
+- S7. Winston's `logger.info('label', value)` multi-arg calls were silently dropping the second
+  argument. Fixed: added `splat()` to the format `combine(...)` chain.
+- S8. Root `.gitignore` only ignored the literal `server/mh_server.log`. Fixed: widened to
+  `server/*.log` (confirmed no other tracked `.log` files under `server/` were affected).
+- S9. `/artist/:dartist/:dtype` silently treated any `dtype` other than exactly `'songs'` as an
+  albums request. Fixed: explicit `dtype === 'songs' || dtype === 'albums'` check, `422`
+  otherwise.
+- S10. `/chart/.../:cdate` didn't validate `cdate` parses to a real date before hitting
+  `dayjs`/Postgres. Fixed: strict `dayjs(chartDate, 'YYYY-MM-DD', true).isValid()` check (via
+  the bundled `customParseFormat` plugin) before proceeding, `422` on failure. All Phase 2
+  changes tested against a local server run: helmet headers confirmed present, valid/invalid
+  `dtype` and `cdate` inputs return the expected 200/422, `RateLimit-*` headers confirmed on
+  the newly-limited routes, and existing Song/Album weekly/range chart lookups still return
+  correct data through the new lookup objects.
 
 ## Client (`client/src/**`)
 
