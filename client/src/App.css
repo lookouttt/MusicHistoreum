@@ -71,6 +71,14 @@ div.container-fluid {
     filter: brightness(50%);
 }
 
+@media (max-width: 768px) {
+    /* background-attachment: fixed is unreliable and can hurt scroll performance on mobile
+       browsers (notably iOS Safari) - fall back to normal scrolling attachment there. */
+    .mh-background::before {
+        background-attachment: scroll;
+    }
+}
+
 #about-content, #features-content, #home-content, #issues-content {
     position: relative;
     color: white;

@@ -24,6 +24,13 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
     const [selectedIds, setSelectedIds] = useState(() => new Set());
     const chartList = useSelector(selectChartsMenu(chartType));
     const currentChart = chartList.find((curChart) => curChart.ChartId === parseInt(chartId));
+    const [isNarrowScreen, setIsNarrowScreen] = useState(() => window.innerWidth <= 550);
+
+    useEffect(() => {
+        const handleResize = () => setIsNarrowScreen(window.innerWidth <= 550);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         window.onbeforeunload = () => {
@@ -55,14 +62,14 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
                 return(`${currentChart.ChartTitle} of ${formattedDate}`);
             case 'Year':
                 formattedDate = format(new Date(dayjs(chartDate)), 'yyyy');
-                if (window.innerWidth > 550)
+                if (!isNarrowScreen)
                     hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points'];
                 else
                     hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points', 'peak', 'weeks'];
                 return(`${currentChart.ChartTitle} of ${formattedDate}`);
             case 'Decade':
                 formattedDate = format(new Date(dayjs(chartDate)), 'yyyy');
-                if (window.innerWidth > 550)
+                if (!isNarrowScreen)
                     hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points'];
                 else
                     hiddenColumns = ['song_id', 'album_id', 'first_date', 'last_date', 'points', 'peak', 'weeks'];
@@ -147,8 +154,7 @@ function ChartCard({chart, bIncludeNav, pageSize, bPage, bFilter}) {
                         columns={columns}
                         data={data}
                         hiddenColumns={hiddenColumns}
-                        tablePageSize={pageSize}
-                        bPage={bPage}
+                        maxRows={bPage ? undefined : pageSize}
                         bFilter={bFilter}
                         selectable={bIncludeNav && chartType === 'Song'}
                         selectedIds={selectedIds}
