@@ -67,8 +67,23 @@ FULL_REFRESH_TABLES = {
     ],
 }
 
+# Table/column names below are always sourced from the two dicts above today, so this can never
+# actually trip - it exists so a future change can't silently make a table/column name
+# attacker-influenced (e.g. from a CLI arg) without hitting an assertion first, since these
+# names get interpolated directly into SQL via f-strings rather than parameterized.
+KNOWN_TABLES = set(APPEND_ONLY_TABLES) | set(FULL_REFRESH_TABLES)
+KNOWN_COLUMNS = {col for cfg in APPEND_ONLY_TABLES.values() for col in cfg["columns"]} \
+    | {col for cols in FULL_REFRESH_TABLES.values() for col in cols}
+
+
+def _assert_known_identifiers(table, columns=()):
+    assert table in KNOWN_TABLES, f"Refusing to interpolate unknown table name into SQL: {table!r}"
+    for col in columns:
+        assert col in KNOWN_COLUMNS, f"Refusing to interpolate unknown column name into SQL: {col!r}"
+
 
 def sync_full_refresh_table(source_uri, target_uri, table, columns):
+    _assert_known_identifiers(table, columns)
     print(f"[{table}] full refresh...")
     src = psycopg2.connect(source_uri)
     try:
@@ -91,6 +106,7 @@ def sync_full_refresh_table(source_uri, target_uri, table, columns):
 
 
 def get_target_max_pk(target_uri, table, pk):
+    _assert_known_identifiers(table, [pk])
     conn = psycopg2.connect(target_uri)
     try:
         cur = conn.cursor()
@@ -101,6 +117,7 @@ def get_target_max_pk(target_uri, table, pk):
 
 
 def fetch_batch(source_uri, table, pk, columns, after_id, limit):
+    _assert_known_identifiers(table, [pk, *columns])
     conn = psycopg2.connect(source_uri)
     try:
         cur = conn.cursor()
@@ -114,6 +131,7 @@ def fetch_batch(source_uri, table, pk, columns, after_id, limit):
 
 
 def insert_batch(target_uri, table, pk, columns, rows):
+    _assert_known_identifiers(table, [pk, *columns])
     conn = psycopg2.connect(target_uri)
     try:
         cur = conn.cursor()
@@ -128,6 +146,7 @@ def insert_batch(target_uri, table, pk, columns, rows):
 
 
 def sync_sequence(target_uri, table, pk):
+    _assert_known_identifiers(table, [pk])
     conn = psycopg2.connect(target_uri)
     try:
         cur = conn.cursor()
