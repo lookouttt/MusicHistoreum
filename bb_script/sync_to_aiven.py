@@ -34,6 +34,8 @@ import time
 import psycopg2
 import psycopg2.extras
 
+from env_utils import load_env
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BATCH_SIZE = 100_000
 MAX_RETRIES = 5
@@ -64,18 +66,6 @@ FULL_REFRESH_TABLES = {
         "is_year_complete", "generated_at",
     ],
 }
-
-
-def load_env(path):
-    env = {}
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            env[key.strip()] = value.strip()
-    return env
 
 
 def sync_full_refresh_table(source_uri, target_uri, table, columns):

@@ -22,6 +22,8 @@ import sys
 import psycopg2
 import psycopg2.extras
 
+from env_utils import load_env
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CHARTS = [
@@ -31,19 +33,6 @@ CHARTS = [
     {"chart_id": 60, "chart_name": "alternative-airplay",        "top_n": 60},
     {"chart_id": 67, "chart_name": "hot-mainstream-rock-tracks", "top_n": 75},
 ]
-
-
-def load_env(path):
-    env = {}
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            value = value.strip().strip('"').strip("'")
-            env[key.strip()] = value
-    return env
 
 
 def populate_annual_top_songs(conn, force=False):

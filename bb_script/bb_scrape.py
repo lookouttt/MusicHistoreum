@@ -6,12 +6,14 @@ import psycopg2
 import logging
 
 from annual_top_songs import populate_annual_top_songs
+from env_utils import load_env
 
 logging.basicConfig(filename='billboard.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 default_date = '1950-01-01'
 last_chart_date = False
 new_chart = False
-DB_CONN_STRING = "dbname=BillboardData user=postgres password=1202ThurnRidge"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_CONN_STRING = load_env(os.path.join(SCRIPT_DIR, ".env"))["SOURCE_SERVICE_URI"]
 conn = psycopg2.connect(DB_CONN_STRING)
 retrieve_Ids = False
 active_lists = []
