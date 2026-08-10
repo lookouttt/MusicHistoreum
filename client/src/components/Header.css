@@ -25,16 +25,15 @@
     padding: 0rem 0.5rem;
 }
 
-#bottomNavItems1, #bottomNavItems2, #bottomNavItems3, #bottomNavItems4  {
+.bottomNavItem {
     color: white;
     padding: 0.1vw 3vw;
     margin: 1vw 3vw;
-    /* border: 1px solid #3471a0; */
-    border: 1px solid #7b68ee    ;
+    border: 1px solid #7b68ee;
     border-radius: 0.3vw;
 }
 
-#bottomNavItems1:hover, #bottomNavItems2:hover, #bottomNavItems3:hover, #bottomNavItems4:hover {
+.bottomNavItem:hover {
     color: #c9c2f7;
 }
 

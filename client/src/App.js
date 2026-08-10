@@ -64,6 +64,7 @@ function App() {
                 <Route path='/' element={<HomePage />}/>
                 <Route path='/Chart' element={<ChartPage />}/>
                 <Route path='/AnnualTopSongs' element={<AnnualTopSongsPage />}/>
+                <Route path='/Artists' element={<ArtistPage />}/>
                 <Route path='/Artist/:artist' element={<ArtistPage />}/>
                 <Route path='/Features' element={<FeaturesPage />}/>
                 <Route path='/About' element={<AboutPage />}/>

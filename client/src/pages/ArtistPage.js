@@ -5,7 +5,6 @@ import AlphabetNav from "../components/AlphabetNav";
 import ArtistList from '../features/artist/ArtistList';
 
 const ArtistPage = () => {
-    const defaultValue = "ABCXYZ"
     let { artist } = useParams();
     if (sessionStorage.getItem('reloadPage') === 'yes') {
         sessionStorage.clear();
@@ -20,7 +19,7 @@ const ArtistPage = () => {
                             <Row>
                                 <Col>
                                     <AlphabetNav />
-                                    { artist !== defaultValue ? <ArtistCard artist={artist} /> : <ArtistList />}
+                                    { artist ? <ArtistCard artist={artist} /> : <ArtistList />}
                                 </Col>
                             </Row>
                         </Container>

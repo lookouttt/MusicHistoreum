@@ -22,7 +22,6 @@ const Header = () => {
     const [dropdownOpen, setdropdownOpen] = useState(false);
     const [topNavOpen, setTopNavOpen] = useState(false);
     const [bottomNavOpen, setBottomNavOpen] = useState(false);
-    const defaultValue='ABCXYZ';
 
     return (
         <Container fluid>
@@ -57,7 +56,7 @@ const Header = () => {
                                 <Dropdown nav
                                     isOpen={dropdownOpen}
                                     toggle={() => setdropdownOpen(!dropdownOpen)}>
-                                    <DropdownToggle nav caret id='bottomNavItems1'>
+                                    <DropdownToggle nav caret className='bottomNavItem'>
                                         Charts
                                     </DropdownToggle>
                                     <DropdownMenu  id='mainDropdown'>
@@ -65,23 +64,28 @@ const Header = () => {
                                     </DropdownMenu>
                                 </Dropdown>
                                 <NavItem>
-                                    <NavLink className='nav-link' to={`/Artist/${defaultValue}`} id='bottomNavItems2'>
+                                    <NavLink className='nav-link bottomNavItem' to='/Artists'>
                                         Artists
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink className='nav-link' to='/AnnualTopSongs' id='bottomNavItems2b'>
+                                    <NavLink className='nav-link bottomNavItem' to='/AnnualTopSongs'>
                                         Top Songs by Year
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink className='nav-link' to='/Features' id='bottomNavItems3'>
+                                    <NavLink className='nav-link bottomNavItem' to='/Features'>
                                         Future Features
                                     </NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink className='nav-link' to='/About' id='bottomNavItems4'>
+                                    <NavLink className='nav-link bottomNavItem' to='/About'>
                                         About the Site
+                                    </NavLink>
+                                </NavItem>
+                                <NavItem>
+                                    <NavLink className='nav-link bottomNavItem' to='/Issues'>
+                                        Known Issues
                                     </NavLink>
                                 </NavItem>
                             </Nav>
