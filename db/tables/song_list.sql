@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict f4aJ9RiZgMSvFcJKr1PB5BHv1hBRLXvK3Yv9fVeCapZiycg4uWUpKYhXXeTHZho
+\restrict fbVK8zHQYZtLindoVHunv9p4ICPKlte2dBRon7fyLUntnpxPdOhIqj19mmFxeL5
 
 -- Dumped from database version 17.10
 -- Dumped by pg_dump version 17.10
@@ -79,5 +79,5 @@ ALTER TABLE ONLY public.song_list
 -- PostgreSQL database dump complete
 --
 
-\unrestrict f4aJ9RiZgMSvFcJKr1PB5BHv1hBRLXvK3Yv9fVeCapZiycg4uWUpKYhXXeTHZho
+\unrestrict fbVK8zHQYZtLindoVHunv9p4ICPKlte2dBRon7fyLUntnpxPdOhIqj19mmFxeL5
 

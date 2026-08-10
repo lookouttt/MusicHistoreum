@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict zTZdWjy1cS8fiYB0UoIdFVCyChh6LOJ8xvOX77bCmzPAWo7HYs4YlOo50bkThhv
+\restrict WhhGttH5IFZNga8tjrAUytTL5UxeXicxhylcvRGNcXqyaIBYLAOthxce0f7FMJv
 
 -- Dumped from database version 17.10
 -- Dumped by pg_dump version 17.10
@@ -34,5 +34,5 @@ CREATE TABLE public.my_artist_id (
 -- PostgreSQL database dump complete
 --
 
-\unrestrict zTZdWjy1cS8fiYB0UoIdFVCyChh6LOJ8xvOX77bCmzPAWo7HYs4YlOo50bkThhv
+\unrestrict WhhGttH5IFZNga8tjrAUytTL5UxeXicxhylcvRGNcXqyaIBYLAOthxce0f7FMJv
 

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict Kxu7g0vf50tJZlxCkycUcXfBL7DQTid1Q2XC3JuXvcO59PDubrUBx0W2M1yxWzD
+\restrict zQ6bzzk9oXfaIi1pyeYMSAnzEbrMofVmew0XiPaNeOXshI3llsM13UydWMHWQvc
 
 -- Dumped from database version 17.10
 -- Dumped by pg_dump version 17.10
@@ -79,5 +79,5 @@ ALTER TABLE ONLY public.album_list
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Kxu7g0vf50tJZlxCkycUcXfBL7DQTid1Q2XC3JuXvcO59PDubrUBx0W2M1yxWzD
+\unrestrict zQ6bzzk9oXfaIi1pyeYMSAnzEbrMofVmew0XiPaNeOXshI3llsM13UydWMHWQvc
 

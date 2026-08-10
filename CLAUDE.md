@@ -80,6 +80,12 @@ The production site is live at `https://www.musichistoreum.com` (client), with t
 
 Adding a new chart timeframe or query means adding/matching a corresponding SQL function in the database, not just editing this file.
 
+### Database schema tracking
+
+`db/functions/*.sql` and `db/tables/*.sql` are read-only, tracked snapshots of the live Aiven schema (see `bb_script/dump_db_functions.sh`/`dump_db_tables.sh`) — editing these files does **not** change the database; rerun the dump scripts after changing something in Postgres to refresh them. Installed extensions aren't captured by these per-table/function dumps: the database has `pg_trgm` (GIN trigram index on `artist_list.artist_name`, for `LIKE`/`similar to` artist search) and `fuzzystrmatch` enabled, in addition to core `plpgsql`.
+
+**Aiven storage note:** the Aiven Postgres plan has a real, fairly tight disk quota — the service automatically flips to read-only when it's exceeded (confirmed 2026-08-10: adding a ~107MB index on `chart_entries`, a ~4.85M-row table, was enough to trigger this). Check the service's disk usage in the Aiven console before adding any sizeable index or bulk data to production.
+
 ### Client: feature-sliced Redux Toolkit app
 
 - `src/features/<domain>/` — one Redux slice + its UI per domain (`chart`, `chartMenu`, `artist`, `contact`, `counter`). Slices are combined in `src/app/store.js`.

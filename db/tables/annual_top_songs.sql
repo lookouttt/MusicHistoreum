@@ -2,12 +2,15 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 14.2
--- Dumped by pg_dump version 14.2
+\restrict l9ZiPbarLdiTLz9qhphyVoLiRtEgSjBcdfpWqzjY03SMVf5ydrmhhG4FRrhqwtI
+
+-- Dumped from database version 17.10
+-- Dumped by pg_dump version 17.10
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -16,12 +19,10 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-SET default_tablespace = '';
-
 SET default_table_access_method = heap;
 
 --
--- Name: annual_top_songs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: annual_top_songs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.annual_top_songs (
@@ -42,10 +43,8 @@ CREATE TABLE public.annual_top_songs (
 );
 
 
-ALTER TABLE public.annual_top_songs OWNER TO postgres;
-
 --
--- Name: annual_top_songs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: annual_top_songs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.annual_top_songs_id_seq
@@ -57,24 +56,22 @@ CREATE SEQUENCE public.annual_top_songs_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.annual_top_songs_id_seq OWNER TO postgres;
-
 --
--- Name: annual_top_songs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: annual_top_songs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.annual_top_songs_id_seq OWNED BY public.annual_top_songs.annual_top_songs_id;
 
 
 --
--- Name: annual_top_songs annual_top_songs_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: annual_top_songs annual_top_songs_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.annual_top_songs ALTER COLUMN annual_top_songs_id SET DEFAULT nextval('public.annual_top_songs_id_seq'::regclass);
 
 
 --
--- Name: annual_top_songs annual_top_songs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: annual_top_songs annual_top_songs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.annual_top_songs
@@ -82,7 +79,7 @@ ALTER TABLE ONLY public.annual_top_songs
 
 
 --
--- Name: annual_top_songs annual_top_songs_unique_row; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: annual_top_songs annual_top_songs_unique_row; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.annual_top_songs
@@ -90,14 +87,14 @@ ALTER TABLE ONLY public.annual_top_songs
 
 
 --
--- Name: idx_annual_top_songs_artist_name; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_annual_top_songs_artist_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_annual_top_songs_artist_name ON public.annual_top_songs USING btree (artist_name);
 
 
 --
--- Name: idx_annual_top_songs_song_title; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_annual_top_songs_song_title; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_annual_top_songs_song_title ON public.annual_top_songs USING btree (song_title);
@@ -106,4 +103,6 @@ CREATE INDEX idx_annual_top_songs_song_title ON public.annual_top_songs USING bt
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict l9ZiPbarLdiTLz9qhphyVoLiRtEgSjBcdfpWqzjY03SMVf5ydrmhhG4FRrhqwtI
 

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict viPLHhR46QBYDID83wO9P4NJcmQhpy8bJ8eLIicFG1WA4PSYkqUyQ95ufRpB52H
+\restrict NeQH0HSDh1m8jppBY9Ly5HNfxKlmrZOGNqjNt8wh97eEp5BriQP1He8tQlaE9o3
 
 -- Dumped from database version 17.10
 -- Dumped by pg_dump version 17.10
@@ -70,8 +70,15 @@ ALTER TABLE ONLY public.artist_list
 
 
 --
+-- Name: idx_artist_list_artist_name_trgm; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_artist_list_artist_name_trgm ON public.artist_list USING gin (artist_name public.gin_trgm_ops);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict viPLHhR46QBYDID83wO9P4NJcmQhpy8bJ8eLIicFG1WA4PSYkqUyQ95ufRpB52H
+\unrestrict NeQH0HSDh1m8jppBY9Ly5HNfxKlmrZOGNqjNt8wh97eEp5BriQP1He8tQlaE9o3
 

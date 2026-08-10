@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 2eHLnTAcQASnOBAeBw9eMf0fm4mEAycoP6HnWfhgFTqd1hPPqXdvHx49CgaVuX2
+\restrict uGLDaGRjheT8fpXhzNnbGecvcZa1VmmNDOtCrWYPPZmtGKUSI52mpenRs1IJ8I7
 
 -- Dumped from database version 17.10
 -- Dumped by pg_dump version 17.10
@@ -69,8 +69,15 @@ ALTER TABLE ONLY public.chart_dates
 
 
 --
+-- Name: idx_chart_dates_chart_id_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_chart_dates_chart_id_date ON public.chart_dates USING btree (chart_id, chart_date);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2eHLnTAcQASnOBAeBw9eMf0fm4mEAycoP6HnWfhgFTqd1hPPqXdvHx49CgaVuX2
+\unrestrict uGLDaGRjheT8fpXhzNnbGecvcZa1VmmNDOtCrWYPPZmtGKUSI52mpenRs1IJ8I7
 

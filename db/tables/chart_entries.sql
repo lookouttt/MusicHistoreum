@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 57yVJFeqK5a5Amdvzw7bHBidBa1rhOqQKUv6Zar3U1wkbCmSTRgWmvEYWSeBCfG
+\restrict WelnugLFvf6Xf3SYkSPIGjXVQ8pWWQasak1x8321kyf39XmoGoPqMB8RYzbMaUS
 
 -- Dumped from database version 17.10
 -- Dumped by pg_dump version 17.10
@@ -77,8 +77,15 @@ ALTER TABLE ONLY public.chart_entries
 
 
 --
+-- Name: idx_chart_entries_chart_id_source; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_chart_entries_chart_id_source ON public.chart_entries USING btree (chart_id, source_id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 57yVJFeqK5a5Amdvzw7bHBidBa1rhOqQKUv6Zar3U1wkbCmSTRgWmvEYWSeBCfG
+\unrestrict WelnugLFvf6Xf3SYkSPIGjXVQ8pWWQasak1x8321kyf39XmoGoPqMB8RYzbMaUS
 
