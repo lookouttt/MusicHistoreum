@@ -55,38 +55,57 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
 
 ## Client (`client/src/**`)
 
-### Medium
-- C1. `songMatcher.js` fires one Apple Music catalog search per selected song (concurrency 5,
-  no caching/dedup by title+artist) — a large "Select All" playlist export can generate
-  thousands of individual Apple API calls instead of batching/deduping.
-- C2. `ChartCard.js` assigns `window.onbeforeunload` directly in the render body (not inside
-  `useEffect`) — re-registers a new closure every render and can clobber other handlers.
-- C3. `ChartCard.js`/`ArtistCard.js` fetch effects have no cancellation guard
-  (`AbortController`/cancelled-flag) — rapid chart/artist navigation can let a stale response
-  overwrite state after a newer request already resolved. (`AnnualTopSongsList.js` already
-  does this correctly — good pattern to copy elsewhere.)
-- C4. Several images in `client/src/app/assets/img/` are unoptimized JPEGs (2-3MB each, one
-  apparently an unused legacy banner) — inflates page weight materially if not compressed.
+### Done this pass
+- C2. `ChartCard.js` assigned `window.onbeforeunload` directly in the render body. Fixed:
+  moved into a `useEffect` keyed on `[chartType, chartId, chartTimeframe, chartDate]`, with a
+  cleanup that clears the handler on unmount.
+- C3. `ChartCard.js`/`ArtistCard.js` fetch effects had no cancellation guard. Fixed: added the
+  same `cancelled`-flag pattern already used correctly in `AnnualTopSongsList.js`.
+- C8. `TopArtistList.js` put the `key` prop on the inner `<Link>` instead of the `<li>`. Fixed.
+- C9. Stray `console.warn` in `songMatcher.js`/`chartsSlice.js`. Fixed: gated behind
+  `process.env.NODE_ENV !== 'production'` rather than removed outright, since they're genuinely
+  useful during development.
+- C1. `songMatcher.js` fired one Apple Music catalog search per selected song with no
+  caching/dedup. Fixed: added an in-memory `Map` cache keyed by normalized `title+artist`,
+  checked before each search; persists across calls for the page's lifetime, not just within
+  one batch. Per the plan's own note, the cache stores an unmatch **reason** alongside the
+  match id (not just the id) so a future per-song "why didn't this match" feature (U20) can
+  look it up regardless of which occurrence actually triggered the network call.
+- C7. `CreatePlaylistModal.js` surfaced raw `err.message` from MusicKit/Apple failures. Fixed:
+  added `getFriendlyErrorMessage()`, which passes through the app's own already-friendly error
+  text (from `musicKitLoader.js`/`musicKitAuth.js`), recognizes network-shaped failures, and
+  falls back to a generic message for anything else rather than showing raw SDK internals.
+- C4. `client/src/app/assets/img/` had several unoptimized JPEGs (up to 3MB each) and one
+  unused legacy banner. Fixed: resized the 6 actually-referenced background images (confirmed
+  via grep against `App.css`) to a 1920px max dimension and re-compressed (quality 78,
+  progressive) — combined 7.85MB → 1.28MB, visually spot-checked for quality. Deleted
+  `main_banner_old.jpg` after confirming zero references anywhere in the codebase.
+- C5. *(decision: swap font-awesome now, defer the bigger styling-architecture question)*
+  Font-awesome's actual footprint turned out to be just 5 icon usages across 4 files
+  (`fa-home` ×2, `fa-address-book`, `fa-music`, `fa-comment`). Replaced with a small
+  `components/Icon.js` using inline SVGs (Google Material Design Icons paths, Apache-2.0,
+  solid/filled style to match font-awesome's original visual weight) — no new dependency added,
+  one removed. Verified via a real production build: CSS bundle shrank ~6.9KB gzipped, and no
+  font-awesome assets remain in the build output. The larger three-styling-systems question
+  (bootstrap + reactstrap + styled-components) is explicitly deferred, not decided here.
+- C6. *(decision: keep `.env.production`/`.env.development` committed)* Both files hold only a
+  public API base URL today. Added an explicit comment in both files plus a `CLAUDE.md` note:
+  never put a secret in either, since anything there ends up in the public client bundle
+  regardless of whether the file is committed.
+- C11. *(decision: leave the commented-out dates, no code change)* Correction to the original
+  finding: the unresolved Saturday/Monday pre-1962 chart-day question actually lives in
+  `CLAUDE.md`'s "Known in-progress issues," not `KnownIssuesPage.js` (that page doesn't mention
+  it at all). Since it's a real open research question (which day of week Billboard used
+  pre-1962), not something safely resolvable without that research, the commented-out
+  `FirstDate` values in `SONG_CHARTS.js` stay as a placeholder for whenever it's resolved.
 
 ### Low
-- C5. *(carried forward, expanded)* Three overlapping styling systems (bootstrap + reactstrap
-  + styled-components) plus an unmaintained `font-awesome@4.7.0` (2017) layered on top for
-  icons — architectural overlap worth a deliberate look.
-- C6. `client/.env.production`/`.env.development` are committed (not gitignored) — currently
-  only a public API base URL, not a live leak, but normalizes committing `.env*` files.
-- C7. `CreatePlaylistModal.js` surfaces raw `err.message` from MusicKit/Apple failures
-  directly to the user — low risk (Apple's own SDK text, not backend internals) but unvetted.
-- C8. `TopArtistList.js` puts the `key` prop on the inner `<Link>` instead of the `<li>`
-  returned by `.map()` — React still warns about missing keys.
-- C9. Stray `console.warn` left in `songMatcher.js`/`chartsSlice.js` for match/dispatch
-  failures — not sensitive, just console noise in production.
 - C10. `ArtistCard.js`'s "no songs/albums found" branches call `setSongItems`/`setAlbumItems`
   with a zero-arg function instead of the array directly — works today only because React's
   functional-updater form happens to invoke it and use the return value; fragile/confusing,
   worth simplifying to a plain array. (Verified this does *not* currently break rendering,
-  contrary to the initial research pass's read of it.)
-- C11. *(carried forward)* `SONG_CHARTS.js` — true historical `FirstDate` values for pre-1962
-  charts left commented out rather than removed.
+  contrary to the initial research pass's read of it.) **Not done this pass** — deliberately
+  deferred to Phase 8, where it's done alongside U19 since both touch the exact same lines.
 
 ## Python ingestion (`bb_script/`)
 

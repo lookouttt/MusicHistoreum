@@ -19,7 +19,12 @@ unlike server code) and is no longer listed in the phase table below. One new it
 added as a deferred decision (not a phase-blocking task) from a finding B4's rewrite surfaced —
 see its entry in the Database section. **Phase 4 is complete too** (`P2`, `P3`, `P9`, `P4`,
 `P6`, `P7`, `P5`), verified via a real scoped scrape run and a real full sync run rather than
-just a syntax check — also no longer in the phase table.
+just a syntax check — also no longer in the phase table. **Phase 5 is complete except C10**
+(`C1`-`C9`, `C11` all done; C10 stays deferred to Phase 8 as originally planned, alongside
+U19) — verified via real production builds, not just syntax checks. C5's font-awesome swap
+happened on Sonnet rather than Opus, since its actual footprint (5 icons) turned out small
+enough to not need the extra reasoning depth; the larger styling-consolidation question that
+*would* warrant Opus was explicitly deferred, not decided.
 
 ## How to use this
 
@@ -54,9 +59,11 @@ wraps). Two categories are worth stepping up to Opus 5 for, flagged inline below
   loops to set-based window functions. This is the plan's highest-stakes correctness work — a
   subtle ordering/tie-breaking bug could slip through silently — so the extra reasoning depth
   is worth it.
-- **C5 / U27** — genuinely open-ended design-direction decisions (styling consolidation,
-  background consistency) with no single right answer. Opus tends to surface richer tradeoff
-  analysis on these than a quick mechanical fix needs.
+- **U27** — genuinely open-ended design-direction decisions (background consistency) with no
+  single right answer. Opus tends to surface richer tradeoff analysis on these than a quick
+  mechanical fix needs. (C5's font-awesome swap turned out small enough to not need this after
+  all — see its entry in the Client section — but the larger styling-consolidation question it
+  was originally paired with would still be a good Opus candidate if picked up later.)
 
 You don't need a whole new session to switch — either change your active model before starting
 that specific file/item, or ask for that one item to be delegated to a subagent with a model
@@ -66,7 +73,6 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 5 | Client correctness & efficiency | C2, C3, C8, C9, C1, C7, C4, C6*, C5*, C11* |
 | 6 | Accessibility & visual consistency | U1, U8, U9, U10, U11, U12, U22, U27*, U26 |
 | 7 | Responsive design | U14, U13, U7, U15, U16, U25, U21 |
 | 8 | Navigation/IA & forms polish | U2, U24, U3, U4, U5, U6, U17, U18, C10, U19, U20, U23 |
@@ -221,45 +227,39 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
 
 ## Client (`client/src/**`)
 
-- **C2** *(Phase 5)* — Move the `window.onbeforeunload` assignment in `ChartCard.js` into a
-  `useEffect(() => { window.onbeforeunload = ...; return () => { window.onbeforeunload = null;
-  }; }, [chartType, chartId, chartTimeframe, chartDate])` so it's set once per relevant change
-  and cleaned up on unmount, not re-registered every render.
-- **C3** *(Phase 5)* — Copy the `cancelled`-flag pattern already used correctly in
-  `AnnualTopSongsList.js` into `ChartCard.js`'s and `ArtistCard.js`'s fetch `useEffect`s
-  (`let cancelled = false; ...; if (!cancelled) setData(...); return () => { cancelled = true;
-  };`).
-- **C8** *(Phase 5)* — Move the `key` prop in `TopArtistList.js` from the inner `<Link>` to the
-  `<li>` returned by `.map()`.
-- **C9** *(Phase 5)* — Remove the stray `console.warn` calls in `songMatcher.js`/
-  `chartsSlice.js`, or gate them behind `if (process.env.NODE_ENV !== 'production')` if they're
-  useful during development.
-- **C1** *(Phase 5)* — In `songMatcher.js`, add an in-memory cache keyed by normalized
-  `title+artist` so duplicate songs (common across years/charts on the Annual Top Songs page)
-  only trigger one catalog search; keep the existing concurrency-5 batching, just skip
-  already-resolved keys. Sequenced right after **C9** since both edit `songMatcher.js`. If
-  **U20** (Phase 8) is also planned, worth designing this cache to store the match/no-match
-  reason per key too, not just the matched result — otherwise U20's per-song reason only
-  reflects the first occurrence and silently goes stale for deduped lookups.
-- **C7** *(Phase 5)* — In `CreatePlaylistModal.js`, map known MusicKit/Apple error cases to a
-  friendly message and fall back to a generic "Something went wrong talking to Apple Music"
-  instead of showing `err.message` verbatim.
-- **C4** *(Phase 5)* — Compress the JPEGs in `client/src/app/assets/img/` (re-export at
-  reasonable quality/dimensions for their actual rendered size); delete `main_banner_old.jpg`
-  once confirmed unreferenced.
-- **C6** *(Phase 5, decision)* — `.env.production`/`.env.development` currently hold only a
-  public API base URL. Recommend leaving them committed (simpler with CRA's build-time env
-  model) but documenting explicitly that no secret may ever go in these files — vs. the
-  alternative of gitignoring them and documenting the values elsewhere. Your call.
-- **C5** *(Phase 5, decision, consider Opus 5)* — Three overlapping styling systems (bootstrap + reactstrap +
-  styled-components) plus unmaintained `font-awesome@4.7.0`. Not a quick fix — recommend
-  picking one long-term system and migrating incrementally rather than in one PR. First step
-  regardless of direction: `grep -r "fa fa-" client/src` to inventory font-awesome usage before
-  deciding what replaces it.
-- **C11** *(Phase 5, decision)* — `SONG_CHARTS.js`'s commented-out pre-1962 `FirstDate` values
-  are tied to the unresolved Saturday/Monday chart-day question in `KnownIssues.js`. Decide
-  whether to resolve that question now and uncomment the real dates, or delete the dead comment
-  if there's no near-term plan to resolve it.
+- **C2** *(Phase 5, done)* — `window.onbeforeunload` in `ChartCard.js` now set inside a
+  `useEffect` keyed on `[chartType, chartId, chartTimeframe, chartDate]`, cleared on cleanup.
+- **C3** *(Phase 5, done)* — The `cancelled`-flag pattern from `AnnualTopSongsList.js` added to
+  `ChartCard.js`'s and `ArtistCard.js`'s fetch `useEffect`s.
+- **C8** *(Phase 5, done)* — `key` prop in `TopArtistList.js` moved from the inner `<Link>` to
+  the `<li>`.
+- **C9** *(Phase 5, done)* — `console.warn` calls in `songMatcher.js`/`chartsSlice.js` gated
+  behind `process.env.NODE_ENV !== 'production'` rather than removed, since they're useful
+  during development.
+- **C1** *(Phase 5, done)* — Added an in-memory `Map` cache in `songMatcher.js`, keyed by
+  normalized `title+artist`, checked before each catalog search; persists across calls for the
+  page's lifetime. Stores the unmatch reason alongside the match id, not just the id, per the
+  note above about U20.
+- **C7** *(Phase 5, done)* — `CreatePlaylistModal.js` now maps known error cases (the app's own
+  already-friendly messages, network-shaped failures) to friendly text via
+  `getFriendlyErrorMessage()`, falling back to a generic message instead of raw `err.message`.
+- **C4** *(Phase 5, done)* — The 6 actually-referenced background JPEGs resized to a 1920px max
+  dimension and re-compressed (quality 78, progressive): 7.85MB → 1.28MB combined, spot-checked
+  visually. `main_banner_old.jpg` deleted after confirming zero references.
+- **C5** *(Phase 5, done — decision: swap font-awesome now, defer the bigger question)* —
+  Font-awesome's real footprint was only 5 icons across 4 files. Replaced with a small
+  `components/Icon.js` (inline SVGs, Material Design Icons paths under Apache-2.0) — net
+  dependency count unchanged (one added, one removed), CSS bundle ~6.9KB smaller gzipped,
+  confirmed via a real build that no font-awesome assets remain in the output. The
+  bootstrap/reactstrap/styled-components consolidation question is explicitly **not** decided
+  here — deferred to a future, separate discussion.
+- **C6** *(Phase 5, done — decision: keep committed)* — Added a comment to both
+  `.env.production`/`.env.development` plus a `CLAUDE.md` note: never put a secret in either
+  file, since anything there ends up in the public client bundle regardless of git status.
+- **C11** *(Phase 5, done — decision: leave as-is)* — Correction: the Saturday/Monday pre-1962
+  chart-day question actually lives in `CLAUDE.md`, not `KnownIssuesPage.js` (verified that page
+  doesn't mention it). Since it's a real open research question, not a mechanical fix, the
+  commented-out `FirstDate` values in `SONG_CHARTS.js` are left in place as a placeholder.
 
 ## Usability
 
