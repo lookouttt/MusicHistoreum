@@ -194,7 +194,9 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                             <>
                                 <p>These songs couldn't be matched on Apple Music:</p>
                                 <ul>
-                                    {result.unmatched.map((title) => <li key={title}>{title}</li>)}
+                                    {result.unmatched.map(({ title, reason }) => (
+                                        <li key={title}>{title}{reason ? ` — ${reason}` : ''}</li>
+                                    ))}
                                 </ul>
                             </>
                         )}

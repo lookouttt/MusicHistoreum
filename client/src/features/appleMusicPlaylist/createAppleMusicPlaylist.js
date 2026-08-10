@@ -47,7 +47,10 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         targetPlaylistId: playlistId,
         totalSelected: songs.length,
         addedCount: matched.length,
-        unmatched: unmatched.map((song) => `${song.song_title} — ${song.artist_name}`),
+        unmatched: unmatched.map(({ song, reason }) => ({
+            title: `${song.song_title} — ${song.artist_name}`,
+            reason,
+        })),
     };
 }
 

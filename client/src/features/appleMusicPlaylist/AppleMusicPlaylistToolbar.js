@@ -9,6 +9,7 @@ const AppleMusicPlaylistToolbar = ({
     data, selectedIds, onSelectTopN, onClear, defaultPlaylistName,
     showTopNPresets = true, onSelectAll, selectAllLoading = false,
 }) => {
+    const [topNSelection, setTopNSelection] = useState('');
     const [customN, setCustomN] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -30,6 +31,15 @@ const AppleMusicPlaylistToolbar = ({
             onSelectTopN(n);
     };
 
+    const handleTopNChange = (e) => {
+        const value = e.target.value;
+        setTopNSelection(value);
+        if (value === 'all')
+            onSelectTopN(Infinity);
+        else if (value !== 'custom' && value !== '')
+            onSelectTopN(Number(value));
+    };
+
     return (
         <div
             className='appleMusicToolbar'
@@ -42,21 +52,33 @@ const AppleMusicPlaylistToolbar = ({
             {showTopNPresets && (
                 <>
                     <span>Select top:</span>
-                    {TOP_N_PRESETS.map((n) => (
-                        <Button key={n} size='sm' outline onClick={() => onSelectTopN(n)}>
-                            {n}
-                        </Button>
-                    ))}
-                    <input
-                        type='number'
-                        min='1'
-                        placeholder='Custom'
-                        value={customN}
-                        onChange={(e) => setCustomN(e.target.value)}
-                        style={{ width: '90px' }}
-                        className='form-control form-control-sm'
-                    />
-                    <Button size='sm' outline onClick={applyCustomN}>Apply</Button>
+                    <select
+                        value={topNSelection}
+                        onChange={handleTopNChange}
+                        className='form-select form-select-sm'
+                        style={{ width: 'auto' }}
+                    >
+                        <option value='' disabled>Choose…</option>
+                        {TOP_N_PRESETS.map((n) => (
+                            <option key={n} value={n}>{n}</option>
+                        ))}
+                        <option value='all'>All</option>
+                        <option value='custom'>Custom…</option>
+                    </select>
+                    {topNSelection === 'custom' && (
+                        <>
+                            <input
+                                type='number'
+                                min='1'
+                                placeholder='#'
+                                value={customN}
+                                onChange={(e) => setCustomN(e.target.value)}
+                                style={{ width: '70px' }}
+                                className='form-control form-control-sm'
+                            />
+                            <Button size='sm' outline onClick={applyCustomN}>Apply</Button>
+                        </>
+                    )}
                 </>
             )}
             {onSelectAll && (

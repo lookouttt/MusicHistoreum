@@ -101,7 +101,9 @@ export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5,
                 }
                 matchCache.set(key, outcome);
             }
-            resultsByIndex[index] = outcome.appleMusicId ? { song, appleMusicId: outcome.appleMusicId } : null;
+            resultsByIndex[index] = outcome.appleMusicId
+                ? { song, appleMusicId: outcome.appleMusicId }
+                : { song, reason: outcome.reason };
 
             completed += 1;
             if (onProgress)
@@ -114,11 +116,11 @@ export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5,
 
     const matched = [];
     const unmatched = [];
-    resultsByIndex.forEach((result, index) => {
-        if (result)
+    resultsByIndex.forEach((result) => {
+        if (result.appleMusicId)
             matched.push(result);
         else
-            unmatched.push(songs[index]);
+            unmatched.push({ song: result.song, reason: result.reason });
     });
 
     return { matched, unmatched };
