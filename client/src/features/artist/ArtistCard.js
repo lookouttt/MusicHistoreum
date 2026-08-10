@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardBody, CardHeader, Container, Row, Col } from "reactstrap";
+import { useNavigate } from 'react-router-dom';
 import fetchArtistData from '../../services/fetchArtistData';
 import { Chrono } from 'react-chrono';
 import './ArtistCard.css';
@@ -7,6 +8,7 @@ import { format } from 'date-fns';
 const dayjs = require("dayjs");
 
 function ArtistCard(artist) {
+    const navigate = useNavigate();
     const [songItems, setSongItems] = useState();
     const [albumItems, setAlbumItems] = useState();
     const [fetchError, setFetchError] = useState(false);
@@ -37,12 +39,7 @@ function ArtistCard(artist) {
                 setSongItems(tempSongItems);
             }
             else {
-                const tempSongItems = () => {
-                    return [{
-                        cardTitle: 'No songs found'
-                    }]
-                }
-                setSongItems(tempSongItems);
+                setSongItems([]);
             }
 
 
@@ -65,12 +62,7 @@ function ArtistCard(artist) {
                 setAlbumItems(tempAlbumItems);
             }
             else {
-                const tempAlbumItems = () => {
-                    return [{
-                        cardTitle: 'No albums found'
-                    }]
-                }
-                setAlbumItems(tempAlbumItems);
+                setAlbumItems([]);
             }
             setFetchError(false);
           } catch (err) {
@@ -98,6 +90,13 @@ function ArtistCard(artist) {
     return songItems && albumItems && (
         <Card className='artistCard'>
             <CardHeader className='artistHeader'>
+                <button
+                    type='button'
+                    className='artistBackLink'
+                    onClick={() => navigate(-1)}
+                >
+                    &larr; Back
+                </button>
                 <h2>{artistTitle()}</h2>
             </CardHeader>
             <CardBody className='artistBody'>
@@ -109,29 +108,33 @@ function ArtistCard(artist) {
                                     <h2>Charted Songs</h2>
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
-                                    <div style={{ minWidth: "250px", maxWidth: "500px", height: "700px" }}>
-                                        <Chrono 
-                                            items={songItems} 
-                                            mode="VERTICAL" 
-                                            cardHeight={100} 
-                                            allowDynamicUpdate='true' 
-                                            useReadMore
-                                            fontSizes={{
-                                                title: '0.8rem',
-                                                cardTitle: '1rem',
-                                                cardSubtitle: '0.9rem',
-                                                cardText: '0.7rem',
-                                              }}
-                                            theme={{
-                                                primary: '#ce7f2f',
-                                                secondary: '#4A4A4A',
-                                                cardBgColor: '#a57038',
-                                                cardForeColor: 'white',
-                                                titleColor: 'white',
-                                                titleColorActive: '#ed8b2a',
-                                            }}
-                                        />
-                                    </div>
+                                    {songItems.length === 0 ? (
+                                        <p>No songs found for this artist.</p>
+                                    ) : (
+                                        <div style={{ minWidth: "250px", maxWidth: "500px", height: "700px" }}>
+                                            <Chrono
+                                                items={songItems}
+                                                mode="VERTICAL"
+                                                cardHeight={100}
+                                                allowDynamicUpdate='true'
+                                                useReadMore
+                                                fontSizes={{
+                                                    title: '0.8rem',
+                                                    cardTitle: '1rem',
+                                                    cardSubtitle: '0.9rem',
+                                                    cardText: '0.7rem',
+                                                  }}
+                                                theme={{
+                                                    primary: '#ce7f2f',
+                                                    secondary: '#4A4A4A',
+                                                    cardBgColor: '#a57038',
+                                                    cardForeColor: 'white',
+                                                    titleColor: 'white',
+                                                    titleColorActive: '#ed8b2a',
+                                                }}
+                                            />
+                                        </div>
+                                    )}
                                 </CardBody>
                             </Card>
                         </Col>
@@ -141,29 +144,33 @@ function ArtistCard(artist) {
                                     <h2>Charted Albums</h2>
                                 </CardHeader>
                                 <CardBody className='artistContentBody'>
-                                    <div style={{ minWidth: "250px", maxWidth: "500px", height: "700px" }}> 
-                                        <Chrono 
-                                            items={albumItems} 
-                                            mode="VERTICAL" 
-                                            cardHeight={100} 
-                                            allowDynamicUpdate='true' 
-                                            useReadMore 
-                                            fontSizes={{
-                                                title: '0.8rem',
-                                                cardTitle: '1rem',
-                                                cardSubtitle: '0.9rem',
-                                                cardText: '0.7rem',
-                                              }}
-                                                theme={{
-                                                primary: '#ce7f2f',
-                                                secondary: '#4A4A4A',
-                                                cardBgColor: '#a57038',
-                                                cardForeColor: 'white',
-                                                titleColor: 'white',
-                                                titleColorActive: '#ed8b2a',
-                                            }}
-                                        />
-                                    </div>
+                                    {albumItems.length === 0 ? (
+                                        <p>No albums found for this artist.</p>
+                                    ) : (
+                                        <div style={{ minWidth: "250px", maxWidth: "500px", height: "700px" }}>
+                                            <Chrono
+                                                items={albumItems}
+                                                mode="VERTICAL"
+                                                cardHeight={100}
+                                                allowDynamicUpdate='true'
+                                                useReadMore
+                                                fontSizes={{
+                                                    title: '0.8rem',
+                                                    cardTitle: '1rem',
+                                                    cardSubtitle: '0.9rem',
+                                                    cardText: '0.7rem',
+                                                  }}
+                                                    theme={{
+                                                    primary: '#ce7f2f',
+                                                    secondary: '#4A4A4A',
+                                                    cardBgColor: '#a57038',
+                                                    cardForeColor: 'white',
+                                                    titleColor: 'white',
+                                                    titleColorActive: '#ed8b2a',
+                                                }}
+                                            />
+                                        </div>
+                                    )}
                                 </CardBody>
                             </Card>
                         </Col>

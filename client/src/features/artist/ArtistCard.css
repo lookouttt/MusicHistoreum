@@ -25,6 +25,17 @@
     background: rgba(255,255,255,0.4);
 }
 
+.artistBackLink {
+    display: block;
+    margin: 0 auto 0.5rem;
+    border: none;
+    background: none;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+
 .artistContentHeader.artistContentHeader {
     text-align: center;
     background: rgba(255,255,255,0.3);
