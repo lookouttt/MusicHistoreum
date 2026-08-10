@@ -48,6 +48,8 @@ The server logs via `winston` to both `server/mh_server.log` (JSON file transpor
 
 `client/src/services/baseUrl.js` reads `process.env.REACT_APP_API_BASE_URL`, falling back to `http://localhost:5000/` if unset. Set `REACT_APP_API_BASE_URL` (a CRA env var, so it must be defined at build time) to point the client at a different backend.
 
+`client/.env.development` and `client/.env.production` are committed to git (not gitignored) — CRA needs them present at build time, and keeping them committed is simpler than the alternative of gitignoring and documenting values elsewhere. Both currently hold only this one public URL. **Never put a secret in either file** — anything here ends up in the client's public JS bundle regardless of whether the file itself is committed.
+
 ### Python ingestion script (`bb_script/bb_scrape.py`)
 
 A separate, standalone Python script (`billboard`/`billboard.py`, `psycopg2`) that scrapes Billboard chart data and populates the same PostgreSQL database the Express server reads from — it's the data producer for `chart_list`, `chart_dates`, `artist_list`, `song_list`, `album_list`, and `chart_entries`. It is not invoked by the server or client; it's run manually/out-of-band. Main loop (bottom of the file): for each active chart in `chart_list`, walk forward via `chart.nextDate` from wherever that chart last left off, look up-or-insert artist/song/album rows, insert chart entries (catching Postgres unique-violation `23505` as an expected duplicate-skip rather than a real error), and sleep 10s between requests to avoid hammering Billboard. Logs to `bb_script/billboard.log`.
