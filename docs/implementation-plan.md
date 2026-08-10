@@ -13,10 +13,11 @@ the phase table below — see their entries in the Server/Python detail sections
 Note: this whole effort had been sitting on an unmerged feature branch for weeks before Phase 1
 was pushed to `master` — if picking this back up after a gap, confirm `git branch --contains`
 for the latest relevant commit actually includes `master` before assuming something is live.
-Phase 3 is almost done too: `B1`, `B6`, `B5`, `B2`, `B7`, `B9`, `B3`, `B4` are all done and live
-on both the local and Aiven databases (DB/schema changes have no separate "deploy" step, unlike
-server code) — only `B8` remains, and a new deferred decision item, `B10`, was added from a
-finding B4's rewrite surfaced. Neither is in the phase table below.
+**Phase 3 is also fully complete** (`B1`, `B2`, `B5`, `B6`, `B7`, `B8`, `B9`, `B3`, `B4` — all
+live on both the local and Aiven databases; DB/schema changes have no separate "deploy" step,
+unlike server code) and is no longer listed in the phase table below. One new item, `B10`, was
+added as a deferred decision (not a phase-blocking task) from a finding B4's rewrite surfaced —
+see its entry in the Database section.
 
 ## How to use this
 
@@ -63,7 +64,6 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 3 | Database integrity & performance | B8 |
 | 4 | Python ingestion reliability | P2, P3, P9, P4, P6, P7, P5 |
 | 5 | Client correctness & efficiency | C2, C3, C8, C9, C1, C7, C4, C6*, C5*, C11* |
 | 6 | Accessibility & visual consistency | U1, U8, U9, U10, U11, U12, U22, U27*, U26 |
@@ -156,10 +156,13 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
   real 1/0.6/0.4 weights (thresholds differ between songs and albums - see audit entry), run it
   against the same chart/date-range as production, and diff `points`/rank output. User wants to
   see that comparison before deciding whether to actually change production behavior.
-- **B8** *(Phase 3, still pending — do right after B3/B4 land)* — Replace
-  `CREATE TEMP TABLE ... ON COMMIT DROP` + populate + `SELECT *` with a single
-  `WITH ... AS (...) SELECT ...` CTE in each of the six JSON-returning functions. Mechanical,
-  low-risk — sequenced here since B3/B4 already touch four of those six files.
+- **B8** *(Phase 3, done)* — Only `get_artist_list.sql` still had the
+  `CREATE TEMP TABLE ... ON COMMIT DROP` pattern by the time this was picked up (B3/B4's
+  rewrite already removed it from the other four functions as a side effect). Rewrote as a
+  single `WITH artist_table AS (... UNION ...) SELECT ...` CTE. Verified: 9 test cases covering
+  every branch of the function's `starting_char` logic (`!`, digit, upper/lowercase letter,
+  `*`, space, `0`) matched old-vs-new byte-for-byte, both locally and confirmed live in
+  production.
 - **B2** *(Phase 3, done — decision: leave as-is, add detection)* — Added
   `db/queries/orphan_row_audit.sql`, covering all five implicit parent/child relationships in
   the schema (including the non-obvious `chart_entries.chart_id` → `chart_dates.chart_date_id`

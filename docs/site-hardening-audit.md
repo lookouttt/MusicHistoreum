@@ -198,10 +198,14 @@ layers (2026-08-09). Organized by area, then by priority (High/Medium/Low) withi
     may still reflect an old, differently-tied-broken order until recomputed
     (`populate_annual_top_songs(conn, force=True)`).
 
-### Low
-- B8. All six JSON-returning functions `CREATE TEMP TABLE ... ON COMMIT DROP` per invocation
-  instead of a CTE — minor catalog churn under load. Sequenced right after B3/B4 land, since
-  it touches the same functions.
+- B8. `CREATE TEMP TABLE ... ON COMMIT DROP` per invocation instead of a CTE. Turned out to only
+  still apply to `get_artist_list.sql` by the time this was picked up — B3/B4's rewrite had
+  already eliminated the pattern from the other four functions as a side effect (the original
+  "all six" count doesn't hold up under direct verification, likely an artifact of an earlier,
+  less-precise research pass). Fixed: rewrote as a single `WITH artist_table AS (... UNION
+  ...) SELECT ...` CTE. Verified: 9 test cases (every branch: `!`, digit, upper/lowercase
+  letter, `*`, space, `0`) diffed byte-for-byte identical between old and new, both locally and
+  confirmed live against production.
 
 ### Decision (deferred)
 - B10. *(new, found during B4's rewrite)* The `pointFactor` integer-rounding quirk above (1/1/0
