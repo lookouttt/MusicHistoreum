@@ -265,13 +265,54 @@ CLAUDE.md describes "mobile layout is an ongoing effort" — verified this doesn
 in the code (zero `@media` queries anywhere in the client, no collapsible nav), so treat that
 framing as aspirational, not current state.
 
+### Done this pass (Phase 6)
+- U1. Added a `.artist-link-cell` CSS class (light lavender `#f0e6ff`, underlined, brightening
+  to white on hover/focus) to `Table.js`'s clickable artist-name cell, alongside its existing
+  `role="button"`/keyboard handling — now visually reads as interactive, not just cursor-only.
+- U8. Correction to the original finding: react-datepicker does **not** forward an arbitrary
+  `aria-label` prop to its underlying input (verified directly against the installed package —
+  it only forwards the explicitly-named `ariaLabelledBy`/`ariaDescribedBy`/`ariaInvalid`/
+  `ariaRequired`, not a raw `aria-label`). Fixed with the audit's other suggested approach
+  instead: a proper visually-hidden `<label htmlFor>` + matching `id` on each of the four
+  pickers (`WeekPicker`, `MonthPicker`, `YearPicker`, `DecadePicker`).
+- U9. `Header.js`'s site-title `<h1>` stays the page's only real h1; every page-title heading
+  (`HomePage.js` ×2, `AboutPage.js`, `FeaturesPage.js`, `KnownIssues.js`, `ArtistList.js`,
+  `ArtistCard.js`, `ChartCard.js`, `AnnualTopSongsList.js`) changed to `<h2>`. No visual change:
+  `App.css` already styles `h1, h2, h3` identically.
+- U10. Added `role="status" aria-live="polite"` to `CreatePlaylistModal.js`'s in-progress status
+  paragraph, and `role="alert" aria-live="assertive"` to its error paragraph and the contact
+  form's submit-error paragraph.
+- U11. `AlphabetNav.js`: replaced the react-router `<NavLink to='#'>` per letter with a real
+  `<button type="button">`, with a small CSS reset (`border: none; background: none;`) so the
+  visual appearance is unchanged — removes both the link/button semantic mismatch and the
+  `href="#"` scroll-jump.
+- U12. Measured contrast precisely (WCAG relative-luminance formula) rather than eyeballing, and
+  found **two** real AA failures, not just the one the audit guessed at. `AnnualTopSongsList.css`'s
+  `#888` loading-text gray on white measured 3.54:1 (needs 4.5:1) — replaced with `#767676`
+  (4.54:1, the standard "darkest AA-safe gray on white"). `Header.css`'s `#7b68ee` bottom-nav
+  hover text on its `#483d8b` background measured only **2.18:1** — failed far worse than
+  expected — replaced with a lighter lavender tint, `#c9c2f7` (5.42:1).
+- U22. `AppleMusicPlaylistToolbar.js`'s wrapping `<div>` now has a semi-opaque
+  `rgba(255, 255, 255, 0.85)` background plus padding/border-radius, so its outline buttons no
+  longer wash out against the page photo. Also widened the custom-count `<input>` from 70px to
+  90px so its "Custom" placeholder no longer renders truncated.
+- U26 / U27. *(decision: delegated to an Opus 5 subagent, per the user's explicit choice)* Chose
+  option (c), a small reused set grouped by section, after finding the original per-page mapping
+  was arbitrary (genre photos on pages with no genre connection) and that two of the six original
+  images had real quality problems under the shared dimming overlay (`vinyl-1894855_960_720.jpg`
+  is only 960×720, visibly soft full-viewport; `country.jpg`'s light upper region reads
+  mid-grey at `brightness(50%)`, the worst text-contrast case of the set). Consolidated to two
+  images in `App.css`: `vinyl-1595847.jpg` for data/chart pages (`HomePage`, `ChartPage`,
+  `ArtistPage`, and now `AnnualTopSongsPage` — fixing U26's missing-rule gap) and
+  `concert-316464.jpg` for informational pages (`AboutPage`, `FeaturesPage`,
+  `KnownIssuesPage`). Left a comment in `App.css` documenting the two-group rule for future
+  pages. No images deleted — the six now-unreferenced files stay on disk (confirmed zero other
+  references via repo-wide grep) as future candidates; CRA only bundles what's referenced, so
+  bundled image payload dropped from ~1.28MB to ~406KB. Verified with a real production build.
+
 ### Navigation & Information Architecture
 
 High
-- U1. The artist-name table cell — the site's primary way to get from a chart to an artist
-  page — has no visual affordance that it's clickable (`components/Table.js`, only
-  `cursor:pointer`, no underline/color change). A first-time or touchscreen user has no way to
-  discover this from looking at it.
 - U2. The chart picker (`ChartMenu.js` → `SingleChartMenu.js` → `TimeFrameMenu.js`) is three
   nested accordions with no explanatory text — a new user must click through blind to learn
   the structure (Song/Album → specific chart → Week/Month/Year/Decade).
@@ -313,38 +354,10 @@ Low
 
 ### Accessibility
 
-High
-- U8. None of the four chart date pickers (`utils/WeekPicker.js`, `MonthPicker.js`, and by the
-  same pattern `YearPicker.js`/`DecadePicker.js`) have an associated `<label>` or `aria-label`
-  — only `placeholderText`, which disappears once a value is entered and isn't reliably exposed
-  to screen readers as a field name.
-
-Medium
-- U9. Every page renders two (sometimes three) `<h1>` elements — `Header.js` renders a
-  persistent site-title `<h1>Music Historeum</h1>` on every route, and most pages also render
-  their own page-title `<h1>` (confirmed: `HomePage.js` alone has two of its own, for three
-  total on that page). Screen-reader users navigating by heading level can't distinguish site
-  chrome from page content.
-- U10. No `aria-live`/`role="status"` anywhere in the client (confirmed: zero matches) — async
-  status changes (`CreatePlaylistModal`'s "Searching Apple Music (12 of 500)…", the contact
-  form's submit error) update visibly but aren't announced to screen-reader users unless
-  they're already focused on that text.
-- U11. `components/AlphabetNav.js` uses a real `<NavLink to='#'>` for each A-Z letter filter
-  rather than a `<button>` — keyboard-focusable, but announced as a link to assistive tech for
-  something that behaves like a toggle/filter, and `href="#"` also jumps scroll position to the
-  top of the page on activation.
-
-Low
-- U12. A few color combinations look contrast-risky under WCAG AA (`Header.css`: `#7b68ee`
-  hover text on `#c3bee5`/`#483d8b` backgrounds; `AnnualTopSongsList.css`: `#888` gray loading
-  text on white) — not measured precisely (no contrast-ratio tool available this session),
-  worth a manual check.
-
-**Worth noting as a strength, not a gap:** the artist-name table cell (U1 above) is actually
-solid on the accessibility axis specifically — it has `role="button"`, `tabIndex={0}`, and
-Enter/Space keyboard handling (`Table.js` ~lines 217-233), so keyboard and screen-reader users
-can activate it even though sighted mouse users get no visual cue it's clickable. Two different
-problems on the same element.
+**Worth noting as a strength:** the artist-name table cell is solid on the accessibility axis —
+it has `role="button"`, `tabIndex={0}`, and Enter/Space keyboard handling (`Table.js`
+~lines 217-233), and (as of U1 above) now has a visual affordance to match, so both keyboard/
+screen-reader and sighted mouse users can tell it's interactive.
 
 ### Responsive Design
 
@@ -396,38 +409,14 @@ contact form's Formik fields are properly `<label htmlFor>`-associated.
 
 Raised directly from live-site review: the user felt the site's per-page background-image
 approach reads as inconsistent, using `AnnualTopSongsPage`'s plain white background as the
-concrete example.
-
-High
-- U26. `AnnualTopSongsPage` was never wired into the per-page background-image system in
-  `App.css`. Every other page sets `data-urltype='X'` on its `.mh-background` section with a
-  matching `[data-urltype='X']::before { background-image: ... }` rule (`ChartPage`,
-  `HomePage`, `ArtistPage`, `FeaturesPage`, `AboutPage`, `KnownIssuesPage` all have one) — no
-  such rule exists for `AnnualTopSongsPage`, confirmed in `App.css`. The `::before` overlay
-  still applies (`filter: brightness(50%)`, fixed positioning) with nothing behind it, so the
-  page renders on a plain white background instead of the themed-photo treatment every other
-  page gets. Same "new page added, forgot to update the existing hardcoded selector list"
-  pattern as U24.
-
-Decision (not a quick fix)
-- U27. Beyond the immediate gap above: is a different themed photo per page (vinyl records, a
-  concert crowd, genre-specific photos, each dimmed 50% via a shared overlay) still the right
-  direction, or would a more visually consistent treatment — e.g. one shared background across
-  all pages, or a small, deliberately-reused set of treatments instead of one per page — read
-  as more cohesive? A design-direction call, not a mechanical fix; the existing `data-urltype`
-  mechanism supports either outcome once decided.
+concrete example. Both findings from this section (U26, U27) are done — see "Done this pass"
+above.
 
 ### Apple Music Playlist Toolbar
 
 Found via direct visual review of the live chart page (screenshot), not code inspection alone
-— confirmed against `AppleMusicPlaylistToolbar.js` afterward.
-
-High
-- U22. `AppleMusicPlaylistToolbar.js`'s wrapping `<div>` has no background of its own and sits
-  directly on the page's photo background — reactstrap's `outline` buttons (designed for a
-  solid background) wash out and become hard to read against it. Confirmed in the same
-  screenshot: the custom-count `<input>`'s hardcoded `width: '70px'` is too narrow for its
-  "Custom" placeholder at the current font size, rendering as a visibly truncated "Custo".
+— confirmed against `AppleMusicPlaylistToolbar.js` afterward. U22 (the High item from this
+section) is done — see "Done this pass" above.
 
 Medium
 - U23. The "Select top" control cluster (three preset buttons + a separate custom number input

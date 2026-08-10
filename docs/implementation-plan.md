@@ -24,7 +24,13 @@ just a syntax check — also no longer in the phase table. **Phase 5 is complete
 U19) — verified via real production builds, not just syntax checks. C5's font-awesome swap
 happened on Sonnet rather than Opus, since its actual footprint (5 icons) turned out small
 enough to not need the extra reasoning depth; the larger styling-consolidation question that
-*would* warrant Opus was explicitly deferred, not decided.
+*would* warrant Opus was explicitly deferred, not decided. **Phase 6 is complete** (`U1`, `U8`,
+`U9`, `U10`, `U11`, `U12`, `U22`, `U26`, `U27` all done) — verified via a real production build.
+U27's background-direction decision was delegated to an Opus 5 subagent per the user's explicit
+choice, working in an isolated git worktree; its result was reviewed and merged in directly. Two
+findings turned out worse under direct measurement than the original audit guessed: U8's
+`aria-label` fix (react-datepicker doesn't actually forward that prop) and U12's nav-hover
+contrast (2.18:1 measured, not just the `#888` gray the audit flagged as "likely").
 
 ## How to use this
 
@@ -59,11 +65,14 @@ wraps). Two categories are worth stepping up to Opus 5 for, flagged inline below
   loops to set-based window functions. This is the plan's highest-stakes correctness work — a
   subtle ordering/tie-breaking bug could slip through silently — so the extra reasoning depth
   is worth it.
-- **U27** — genuinely open-ended design-direction decisions (background consistency) with no
-  single right answer. Opus tends to surface richer tradeoff analysis on these than a quick
-  mechanical fix needs. (C5's font-awesome swap turned out small enough to not need this after
-  all — see its entry in the Client section — but the larger styling-consolidation question it
-  was originally paired with would still be a good Opus candidate if picked up later.)
+- **U27** *(done — delegated to Opus 5)* — genuinely open-ended design-direction decisions
+  (background consistency) with no single right answer; the user chose to delegate this one to
+  an Opus 5 subagent rather than decide on Sonnet, which surfaced a richer tradeoff analysis
+  (image quality issues, an arbitrary original mapping) than a quick mechanical fix would have
+  found — see its entry in the Usability section. (C5's font-awesome swap turned out small
+  enough to not need this after all — see its entry in the Client section — but the larger
+  styling-consolidation question it was originally paired with would still be a good Opus
+  candidate if picked up later.)
 
 You don't need a whole new session to switch — either change your active model before starting
 that specific file/item, or ask for that one item to be delegated to a subagent with a model
@@ -73,11 +82,8 @@ override (e.g. "have an Opus agent do the B4 rewrite").
 
 | Phase | Focus | Items |
 |---|---|---|
-| 6 | Accessibility & visual consistency | U1, U8, U9, U10, U11, U12, U22, U27*, U26 |
 | 7 | Responsive design | U14, U13, U7, U15, U16, U25, U21 |
 | 8 | Navigation/IA & forms polish | U2, U24, U3, U4, U5, U6, U17, U18, C10, U19, U20, U23 |
-
-\* = decision point, see detail section.
 
 Phases 1-4 (server/DB/Python) touch systems only you can access (Aiven, credentials) or
 review for correctness risk (SQL rewrites) — do those first regardless of client/usability
@@ -263,50 +269,45 @@ work. Phases 5-8 (client) can proceed independently and in any order relative to
 
 ## Usability
 
-- **U8** *(Phase 6)* — Add a visually-hidden `<label htmlFor>` (Bootstrap's `visually-hidden`
-  class) or at minimum an `aria-label="Select a chart date"` (react-datepicker forwards extra
-  props to its input) to all four picker components: `WeekPicker.js`, `MonthPicker.js`,
-  `YearPicker.js`, `DecadePicker.js`.
-- **U1** *(Phase 6)* — Add a CSS treatment (underline on hover, distinct link color, or a small
-  icon) to the `artist_name` cell in `Table.js` so it visually reads as interactive, not just
-  `cursor:pointer`.
-- **U9** *(Phase 6)* — Keep `Header.js`'s site title as the page's only real `<h1>`; change each
-  page's own "page title" heading (`HomePage.js`, `AboutPage.js`, `ArtistCard.js`,
-  `ChartCard.js`, `ArtistList.js`, etc.) to `<h2>`, keeping existing CSS classes/ids so visual
-  styling doesn't need to change — semantic tag only.
-- **U10** *(Phase 6)* — Add `aria-live="polite"` (or `role="status"`) to the status
-  paragraph(s) in `CreatePlaylistModal.js` and the contact form's error message container.
-- **U11** *(Phase 6)* — Replace each `<NavLink to='#' onClick={...}>` letter filter in
-  `AlphabetNav.js` with a real `<button type="button" className="nav-link alphaItem"
-  onClick={...}>`, keeping existing classes for styling — removes the semantic mismatch and the
-  `href="#"` scroll-jump in one change.
-- **U12** *(Phase 6)* — Check `#7b68ee`/`#c3bee5`/`#483d8b` and `#888`-on-white combinations with
-  a contrast checker (e.g. WebAIM's) and darken whichever fails AA (4.5:1 for normal text) —
-  likely just the `#888` gray needs adjustment.
-- **U22** *(Phase 6)* — Give `AppleMusicPlaylistToolbar.js`'s wrapping `<div>` an opaque or
-  semi-opaque background (e.g. wrap it in a reactstrap `Card`/`CardBody`, or just a background
-  color on the existing div) so it no longer sits directly on the page's photo background — this
-  alone fixes the washed-out `outline`-button contrast. Same pass: fix the custom-count input's
-  hardcoded `style={{ width: '70px' }}` (confirmed too narrow for its "Custom" placeholder,
-  visibly truncated to "Custo") — widen it or shorten the placeholder to something like "#".
-- **U27** *(Phase 6, decision, consider Opus 5 — resolve before U26 below, which depends on
-  this)* — Evaluate the overall page-background design direction. Currently each page gets a
-  different themed photo (`vinyl-1595847.jpg`, `vinyl-1894855_960_720.jpg`, `concert-316464.jpg`,
-  `rock.jpg`, `pop.jpg`, `country.jpg`) dimmed 50% via the shared `.mh-background::before`
-  overlay, wired per-page through the `data-urltype` attribute + a matching `App.css` selector.
-  Decide between: (a) keep one themed photo per page, but make sure every page participates
-  (including U26) and add new pages to this list as a standing checklist item going forward,
-  (b) consolidate to a single shared background/treatment across all pages for a more unified
-  look, or (c) a middle ground — a small, deliberately-reused set of background treatments
-  grouped by section rather than one image per page. No architecture change is needed for any
-  of these — the `data-urltype` mechanism already supports whichever direction is chosen; this
-  is purely a decision on what to actually use it for.
-- **U26** *(Phase 6, quick win)* — Add a
-  `[data-urltype='AnnualTopSongsPage']::before { background-image: url(...); }` rule to
-  `App.css`, matching the pattern every other page already uses (`ChartPage`, `HomePage`,
-  `ArtistPage`, `FeaturesPage`, `AboutPage`, `KnownIssuesPage`) — using whatever direction came
-  out of **U27** above. If U27 hasn't been resolved yet, reuse an existing image (e.g. the same
-  one as `HomePage`) rather than blocking this fix on the bigger decision.
+- **U8** *(Phase 6, done)* — Correction found during implementation: react-datepicker does not
+  actually forward an arbitrary `aria-label` prop to its input (verified against the installed
+  package — only `ariaLabelledBy`/`ariaDescribedBy`/`ariaInvalid`/`ariaRequired` are forwarded).
+  Used the plan's other suggested approach instead: a visually-hidden `<label htmlFor>` + matching
+  `id` added to all four picker components (`WeekPicker.js`, `MonthPicker.js`, `YearPicker.js`,
+  `DecadePicker.js`).
+- **U1** *(Phase 6, done)* — Added a `.artist-link-cell` CSS class (light lavender, underlined,
+  brightens on hover/focus) to the `artist_name` cell in `Table.js`.
+- **U9** *(Phase 6, done)* — `Header.js`'s site title kept as the only real `<h1>`; every page's
+  own page-title heading changed to `<h2>` (`HomePage.js` ×2, `AboutPage.js`, `FeaturesPage.js`,
+  `KnownIssues.js`, `ArtistList.js`, `ArtistCard.js`, `ChartCard.js`, `AnnualTopSongsList.js`).
+  No visual change, since `App.css` already styles `h1`/`h2`/`h3` identically.
+- **U10** *(Phase 6, done)* — Added `role="status" aria-live="polite"` to `CreatePlaylistModal.js`'s
+  in-progress status paragraph, and `role="alert" aria-live="assertive"` to its error paragraph
+  and the contact form's submit-error paragraph.
+- **U11** *(Phase 6, done)* — Replaced each `<NavLink to='#'>` letter filter in `AlphabetNav.js`
+  with a real `<button type="button" className="nav-link alphaItem">`, with a small CSS reset
+  (`border: none; background: none;`) to keep the visual appearance unchanged.
+- **U12** *(Phase 6, done)* — Measured contrast precisely (WCAG relative-luminance formula)
+  instead of eyeballing, and found the plan's guess understated the problem: `#7b68ee` bottom-nav
+  hover text on `#483d8b` measured only 2.18:1 (needs 4.5:1), far worse than expected — replaced
+  with `#c9c2f7` (5.42:1). The `#888` gray on white measured 3.54:1 — replaced with `#767676`
+  (4.54:1, the standard "darkest AA-safe gray on white"). The site-title text (`#4a4a4a` on
+  `#c3bee5`) measured 4.99:1 and needed no change.
+- **U22** *(Phase 6, done)* — `AppleMusicPlaylistToolbar.js`'s wrapping `<div>` now has a
+  `rgba(255, 255, 255, 0.85)` background plus padding/border-radius, fixing the washed-out
+  `outline`-button contrast. The custom-count input widened from 70px to 90px, fixing the
+  truncated "Custo" placeholder.
+- **U27** *(Phase 6, done — decision, delegated to an Opus 5 subagent per the user's explicit
+  choice)* — Chose option (c), a small reused set grouped by section: the original per-page
+  photo mapping was arbitrary (genre photos on pages with no genre connection), and two of the
+  six original images had real quality problems under the dimming overlay
+  (`vinyl-1894855_960_720.jpg` only 960×720, visibly soft full-viewport; `country.jpg`'s light
+  upper region reading mid-grey at `brightness(50%)`). No images deleted — the newly-unreferenced
+  ones stay on disk (zero other references confirmed via grep) as future candidates.
+- **U26** *(Phase 6, done)* — Implemented as part of U27's rewrite: `AnnualTopSongsPage` now
+  shares `vinyl-1595847.jpg` with the other data/chart pages in `App.css`, closing the missing-rule
+  gap. Bundled image payload dropped from ~1.28MB to ~406KB as a side effect of the consolidation.
+  Verified with a real production build (`npm run build`, no new warnings).
 - **U14** *(Phase 7, do first in this phase)* — Add reactstrap's `NavbarToggler` + `Collapse`
   (with local `isOpen` state) to both `<Navbar>`s in `Header.js` — standard reactstrap
   collapsible-navbar pattern, no new dependency needed.
