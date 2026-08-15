@@ -54,12 +54,19 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         }
     }
 
+    // A song can appear multiple times in `songs` (e.g. one row per week it charted), so matching
+    // can legitimately produce the same Apple Music track more than once in `matched`. Track what's
+    // been queued in this run, not just what's already on the playlist, so a newly-matched song
+    // that recurs across many chart weeks gets added once instead of once per recurrence.
     const toAdd = [];
     let duplicateCount = 0;
+    const queuedThisRun = new Set();
     matched.forEach((m) => {
-        if (existingIdentities.has(identityOf({ type: m.type, id: m.appleMusicId, catalogId: m.catalogId }))) {
+        const identity = identityOf({ type: m.type, id: m.appleMusicId, catalogId: m.catalogId });
+        if (existingIdentities.has(identity) || queuedThisRun.has(identity)) {
             duplicateCount += 1;
         } else {
+            queuedThisRun.add(identity);
             toAdd.push(m);
         }
     });

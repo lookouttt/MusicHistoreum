@@ -58,6 +58,8 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
     }, [isOpen, defaultPlaylistName]);
 
     const handleCreate = async () => {
+        if (status === 'working')
+            return;
         setStatus('working');
         setErrorMessage('');
         try {

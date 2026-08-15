@@ -52,6 +52,12 @@ const namesLooselyMatch = (a, b) => {
     if (canonicalArtist(a) === canonicalArtist(b))
         return true;
 
+    // Loose substring check first - catches single-character spelling differences within a token
+    // (e.g. Apple's accented "Beyoncé" normalizes to "beyonc", one letter short of "beyonce")
+    // that the stricter whole-token comparison below would otherwise reject.
+    if (normA.includes(normB) || normB.includes(normA))
+        return true;
+
     const tokensA = tokenize(normA);
     const tokensB = tokenize(normB);
     return isTokenSubsequence(tokensA, tokensB) || isTokenSubsequence(tokensB, tokensA);
