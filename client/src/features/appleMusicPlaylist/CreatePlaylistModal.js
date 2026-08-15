@@ -190,6 +190,9 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                                 ? `Added ${result.addedCount} of ${result.totalSelected} songs to "${selectedPlaylistName}".`
                                 : `Playlist "${result.playlistName}" created with ${result.addedCount} of ${result.totalSelected} songs.`}
                         </p>
+                        {result.duplicateCount > 0 && (
+                            <p>{result.duplicateCount} song{result.duplicateCount === 1 ? '' : 's'} already on the playlist {result.duplicateCount === 1 ? 'was' : 'were'} skipped.</p>
+                        )}
                         {result.unmatched.length > 0 && (
                             <>
                                 <p>These songs couldn't be matched on Apple Music:</p>
