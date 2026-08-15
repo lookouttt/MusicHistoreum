@@ -45,7 +45,50 @@ async function searchCatalog(instance, term, attempt = 0) {
     }
 }
 
+async function searchLibrary(instance, term, attempt = 0) {
+    try {
+        return await instance.api.music('/v1/me/library/search', {
+            term,
+            types: 'library-songs',
+            limit: 10,
+        });
+    } catch (err) {
+        if (attempt >= 2)
+            throw err;
+        await sleep(300 * (attempt + 1));
+        return searchLibrary(instance, term, attempt + 1);
+    }
+}
+
+// Apple Music/Uploaded/Matched songs all show up here identically (library search doesn't
+// expose which one), so any result is a valid "the user already owns this" match. Library-song
+// ids work directly on the playlist-tracks endpoint, so a hit here skips the catalog search below.
+async function findLibraryMatch(instance, song, { preferClean = true } = {}) {
+    const term = `${song.song_title} ${primaryArtist(song.artist_name)}`;
+    const results = await searchLibrary(instance, term);
+
+    const candidates = results?.data?.results?.['library-songs']?.data || [];
+    const artistMatches = candidates.filter((candidate) =>
+        artistsLooselyMatch(song.artist_name, candidate?.attributes?.artistName)
+    );
+
+    if (artistMatches.length === 0)
+        return null;
+
+    if (preferClean) {
+        const cleanMatch = artistMatches.find((candidate) => candidate?.attributes?.contentRating !== 'explicit');
+        if (cleanMatch)
+            return cleanMatch.id;
+    }
+
+    return artistMatches[0].id;
+}
+
 async function findBestMatch(instance, song, { preferClean = true } = {}) {
+    const libraryId = await findLibraryMatch(instance, song, { preferClean });
+    if (libraryId)
+        return { appleMusicId: libraryId, type: 'library-songs', reason: null };
+
     const term = `${song.song_title} ${primaryArtist(song.artist_name)}`;
     const results = await searchCatalog(instance, term);
 
@@ -55,15 +98,15 @@ async function findBestMatch(instance, song, { preferClean = true } = {}) {
     );
 
     if (artistMatches.length === 0)
-        return { appleMusicId: null, reason: 'No catalog match found for this song/artist.' };
+        return { appleMusicId: null, type: null, reason: 'No catalog match found for this song/artist.' };
 
     if (preferClean) {
         const cleanMatch = artistMatches.find((candidate) => candidate?.attributes?.contentRating !== 'explicit');
         if (cleanMatch)
-            return { appleMusicId: cleanMatch.id, reason: null };
+            return { appleMusicId: cleanMatch.id, type: 'songs', reason: null };
     }
 
-    return { appleMusicId: artistMatches[0].id, reason: null };
+    return { appleMusicId: artistMatches[0].id, type: 'songs', reason: null };
 }
 
 // Keyed by normalized title+artist so the same song appearing multiple times in one batch
@@ -102,7 +145,7 @@ export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5,
                 matchCache.set(key, outcome);
             }
             resultsByIndex[index] = outcome.appleMusicId
-                ? { song, appleMusicId: outcome.appleMusicId }
+                ? { song, appleMusicId: outcome.appleMusicId, type: outcome.type }
                 : { song, reason: outcome.reason };
 
             completed += 1;

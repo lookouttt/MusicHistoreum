@@ -32,7 +32,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
                 fetchOptions: {
                     method: 'POST',
                     body: JSON.stringify({
-                        data: trackBatch.map((m) => ({ id: m.appleMusicId, type: 'songs' })),
+                        data: trackBatch.map((m) => ({ id: m.appleMusicId, type: m.type || 'songs' })),
                     }),
                 },
             });
