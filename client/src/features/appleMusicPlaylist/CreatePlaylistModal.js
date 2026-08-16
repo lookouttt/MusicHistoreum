@@ -174,7 +174,9 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                     <p role='status' aria-live='polite'>
                         {progress?.stage === 'adding'
                             ? `Adding to playlist (${progress.completed} of ${progress.total})…`
-                            : `Searching Apple Music${progress ? ` (${progress.completed} of ${progress.total})` : '…'}`}
+                            : progress?.stage === 'checking-playlist'
+                                ? `Checking existing playlist for duplicates (${progress.completed} tracks found so far)…`
+                                : `Searching Apple Music${progress ? ` (${progress.completed} of ${progress.total})` : '…'}`}
                     </p>
                 )}
 

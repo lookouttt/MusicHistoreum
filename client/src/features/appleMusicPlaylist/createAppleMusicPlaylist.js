@@ -3,6 +3,10 @@ import matchSongsToAppleMusic from './songMatcher';
 
 const MAX_TRACKS_PER_REQUEST = 100;
 const PLAYLIST_TRACKS_PAGE_SIZE = 100;
+// A generous ceiling (10M tracks) purely as a backstop against an unbounded loop if pagination
+// ever stops advancing (e.g. a caching layer returning the same page for every offset) - normal
+// playlists finish in a handful of pages, this should never be hit in practice.
+const MAX_PLAYLIST_TRACK_PAGES = 100000;
 
 // A playlist track can be identified by its catalog id (present whenever the item has a catalog
 // counterpart - both a straight catalog addition and a matched library upload carry one) or, for
@@ -11,10 +15,10 @@ const PLAYLIST_TRACKS_PAGE_SIZE = 100;
 // when the matcher would add it via the other route.
 const identityOf = (item) => (item.catalogId ? `catalog:${item.catalogId}` : `${item.type}:${item.id}`);
 
-async function fetchExistingPlaylistTrackIdentities(instance, playlistId) {
+async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProgress) {
     const identities = new Set();
     let offset = 0;
-    for (;;) {
+    for (let page = 0; page < MAX_PLAYLIST_TRACK_PAGES; page += 1) {
         const response = await instance.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {
             limit: PLAYLIST_TRACKS_PAGE_SIZE,
             offset,
@@ -27,6 +31,8 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId) {
                 catalogId: item?.attributes?.playParams?.catalogId || null,
             }));
         });
+        if (onProgress)
+            onProgress({ completed: identities.size });
         if (items.length < PLAYLIST_TRACKS_PAGE_SIZE)
             break;
         offset += PLAYLIST_TRACKS_PAGE_SIZE;
@@ -47,7 +53,9 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     let existingIdentities = new Set();
     if (targetPlaylistId) {
         try {
-            existingIdentities = await fetchExistingPlaylistTrackIdentities(instance, targetPlaylistId);
+            existingIdentities = await fetchExistingPlaylistTrackIdentities(instance, targetPlaylistId, (progress) =>
+                onProgress && onProgress({ stage: 'checking-playlist', ...progress })
+            );
         } catch (err) {
             if (process.env.NODE_ENV !== 'production')
                 console.warn('Could not fetch existing playlist tracks; duplicates may not be filtered.', err);
