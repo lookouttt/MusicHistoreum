@@ -110,12 +110,21 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         }
     }
 
+    // "Found in library" covers the whole selection - it's independent of whether a song ended up
+    // getting added to the playlist or skipped as an existing duplicate. "Added to library" only
+    // covers this run's actual additions: a library-songs match was already in the library, so
+    // only the songs-type (catalog) additions represent something newly added to it.
+    const foundInLibraryCount = matched.filter((m) => m.type === 'library-songs').length;
+    const addedToLibraryCount = toAdd.filter((m) => m.type === 'songs').length;
+
     return {
         playlistName: playlistName || null,
         targetPlaylistId: playlistId,
         totalSelected: songs.length,
         addedCount: toAdd.length,
         duplicateCount,
+        foundInLibraryCount,
+        addedToLibraryCount,
         unmatched: unmatched.map(({ song, reason }) => ({
             title: `${song.song_title} — ${song.artist_name}`,
             reason,

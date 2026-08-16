@@ -194,6 +194,7 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                                 ? `Added ${result.addedCount} of ${result.totalSelected} songs to "${selectedPlaylistName}".`
                                 : `Playlist "${result.playlistName}" created with ${result.addedCount} of ${result.totalSelected} songs.`}
                         </p>
+                        <p>{result.foundInLibraryCount} song{result.foundInLibraryCount === 1 ? '' : 's'} found already in your Apple Music library, {result.addedToLibraryCount} newly added to it.</p>
                         {result.duplicateCount > 0 && (
                             <p>{result.duplicateCount} song{result.duplicateCount === 1 ? '' : 's'} already on the playlist {result.duplicateCount === 1 ? 'was' : 'were'} skipped.</p>
                         )}
