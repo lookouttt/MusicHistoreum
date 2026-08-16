@@ -7,6 +7,8 @@ import matchSongsToAppleMusic, { cacheKey, searchTitle } from './songMatcher';
 // can't cause the text-based dedup check to miss what's really the same song.
 const textKeyFor = (title, artist) => cacheKey({ song_title: searchTitle(title), artist_name: artist });
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const MAX_TRACKS_PER_REQUEST = 100;
 const PLAYLIST_TRACKS_PAGE_SIZE = 100;
 // A generous ceiling (10M tracks) purely as a backstop against an unbounded loop if pagination
@@ -26,6 +28,30 @@ const identityOf = (item) => {
     return catalogId ? `catalog:${catalogId}` : `${item.type}:${item.id}`;
 };
 
+async function fetchPlaylistTracksPage(instance, playlistId, offset, attempt = 0) {
+    try {
+        return await instance.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {
+            limit: PLAYLIST_TRACKS_PAGE_SIZE,
+            offset,
+        }, {
+            // Explicitly bypasses any HTTP-level caching (browser or MusicKit) - this exact URL
+            // can be requested again on a later run in the same page session, and a stale/cached
+            // response here would make dedup blind to anything added or cleaned up since the
+            // first time that URL was fetched, regardless of how correct the comparison logic is.
+            fetchOptions: { cache: 'no-store' },
+        });
+    } catch (err) {
+        // A transient failure partway through a long pagination run (a large playlist can be 60+
+        // pages) previously meant either the whole scan aborting (losing everything already
+        // gathered) or, worse, being silently indistinguishable from "no more pages" - retry a
+        // couple times before actually giving up on this page.
+        if (attempt >= 2)
+            throw err;
+        await sleep(400 * (attempt + 1));
+        return fetchPlaylistTracksPage(instance, playlistId, offset, attempt + 1);
+    }
+}
+
 async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProgress) {
     const identities = new Set();
     // Id-based identity depends on Apple consistently populating catalogId/type the same way our
@@ -35,16 +61,7 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
     const textKeys = new Set();
     let offset = 0;
     for (let page = 0; page < MAX_PLAYLIST_TRACK_PAGES; page += 1) {
-        // Explicitly bypasses any HTTP-level caching (browser or MusicKit) for this specific
-        // request - it's queried with the same URL on every run in a session, and stale results
-        // here would make dedup silently blind to anything added or cleaned up since the first
-        // time that URL was fetched, regardless of how correct the comparison logic itself is.
-        const response = await instance.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {
-            limit: PLAYLIST_TRACKS_PAGE_SIZE,
-            offset,
-        }, {
-            fetchOptions: { cache: 'no-store' },
-        });
+        const response = await fetchPlaylistTracksPage(instance, playlistId, offset);
         const items = response?.data?.data || [];
         items.forEach((item) => {
             identities.add(identityOf({
@@ -56,7 +73,15 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
         });
         if (onProgress)
             onProgress({ completed: identities.size });
-        if (items.length < PLAYLIST_TRACKS_PAGE_SIZE)
+        // Apple's paginated relationships include a `next` link only when another page actually
+        // exists - trust that over inferring end-of-data from a short page, since a page that
+        // happens to return fewer than the limit (a transient hiccup, not truly the last page)
+        // would otherwise cut the scan off early and leave the rest of the playlist unaccounted
+        // for, silently letting anything past that point look "not on the playlist" and get
+        // re-searched. Falls back to the length check only if `next` isn't present in the response.
+        const hasNext = typeof response?.data?.next === 'string';
+        const looksLikeLastPage = items.length < PLAYLIST_TRACKS_PAGE_SIZE;
+        if (response?.data?.next !== undefined ? !hasNext : looksLikeLastPage)
             break;
         offset += PLAYLIST_TRACKS_PAGE_SIZE;
     }
