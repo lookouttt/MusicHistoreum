@@ -88,6 +88,12 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         }
     }
 
+    // Temporary diagnostic - logs what the existing-playlist scan actually saw, so a duplicate
+    // that slips through can be traced to a specific cause (missing from this set entirely vs.
+    // present but not matching the newly-computed key for some reason) instead of guessed at.
+    // eslint-disable-next-line no-console
+    console.log('[AppleMusicPlaylist] existingTextKeys:', [...existingTextKeys].sort());
+
     let alreadyOnPlaylistCount = 0;
     const songsToMatch = [];
     songs.forEach((song) => {
@@ -125,6 +131,16 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
             queuedTextKeys.add(textKey);
             toAdd.push(m);
         }
+        // Temporary diagnostic - see the console.log above. Every song that made it past the
+        // pre-filter and through matching, with the exact key it was checked/added under.
+        // eslint-disable-next-line no-console
+        console.log('[AppleMusicPlaylist]', isDuplicate ? 'caught as duplicate here' : 'ADDED', {
+            title: m.song.song_title,
+            artist: m.song.artist_name,
+            identity,
+            textKey,
+            type: m.type,
+        });
     });
 
     let playlistId = targetPlaylistId;
