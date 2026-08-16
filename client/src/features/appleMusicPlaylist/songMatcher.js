@@ -94,7 +94,7 @@ const artistsLooselyMatch = (ourArtist, candidateArtist) =>
 // can push the real match out of Apple's (limited to 10) results entirely, even for a song
 // that's unambiguously there - stripped only for the search itself, not for display text.
 const SOUNDTRACK_SUFFIX_REGEX = /\s*\(from\s+[^)]*\)\s*$/i;
-const searchTitle = (title) => String(title || '').replace(SOUNDTRACK_SUFFIX_REGEX, '').trim() || title;
+export const searchTitle = (title) => String(title || '').replace(SOUNDTRACK_SUFFIX_REGEX, '').trim() || title;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

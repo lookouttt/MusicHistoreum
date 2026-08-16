@@ -42,6 +42,12 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
     const [progress, setProgress] = useState(null);
     const [result, setResult] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    // Seeded from result.playlistKnownIdentities/playlistKnownTextKeys whenever a result is set
+    // (fresh run or restored), then grown as manual "add this candidate" picks succeed, so a song
+    // picked for one unmatched entry is recognized if it also shows up as a candidate elsewhere in
+    // the same review session.
+    const [knownIdentities, setKnownIdentities] = useState([]);
+    const [knownTextKeys, setKnownTextKeys] = useState([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -77,6 +83,8 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                 onProgress: setProgress,
             });
             setResult(summary);
+            setKnownIdentities(summary.playlistKnownIdentities || []);
+            setKnownTextKeys(summary.playlistKnownTextKeys || []);
             setStatus('done');
             try {
                 sessionStorage.setItem(LAST_RESULT_KEY, JSON.stringify(summary));
@@ -94,7 +102,10 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
         try {
             const saved = sessionStorage.getItem(LAST_RESULT_KEY);
             if (saved) {
-                setResult(JSON.parse(saved));
+                const parsed = JSON.parse(saved);
+                setResult(parsed);
+                setKnownIdentities(parsed.playlistKnownIdentities || []);
+                setKnownTextKeys(parsed.playlistKnownTextKeys || []);
                 setStatus('done');
             }
         } catch (err) {
@@ -243,6 +254,12 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                                             reason={reason}
                                             candidates={candidates}
                                             playlistId={result.targetPlaylistId}
+                                            knownIdentities={knownIdentities}
+                                            knownTextKeys={knownTextKeys}
+                                            onAdded={(identity, textKey) => {
+                                                setKnownIdentities((prev) => [...prev, identity]);
+                                                setKnownTextKeys((prev) => [...prev, textKey]);
+                                            }}
                                         />
                                     ))}
                                 </ul>

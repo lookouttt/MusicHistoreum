@@ -2,18 +2,26 @@ import { useState } from 'react';
 import { Button } from 'reactstrap';
 import { addCandidateToPlaylist } from './createAppleMusicPlaylist';
 
-const UnmatchedSongItem = ({ title, reason, candidates, playlistId }) => {
+const UnmatchedSongItem = ({ title, reason, candidates, playlistId, knownIdentities, knownTextKeys, onAdded }) => {
     const [expanded, setExpanded] = useState(false);
     const [addingId, setAddingId] = useState(null);
     const [addedId, setAddedId] = useState(null);
+    const [alreadyOnPlaylistId, setAlreadyOnPlaylistId] = useState(null);
     const [error, setError] = useState('');
 
     const handleAdd = async (candidate) => {
         setAddingId(candidate.id);
         setError('');
         try {
-            await addCandidateToPlaylist(playlistId, candidate.id);
-            setAddedId(candidate.id);
+            const outcome = await addCandidateToPlaylist(playlistId, candidate, knownIdentities, knownTextKeys);
+            if (outcome.alreadyOnPlaylist) {
+                setAlreadyOnPlaylistId(candidate.id);
+            } else {
+                setAddedId(candidate.id);
+                // Shares this pick's identity with sibling rows in the same review session, so
+                // picking the same song for two different unmatched entries doesn't double-add it.
+                onAdded && onAdded(outcome.identity, outcome.textKey);
+            }
         } catch (err) {
             setError("Couldn't add this track. Please try again.");
         } finally {
@@ -24,6 +32,11 @@ const UnmatchedSongItem = ({ title, reason, candidates, playlistId }) => {
     if (addedId) {
         const added = candidates.find((c) => c.id === addedId);
         return <li>{title} — Added "{added?.name}" by {added?.artistName} ✓</li>;
+    }
+
+    if (alreadyOnPlaylistId) {
+        const already = candidates.find((c) => c.id === alreadyOnPlaylistId);
+        return <li>{title} — "{already?.name}" by {already?.artistName} is already on this playlist.</li>;
     }
 
     return (

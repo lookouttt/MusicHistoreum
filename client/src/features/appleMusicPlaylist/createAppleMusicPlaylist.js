@@ -1,5 +1,11 @@
 import getAuthorizedMusicKitInstance from './musicKitAuth';
-import matchSongsToAppleMusic, { cacheKey } from './songMatcher';
+import matchSongsToAppleMusic, { cacheKey, searchTitle } from './songMatcher';
+
+// The search itself strips Billboard's `(From "Movie")` soundtrack suffix before querying Apple
+// (see songMatcher.js), but Apple's own title for the matched track may or may not carry an
+// equivalent suffix - stripping it from both sides here means a mismatch on that one detail alone
+// can't cause the text-based dedup check to miss what's really the same song.
+const textKeyFor = (title, artist) => cacheKey({ song_title: searchTitle(title), artist_name: artist });
 
 const MAX_TRACKS_PER_REQUEST = 100;
 const PLAYLIST_TRACKS_PAGE_SIZE = 100;
@@ -40,7 +46,7 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
                 id: item.id,
                 catalogId: item?.attributes?.playParams?.catalogId || null,
             }));
-            textKeys.add(cacheKey({ song_title: item?.attributes?.name, artist_name: item?.attributes?.artistName }));
+            textKeys.add(textKeyFor(item?.attributes?.name, item?.attributes?.artistName));
         });
         if (onProgress)
             onProgress({ completed: identities.size });
@@ -88,7 +94,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     const queuedTextKeys = new Set();
     matched.forEach((m) => {
         const identity = identityOf({ type: m.type, id: m.appleMusicId, catalogId: m.catalogId });
-        const textKey = cacheKey(m.song);
+        const textKey = textKeyFor(m.song.song_title, m.song.artist_name);
         const isDuplicate = existingIdentities.has(identity) || existingTextKeys.has(textKey)
             || queuedIdentities.has(identity) || queuedTextKeys.has(textKey);
         if (isDuplicate) {
@@ -147,6 +153,12 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         duplicateCount,
         foundInLibraryCount,
         addedToLibraryCount,
+        // Everything now known to be on the playlist (already there, plus this run's additions) -
+        // carried along so a later manual "add this candidate" pick (see addCandidateToPlaylist)
+        // can check against it instead of blindly posting. Arrays, not Sets, so this survives the
+        // JSON round-trip through sessionStorage (see CreatePlaylistModal.js).
+        playlistKnownIdentities: [...existingIdentities, ...queuedIdentities],
+        playlistKnownTextKeys: [...existingTextKeys, ...queuedTextKeys],
         unmatched: unmatched.map(({ song, reason, candidates }) => ({
             title: `${song.song_title} — ${song.artist_name}`,
             reason,
@@ -158,15 +170,23 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
 // Lets a person add a specific catalog track to an already-created playlist after the fact -
 // used for manually resolving an unmatched song from its list of candidates (see songMatcher.js's
 // "Found catalog results, but none matched this artist name" case) without rerunning the whole
-// batch.
-export async function addCandidateToPlaylist(playlistId, candidateId) {
+// batch. Checks the same known-identity data the main run computed (see createAppleMusicPlaylist
+// above) before posting, so picking a candidate that turns out to already be on the playlist
+// (under a different id/route) doesn't create a fresh duplicate.
+export async function addCandidateToPlaylist(playlistId, candidate, knownIdentities = [], knownTextKeys = []) {
+    const identity = identityOf({ type: 'songs', id: candidate.id, catalogId: candidate.id });
+    const textKey = textKeyFor(candidate.name, candidate.artistName);
+    if (knownIdentities.includes(identity) || knownTextKeys.includes(textKey))
+        return { added: false, alreadyOnPlaylist: true, identity, textKey };
+
     const instance = await getAuthorizedMusicKitInstance();
     await instance.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {}, {
         fetchOptions: {
             method: 'POST',
-            body: JSON.stringify({ data: [{ id: candidateId, type: 'songs' }] }),
+            body: JSON.stringify({ data: [{ id: candidate.id, type: 'songs' }] }),
         },
     });
+    return { added: true, alreadyOnPlaylist: false, identity, textKey };
 }
 
 export default createAppleMusicPlaylist;
