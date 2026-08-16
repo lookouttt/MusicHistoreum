@@ -8,6 +8,12 @@ const stripDiacritics = (str) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 const normalize = (str) => stripDiacritics(String(str || ''))
     .toLowerCase()
+    // "&" is just as often written as "and" in music credits ("Elton John & Britney Spears" vs
+    // "...And..."). Converting it instead of deleting it outright (the next line strips it as
+    // punctuation) preserves the word so both spellings normalize to the same text - deleting it
+    // silently removes an entire word from one side, changing the word count and breaking the
+    // match, as opposed to punctuation like "!" or "," where deleting it changes nothing.
+    .replace(/&/g, ' and ')
     .replace(/[^a-z0-9\s]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
