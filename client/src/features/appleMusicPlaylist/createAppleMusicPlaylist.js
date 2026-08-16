@@ -204,6 +204,32 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         });
     });
 
+    // A song's own candidate list (see songMatcher.js's "found catalog results but none matched
+    // this artist name" case) comes straight from Apple, so comparing a candidate against an
+    // existing playlist track is Apple-text-to-Apple-text - much more reliable than the pre-filter
+    // above, which has to compare Billboard's often-differently-worded credit directly against
+    // Apple's. Resolving this automatically (instead of only when a person manually picks the same
+    // candidate) means a song already on the playlist doesn't need to be reviewed at all.
+    const resolvedUnmatched = [];
+    let autoResolvedFromCandidatesCount = 0;
+    for (let i = 0; i < unmatched.length; i += 1) {
+        const entry = unmatched[i];
+        const candidates = entry.candidates || [];
+        const alreadyPresent = candidates.some((candidate) =>
+            existingTracks.some((track) =>
+                namesLooselyMatch(searchTitle(candidate.name), searchTitle(track.name || ''))
+                && artistsLooselyMatch(candidate.artistName, track.artistName || '')
+            )
+        );
+        if (alreadyPresent)
+            autoResolvedFromCandidatesCount += 1;
+        else
+            resolvedUnmatched.push(entry);
+        if (i % 20 === 19)
+            await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+    duplicateCount += autoResolvedFromCandidatesCount;
+
     let playlistId = targetPlaylistId;
     if (!playlistId) {
         const playlistResponse = await instance.api.music('/v1/me/library/playlists', {}, {
@@ -258,7 +284,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         playlistKnownIdentities: [...existingIdentities, ...queuedIdentities],
         playlistKnownTextKeys: [...existingTextKeys, ...queuedTextKeys],
         playlistKnownTracks: [...existingTracks, ...queuedTracks],
-        unmatched: unmatched.map(({ song, reason, candidates }) => ({
+        unmatched: resolvedUnmatched.map(({ song, reason, candidates }) => ({
             title: `${song.song_title} — ${song.artist_name}`,
             reason,
             candidates: candidates || [],
