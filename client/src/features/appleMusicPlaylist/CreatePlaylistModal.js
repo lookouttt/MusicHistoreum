@@ -224,7 +224,9 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                             ? `Adding to playlist (${progress.completed} of ${progress.total})…`
                             : progress?.stage === 'checking-playlist'
                                 ? `Checking existing playlist for duplicates (${progress.completed} tracks found so far)…`
-                                : `Searching Apple Music${progress ? ` (${progress.completed} of ${progress.total})` : '…'}`}
+                                : progress?.stage === 'checking-similar'
+                                    ? `Checking for near-matches (${progress.completed} checked so far)…`
+                                    : `Searching Apple Music${progress ? ` (${progress.completed} of ${progress.total})` : '…'}`}
                     </p>
                 )}
 

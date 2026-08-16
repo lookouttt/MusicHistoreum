@@ -80,15 +80,13 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
         });
         if (onProgress)
             onProgress({ completed: identities.size });
-        // Apple's paginated relationships include a `next` link only when another page actually
-        // exists - trust that over inferring end-of-data from a short page, since a page that
-        // happens to return fewer than the limit (a transient hiccup, not truly the last page)
-        // would otherwise cut the scan off early and leave the rest of the playlist unaccounted
-        // for, silently letting anything past that point look "not on the playlist" and get
-        // re-searched. Falls back to the length check only if `next` isn't present in the response.
-        const hasNext = typeof response?.data?.next === 'string';
-        const looksLikeLastPage = items.length < PLAYLIST_TRACKS_PAGE_SIZE;
-        if (response?.data?.next !== undefined ? !hasNext : looksLikeLastPage)
+        // A page coming back short of the requested limit means this was the last one. (A prior
+        // version of this also tried to prefer Apple's `next` pagination link over this check, on
+        // the theory that a transient short page could be mistaken for the last one - but without
+        // having actually confirmed that field's real behavior, it caused pagination to run well
+        // past the true end of the playlist instead. Reverted; the retry-on-failure above is what
+        // actually protects against a transient hiccup truncating the scan early.)
+        if (items.length < PLAYLIST_TRACKS_PAGE_SIZE)
             break;
         offset += PLAYLIST_TRACKS_PAGE_SIZE;
     }
@@ -154,8 +152,12 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
             songsToMatch.push(song);
         }
         looseCheckCount += 1;
+        // Its own stage, not 'checking-playlist' - that one reports progress toward the playlist's
+        // actual track count, while this counts through the (much smaller) remainder of input
+        // songs still needing the loose fallback check. Reusing the same stage/counter made the
+        // displayed number run past the real playlist size as soon as this phase started.
         if (onProgress)
-            onProgress({ stage: 'checking-playlist', completed: existingTracks.length + looseCheckCount });
+            onProgress({ stage: 'checking-similar', completed: looseCheckCount });
         if (looseCheckCount % 20 === 0)
             await new Promise((resolve) => setTimeout(resolve, 0));
     }
