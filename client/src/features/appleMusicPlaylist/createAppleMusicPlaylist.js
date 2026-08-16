@@ -1,5 +1,5 @@
 import getAuthorizedMusicKitInstance from './musicKitAuth';
-import matchSongsToAppleMusic from './songMatcher';
+import matchSongsToAppleMusic, { cacheKey } from './songMatcher';
 
 const MAX_TRACKS_PER_REQUEST = 100;
 const PLAYLIST_TRACKS_PAGE_SIZE = 100;
@@ -12,11 +12,21 @@ const MAX_PLAYLIST_TRACK_PAGES = 100000;
 // counterpart - both a straight catalog addition and a matched library upload carry one) or, for
 // a plain library upload with no catalog match, only by its own library id. Comparing on catalog
 // id first means a song already on the playlist via one route is still recognized as a duplicate
-// when the matcher would add it via the other route.
-const identityOf = (item) => (item.catalogId ? `catalog:${item.catalogId}` : `${item.type}:${item.id}`);
+// when the matcher would add it via the other route. A 'songs'-type item's own id already IS its
+// catalog id (that's what makes it a catalog resource in the first place), so it falls back to
+// that instead of the (library-item-only) playParams.catalogId field.
+const identityOf = (item) => {
+    const catalogId = item.catalogId || (item.type === 'songs' ? item.id : null);
+    return catalogId ? `catalog:${catalogId}` : `${item.type}:${item.id}`;
+};
 
 async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProgress) {
     const identities = new Set();
+    // Id-based identity depends on Apple consistently populating catalogId/type the same way our
+    // own matcher does, which hasn't proven reliable in testing - falling back to a normalized
+    // title+artist comparison (the same one used to dedupe the input selection) catches the same
+    // real-world song even when the two sides disagree on ids.
+    const textKeys = new Set();
     let offset = 0;
     for (let page = 0; page < MAX_PLAYLIST_TRACK_PAGES; page += 1) {
         const response = await instance.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {
@@ -30,6 +40,7 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
                 id: item.id,
                 catalogId: item?.attributes?.playParams?.catalogId || null,
             }));
+            textKeys.add(cacheKey({ song_title: item?.attributes?.name, artist_name: item?.attributes?.artistName }));
         });
         if (onProgress)
             onProgress({ completed: identities.size });
@@ -37,7 +48,7 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
             break;
         offset += PLAYLIST_TRACKS_PAGE_SIZE;
     }
-    return identities;
+    return { identities, textKeys };
 }
 
 export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId, songs, preferClean = true, onProgress }) {
@@ -51,11 +62,14 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     // Only an existing playlist can already have tracks on it - a newly created one starts empty,
     // so there's nothing to dedupe against.
     let existingIdentities = new Set();
+    let existingTextKeys = new Set();
     if (targetPlaylistId) {
         try {
-            existingIdentities = await fetchExistingPlaylistTrackIdentities(instance, targetPlaylistId, (progress) =>
+            const existing = await fetchExistingPlaylistTrackIdentities(instance, targetPlaylistId, (progress) =>
                 onProgress && onProgress({ stage: 'checking-playlist', ...progress })
             );
+            existingIdentities = existing.identities;
+            existingTextKeys = existing.textKeys;
         } catch (err) {
             if (process.env.NODE_ENV !== 'production')
                 console.warn('Could not fetch existing playlist tracks; duplicates may not be filtered.', err);
@@ -65,16 +79,23 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     // A song can appear multiple times in `songs` (e.g. one row per week it charted), so matching
     // can legitimately produce the same Apple Music track more than once in `matched`. Track what's
     // been queued in this run, not just what's already on the playlist, so a newly-matched song
-    // that recurs across many chart weeks gets added once instead of once per recurrence.
+    // that recurs across many chart weeks gets added once instead of once per recurrence. Checked
+    // by both id-based identity and normalized title+artist text (see fetchExistingPlaylistTrackIdentities)
+    // so a mismatch in either signal alone doesn't let a real duplicate through.
     const toAdd = [];
     let duplicateCount = 0;
-    const queuedThisRun = new Set();
+    const queuedIdentities = new Set();
+    const queuedTextKeys = new Set();
     matched.forEach((m) => {
         const identity = identityOf({ type: m.type, id: m.appleMusicId, catalogId: m.catalogId });
-        if (existingIdentities.has(identity) || queuedThisRun.has(identity)) {
+        const textKey = cacheKey(m.song);
+        const isDuplicate = existingIdentities.has(identity) || existingTextKeys.has(textKey)
+            || queuedIdentities.has(identity) || queuedTextKeys.has(textKey);
+        if (isDuplicate) {
             duplicateCount += 1;
         } else {
-            queuedThisRun.add(identity);
+            queuedIdentities.add(identity);
+            queuedTextKeys.add(textKey);
             toAdd.push(m);
         }
     });

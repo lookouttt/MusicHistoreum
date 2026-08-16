@@ -89,6 +89,13 @@ const artistsLooselyMatch = (ourArtist, candidateArtist) =>
     namesLooselyMatch(ourArtist, candidateArtist)
     || namesLooselyMatch(primaryArtist(ourArtist), primaryArtist(candidateArtist));
 
+// Billboard appends a soundtrack/movie attribution like `(From "Top Gun")` to plenty of chart
+// titles that Apple's own catalog/library title doesn't carry. Leaving it in the search query
+// can push the real match out of Apple's (limited to 10) results entirely, even for a song
+// that's unambiguously there - stripped only for the search itself, not for display text.
+const SOUNDTRACK_SUFFIX_REGEX = /\s*\(from\s+[^)]*\)\s*$/i;
+const searchTitle = (title) => String(title || '').replace(SOUNDTRACK_SUFFIX_REGEX, '').trim() || title;
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const isRateLimitError = (err) => {
@@ -137,7 +144,7 @@ async function searchLibrary(instance, term, attempt = 0) {
 // uploads, absent for plain uploads) so callers can dedupe against a playlist's existing tracks
 // by catalog identity, not just by which of the two id spaces a track happened to be added under.
 async function findLibraryMatch(instance, song, { preferClean = true } = {}) {
-    const term = `${song.song_title} ${primaryArtist(song.artist_name)}`;
+    const term = `${searchTitle(song.song_title)} ${primaryArtist(song.artist_name)}`;
     const results = await searchLibrary(instance, term);
 
     const candidates = results?.data?.results?.['library-songs']?.data || [];
@@ -158,7 +165,7 @@ async function findBestMatch(instance, song, { preferClean = true } = {}) {
     if (libraryMatch)
         return { appleMusicId: libraryMatch.id, type: 'library-songs', catalogId: libraryMatch.catalogId, reason: null, retryable: false };
 
-    const term = `${song.song_title} ${primaryArtist(song.artist_name)}`;
+    const term = `${searchTitle(song.song_title)} ${primaryArtist(song.artist_name)}`;
     const results = await searchCatalog(instance, term);
 
     const candidates = results?.data?.results?.songs?.data || [];
@@ -209,7 +216,11 @@ async function findBestMatch(instance, song, { preferClean = true } = {}) {
 // network call - otherwise that reason would only reflect the first occurrence and silently go
 // stale for deduped lookups.
 const matchCache = new Map();
-const cacheKey = (song) => `${normalize(song.song_title)}::${normalize(song.artist_name)}`;
+
+// Exported so callers can compute the same normalized title::artist key for an Apple-side track
+// (name/artistName) as for one of our own songs (song_title/artist_name) - see
+// createAppleMusicPlaylist.js's dedupe-by-text fallback alongside its id-based comparison.
+export const cacheKey = (song) => `${normalize(song.song_title)}::${normalize(song.artist_name)}`;
 
 export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5, preferClean = true, onProgress, maxRateLimitRetries = 2 } = {}) {
     // Indexed by each song's original position so chart order survives concurrent,

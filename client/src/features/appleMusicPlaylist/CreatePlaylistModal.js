@@ -109,7 +109,7 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
     const targetPlaylistName = existingPlaylists.find((p) => p.id === result?.targetPlaylistId)?.name;
 
     return (
-        <Modal isOpen={isOpen} toggle={toggle} className='modalStyle'>
+        <Modal isOpen={isOpen} toggle={toggle} backdrop='static' className='modalStyle'>
             <ModalHeader toggle={toggle}>Save to Apple Music</ModalHeader>
             <ModalBody>
                 {status === 'idle' && (
