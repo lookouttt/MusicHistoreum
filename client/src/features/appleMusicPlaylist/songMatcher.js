@@ -85,9 +85,15 @@ const namesLooselyMatch = (a, b) => {
     return isTokenSubsequence(tokensA, tokensB) || isTokenSubsequence(tokensB, tokensA);
 };
 
-const artistsLooselyMatch = (ourArtist, candidateArtist) =>
+export const artistsLooselyMatch = (ourArtist, candidateArtist) =>
     namesLooselyMatch(ourArtist, candidateArtist)
     || namesLooselyMatch(primaryArtist(ourArtist), primaryArtist(candidateArtist));
+
+// Exported for the same loose title comparison used elsewhere in this file (e.g. matching a
+// candidate's name against a song's title) - reused by createAppleMusicPlaylist.js's existing-
+// playlist fallback check, since a strict comparison can't recognize a song that was only ever
+// resolved through a manual candidate pick (see below).
+export { namesLooselyMatch };
 
 // Billboard appends a soundtrack/movie attribution like `(From "Top Gun")` to plenty of chart
 // titles that Apple's own catalog/library title doesn't carry, and separately, Apple's own title

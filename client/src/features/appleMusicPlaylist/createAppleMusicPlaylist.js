@@ -1,5 +1,5 @@
 import getAuthorizedMusicKitInstance from './musicKitAuth';
-import matchSongsToAppleMusic, { cacheKey, searchTitle } from './songMatcher';
+import matchSongsToAppleMusic, { cacheKey, searchTitle, namesLooselyMatch, artistsLooselyMatch } from './songMatcher';
 
 // The search itself strips Billboard's `(From "Movie")` soundtrack suffix before querying Apple
 // (see songMatcher.js), but Apple's own title for the matched track may or may not carry an
@@ -59,6 +59,12 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
     // title+artist comparison (the same one used to dedupe the input selection) catches the same
     // real-world song even when the two sides disagree on ids.
     const textKeys = new Set();
+    // Raw name/artistName pairs, kept alongside the Sets above for the loose fallback comparison
+    // in createAppleMusicPlaylist.js - a song only ever resolved through a manual candidate pick
+    // (see UnmatchedSongItem.js) has, by definition, a title/artist that didn't line up closely
+    // enough for the strict text-key check either, since that's the same reason it failed the
+    // automatic matcher's own artist check in the first place.
+    const tracks = [];
     let offset = 0;
     for (let page = 0; page < MAX_PLAYLIST_TRACK_PAGES; page += 1) {
         const response = await fetchPlaylistTracksPage(instance, playlistId, offset);
@@ -70,6 +76,7 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
                 catalogId: item?.attributes?.playParams?.catalogId || null,
             }));
             textKeys.add(textKeyFor(item?.attributes?.name, item?.attributes?.artistName));
+            tracks.push({ name: item?.attributes?.name, artistName: item?.attributes?.artistName });
         });
         if (onProgress)
             onProgress({ completed: identities.size });
@@ -85,7 +92,7 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
             break;
         offset += PLAYLIST_TRACKS_PAGE_SIZE;
     }
-    return { identities, textKeys };
+    return { identities, textKeys, tracks };
 }
 
 export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId, songs, preferClean = true, onProgress }) {
@@ -100,6 +107,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     // title+artist avoids that risk by construction, rather than trying to reconcile it afterward.
     let existingIdentities = new Set();
     let existingTextKeys = new Set();
+    let existingTracks = [];
     if (targetPlaylistId) {
         try {
             const existing = await fetchExistingPlaylistTrackIdentities(instance, targetPlaylistId, (progress) =>
@@ -107,6 +115,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
             );
             existingIdentities = existing.identities;
             existingTextKeys = existing.textKeys;
+            existingTracks = existing.tracks;
         } catch (err) {
             if (process.env.NODE_ENV !== 'production')
                 console.warn('Could not fetch existing playlist tracks; duplicates may not be filtered.', err);
@@ -122,7 +131,20 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     let alreadyOnPlaylistCount = 0;
     const songsToMatch = [];
     songs.forEach((song) => {
-        if (existingTextKeys.has(textKeyFor(song.song_title, song.artist_name)))
+        if (existingTextKeys.has(textKeyFor(song.song_title, song.artist_name))) {
+            alreadyOnPlaylistCount += 1;
+            return;
+        }
+        // The strict key above can't recognize a song that was only ever resolved through a
+        // manual candidate pick - that pick's title/artist, by definition, didn't line up closely
+        // enough with Billboard's for the automatic matcher's own artist check either, which is
+        // exactly why it needed manual review in the first place. Only run for the (much smaller)
+        // remainder that fails the fast exact check, not the whole playlist.
+        const looseMatch = existingTracks.some((track) =>
+            namesLooselyMatch(searchTitle(song.song_title), searchTitle(track.name || ''))
+            && artistsLooselyMatch(song.artist_name, track.artistName || '')
+        );
+        if (looseMatch)
             alreadyOnPlaylistCount += 1;
         else
             songsToMatch.push(song);
