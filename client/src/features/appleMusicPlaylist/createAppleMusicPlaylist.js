@@ -35,9 +35,15 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
     const textKeys = new Set();
     let offset = 0;
     for (let page = 0; page < MAX_PLAYLIST_TRACK_PAGES; page += 1) {
+        // Explicitly bypasses any HTTP-level caching (browser or MusicKit) for this specific
+        // request - it's queried with the same URL on every run in a session, and stale results
+        // here would make dedup silently blind to anything added or cleaned up since the first
+        // time that URL was fetched, regardless of how correct the comparison logic itself is.
         const response = await instance.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {
             limit: PLAYLIST_TRACKS_PAGE_SIZE,
             offset,
+        }, {
+            fetchOptions: { cache: 'no-store' },
         });
         const items = response?.data?.data || [];
         items.forEach((item) => {

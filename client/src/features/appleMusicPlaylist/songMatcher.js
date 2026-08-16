@@ -110,13 +110,19 @@ const isRateLimitError = (err) => {
 // (e.g. a cover/medley competing against a much more popular original for the same title words).
 const SEARCH_RESULT_LIMIT = 25;
 
+// Bypasses HTTP-level caching (browser or MusicKit) - the same term can legitimately be searched
+// again in a later run within the same page session (a song recurring across chart weeks, or the
+// same title searched again on a retest), and a stale response would mean a since-added library
+// track or since-changed catalog result silently goes unseen.
+const NO_CACHE_FETCH_OPTIONS = { fetchOptions: { cache: 'no-store' } };
+
 async function searchCatalog(instance, term, attempt = 0) {
     try {
         return await instance.api.music(`/v1/catalog/${instance.storefrontId}/search`, {
             term,
             types: 'songs',
             limit: SEARCH_RESULT_LIMIT,
-        });
+        }, NO_CACHE_FETCH_OPTIONS);
     } catch (err) {
         // Apple's catalog search occasionally rate-limits concurrent requests (429) or
         // hiccups transiently; retry a couple times before giving up on this song.
@@ -133,7 +139,7 @@ async function searchLibrary(instance, term, attempt = 0) {
             term,
             types: 'library-songs',
             limit: SEARCH_RESULT_LIMIT,
-        });
+        }, NO_CACHE_FETCH_OPTIONS);
     } catch (err) {
         if (attempt >= 2)
             throw err;
