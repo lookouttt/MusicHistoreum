@@ -90,11 +90,23 @@ const artistsLooselyMatch = (ourArtist, candidateArtist) =>
     || namesLooselyMatch(primaryArtist(ourArtist), primaryArtist(candidateArtist));
 
 // Billboard appends a soundtrack/movie attribution like `(From "Top Gun")` to plenty of chart
-// titles that Apple's own catalog/library title doesn't carry. Leaving it in the search query
-// can push the real match out of Apple's (limited to 10) results entirely, even for a song
-// that's unambiguously there - stripped only for the search itself, not for display text.
-const SOUNDTRACK_SUFFIX_REGEX = /\s*\(from\s+[^)]*\)\s*$/i;
-export const searchTitle = (title) => String(title || '').replace(SOUNDTRACK_SUFFIX_REGEX, '').trim() || title;
+// titles that Apple's own catalog/library title doesn't carry, and separately, Apple's own title
+// for an already-matched track very often carries its own trailing annotation - "(2019 Remaster)",
+// "(Single Version)", "(Live)", "[Radio Edit]" - that Billboard's plain title never had. Strips any
+// number of trailing parenthesized/bracketed groups (not just soundtrack ones) so a title differing
+// only by this kind of annotation isn't treated as a different song, for the search query itself
+// and (via callers) for text-based dedup, where a strict match would otherwise miss it entirely.
+const TRAILING_ANNOTATION_REGEX = /\s*[([][^()[\]]*[)\]]\s*$/;
+export const searchTitle = (title) => {
+    let result = String(title || '');
+    for (;;) {
+        const stripped = result.replace(TRAILING_ANNOTATION_REGEX, '').trim();
+        if (!stripped || stripped === result)
+            break;
+        result = stripped;
+    }
+    return result || title;
+};
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
