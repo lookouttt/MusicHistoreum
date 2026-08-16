@@ -66,13 +66,13 @@ async function fetchExistingPlaylistTrackIdentities(instance, playlistId, onProg
 export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId, songs, preferClean = true, onProgress }) {
     const instance = await getAuthorizedMusicKitInstance();
 
-    const { matched, unmatched } = await matchSongsToAppleMusic(instance, songs, {
-        preferClean,
-        onProgress: (progress) => onProgress && onProgress({ stage: 'matching', ...progress }),
-    });
-
     // Only an existing playlist can already have tracks on it - a newly created one starts empty,
-    // so there's nothing to dedupe against.
+    // so there's nothing to dedupe against. Checked before any searching happens (not after) - a
+    // fresh search for a song already on the playlist can legitimately land on a different-but-
+    // equally-valid catalog edition (single vs album version, remaster vs original) than whatever
+    // was matched last time, which would defeat even a post-hoc id/text comparison between the two
+    // independently-resolved results. Skipping the search entirely for anything already present by
+    // title+artist avoids that risk by construction, rather than trying to reconcile it afterward.
     let existingIdentities = new Set();
     let existingTextKeys = new Set();
     if (targetPlaylistId) {
@@ -88,14 +88,29 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         }
     }
 
+    let alreadyOnPlaylistCount = 0;
+    const songsToMatch = [];
+    songs.forEach((song) => {
+        if (existingTextKeys.has(textKeyFor(song.song_title, song.artist_name)))
+            alreadyOnPlaylistCount += 1;
+        else
+            songsToMatch.push(song);
+    });
+
+    const { matched, unmatched } = await matchSongsToAppleMusic(instance, songsToMatch, {
+        preferClean,
+        onProgress: (progress) => onProgress && onProgress({ stage: 'matching', ...progress }),
+    });
+
     // A song can appear multiple times in `songs` (e.g. one row per week it charted), so matching
     // can legitimately produce the same Apple Music track more than once in `matched`. Track what's
     // been queued in this run, not just what's already on the playlist, so a newly-matched song
-    // that recurs across many chart weeks gets added once instead of once per recurrence. Checked
-    // by both id-based identity and normalized title+artist text (see fetchExistingPlaylistTrackIdentities)
-    // so a mismatch in either signal alone doesn't let a real duplicate through.
+    // that recurs across many chart weeks gets added once instead of once per recurrence. Still
+    // checked against both id and text here too, as a second line of defense for anything the
+    // pre-filter above didn't catch (e.g. a title/artist spelling too different from what's
+    // already on the playlist for the text-key match to line up).
     const toAdd = [];
-    let duplicateCount = 0;
+    let duplicateCount = alreadyOnPlaylistCount;
     const queuedIdentities = new Set();
     const queuedTextKeys = new Set();
     matched.forEach((m) => {
