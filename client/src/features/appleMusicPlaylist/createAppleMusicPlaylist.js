@@ -130,25 +130,35 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
 
     let alreadyOnPlaylistCount = 0;
     const songsToMatch = [];
-    songs.forEach((song) => {
+    let looseCheckCount = 0;
+    for (let i = 0; i < songs.length; i += 1) {
+        const song = songs[i];
         if (existingTextKeys.has(textKeyFor(song.song_title, song.artist_name))) {
             alreadyOnPlaylistCount += 1;
-            return;
+            continue;
         }
         // The strict key above can't recognize a song that was only ever resolved through a
         // manual candidate pick - that pick's title/artist, by definition, didn't line up closely
         // enough with Billboard's for the automatic matcher's own artist check either, which is
         // exactly why it needed manual review in the first place. Only run for the (much smaller)
-        // remainder that fails the fast exact check, not the whole playlist.
+        // remainder that fails the fast exact check, not the whole playlist - it's still a full
+        // scan against every existing track per song, expensive enough that doing hundreds of
+        // these back-to-back with no yield point can freeze the page for several seconds.
         const looseMatch = existingTracks.some((track) =>
             namesLooselyMatch(searchTitle(song.song_title), searchTitle(track.name || ''))
             && artistsLooselyMatch(song.artist_name, track.artistName || '')
         );
-        if (looseMatch)
+        if (looseMatch) {
             alreadyOnPlaylistCount += 1;
-        else
+        } else {
             songsToMatch.push(song);
-    });
+        }
+        looseCheckCount += 1;
+        if (onProgress)
+            onProgress({ stage: 'checking-playlist', completed: existingTracks.length + looseCheckCount });
+        if (looseCheckCount % 20 === 0)
+            await new Promise((resolve) => setTimeout(resolve, 0));
+    }
 
     const { matched, unmatched } = await matchSongsToAppleMusic(instance, songsToMatch, {
         preferClean,
