@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from 'reactstrap';
 import { addCandidateToPlaylist } from './createAppleMusicPlaylist';
 
-const UnmatchedSongItem = ({ title, reason, candidates, playlistId, knownIdentities, knownTextKeys, onAdded }) => {
+const UnmatchedSongItem = ({ title, reason, candidates, playlistId, knownIdentities, knownTextKeys, knownTracks, onAdded }) => {
     const [expanded, setExpanded] = useState(false);
     const [addingId, setAddingId] = useState(null);
     const [addedId, setAddedId] = useState(null);
@@ -13,14 +13,14 @@ const UnmatchedSongItem = ({ title, reason, candidates, playlistId, knownIdentit
         setAddingId(candidate.id);
         setError('');
         try {
-            const outcome = await addCandidateToPlaylist(playlistId, candidate, knownIdentities, knownTextKeys);
+            const outcome = await addCandidateToPlaylist(playlistId, candidate, knownIdentities, knownTextKeys, knownTracks);
             if (outcome.alreadyOnPlaylist) {
                 setAlreadyOnPlaylistId(candidate.id);
             } else {
                 setAddedId(candidate.id);
                 // Shares this pick's identity with sibling rows in the same review session, so
                 // picking the same song for two different unmatched entries doesn't double-add it.
-                onAdded && onAdded(outcome.identity, outcome.textKey);
+                onAdded && onAdded(outcome.identity, outcome.textKey, { name: candidate.name, artistName: candidate.artistName });
             }
         } catch (err) {
             setError("Couldn't add this track. Please try again.");

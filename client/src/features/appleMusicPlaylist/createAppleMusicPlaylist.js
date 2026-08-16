@@ -176,6 +176,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     let duplicateCount = alreadyOnPlaylistCount;
     const queuedIdentities = new Set();
     const queuedTextKeys = new Set();
+    const queuedTracks = [];
     matched.forEach((m) => {
         const identity = identityOf({ type: m.type, id: m.appleMusicId, catalogId: m.catalogId });
         const textKey = textKeyFor(m.song.song_title, m.song.artist_name);
@@ -186,6 +187,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         } else {
             queuedIdentities.add(identity);
             queuedTextKeys.add(textKey);
+            queuedTracks.push({ name: m.song.song_title, artistName: m.song.artist_name });
             toAdd.push(m);
         }
         // Temporary diagnostic - see the console.log above. Every song that made it past the
@@ -253,6 +255,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         // JSON round-trip through sessionStorage (see CreatePlaylistModal.js).
         playlistKnownIdentities: [...existingIdentities, ...queuedIdentities],
         playlistKnownTextKeys: [...existingTextKeys, ...queuedTextKeys],
+        playlistKnownTracks: [...existingTracks, ...queuedTracks],
         unmatched: unmatched.map(({ song, reason, candidates }) => ({
             title: `${song.song_title} — ${song.artist_name}`,
             reason,
@@ -267,10 +270,20 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
 // batch. Checks the same known-identity data the main run computed (see createAppleMusicPlaylist
 // above) before posting, so picking a candidate that turns out to already be on the playlist
 // (under a different id/route) doesn't create a fresh duplicate.
-export async function addCandidateToPlaylist(playlistId, candidate, knownIdentities = [], knownTextKeys = []) {
+export async function addCandidateToPlaylist(playlistId, candidate, knownIdentities = [], knownTextKeys = [], knownTracks = []) {
     const identity = identityOf({ type: 'songs', id: candidate.id, catalogId: candidate.id });
     const textKey = textKeyFor(candidate.name, candidate.artistName);
-    if (knownIdentities.includes(identity) || knownTextKeys.includes(textKey))
+    // A candidate picked from the "possible matches" list is, by definition, one the automatic
+    // artist check already rejected once for the song it's resolving - the same leniency used
+    // for the automatic pre-filter (see createAppleMusicPlaylist above) is needed here too, or a
+    // candidate that's loosely-but-not-exactly what's already on the playlist slips past this
+    // check the same way it used to slip past the automatic one.
+    const isKnown = knownIdentities.includes(identity) || knownTextKeys.includes(textKey)
+        || knownTracks.some((track) =>
+            namesLooselyMatch(searchTitle(candidate.name), searchTitle(track.name || ''))
+            && artistsLooselyMatch(candidate.artistName, track.artistName || '')
+        );
+    if (isKnown)
         return { added: false, alreadyOnPlaylist: true, identity, textKey };
 
     const instance = await getAuthorizedMusicKitInstance();

@@ -48,6 +48,7 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
     // the same review session.
     const [knownIdentities, setKnownIdentities] = useState([]);
     const [knownTextKeys, setKnownTextKeys] = useState([]);
+    const [knownTracks, setKnownTracks] = useState([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -85,6 +86,7 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
             setResult(summary);
             setKnownIdentities(summary.playlistKnownIdentities || []);
             setKnownTextKeys(summary.playlistKnownTextKeys || []);
+            setKnownTracks(summary.playlistKnownTracks || []);
             setStatus('done');
             try {
                 sessionStorage.setItem(LAST_RESULT_KEY, JSON.stringify(summary));
@@ -106,6 +108,7 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                 setResult(parsed);
                 setKnownIdentities(parsed.playlistKnownIdentities || []);
                 setKnownTextKeys(parsed.playlistKnownTextKeys || []);
+                setKnownTracks(parsed.playlistKnownTracks || []);
                 setStatus('done');
             }
         } catch (err) {
@@ -256,9 +259,11 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                                             playlistId={result.targetPlaylistId}
                                             knownIdentities={knownIdentities}
                                             knownTextKeys={knownTextKeys}
-                                            onAdded={(identity, textKey) => {
+                                            knownTracks={knownTracks}
+                                            onAdded={(identity, textKey, track) => {
                                                 setKnownIdentities((prev) => [...prev, identity]);
                                                 setKnownTextKeys((prev) => [...prev, textKey]);
+                                                setKnownTracks((prev) => [...prev, track]);
                                             }}
                                         />
                                     ))}
