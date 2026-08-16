@@ -209,14 +209,18 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     // existing playlist track is Apple-text-to-Apple-text - much more reliable than the pre-filter
     // above, which has to compare Billboard's often-differently-worded credit directly against
     // Apple's. Resolving this automatically (instead of only when a person manually picks the same
-    // candidate) means a song already on the playlist doesn't need to be reviewed at all.
+    // candidate) means a song already on the playlist doesn't need to be reviewed at all. Checked
+    // against tracks already there *and* ones this same run just queued to add - a song matched
+    // automatically earlier in this run wouldn't be in existingTracks yet, but a different
+    // unmatched song's candidate could still be the same track.
+    const knownTracksSoFar = existingTracks.concat(queuedTracks);
     const resolvedUnmatched = [];
     let autoResolvedFromCandidatesCount = 0;
     for (let i = 0; i < unmatched.length; i += 1) {
         const entry = unmatched[i];
         const candidates = entry.candidates || [];
         const alreadyPresent = candidates.some((candidate) =>
-            existingTracks.some((track) =>
+            knownTracksSoFar.some((track) =>
                 namesLooselyMatch(searchTitle(candidate.name), searchTitle(track.name || ''))
                 && artistsLooselyMatch(candidate.artistName, track.artistName || '')
             )
