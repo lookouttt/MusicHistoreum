@@ -3,6 +3,7 @@ import { Button, Modal, ModalHeader, ModalBody, FormGroup, Label, Input } from '
 import createAppleMusicPlaylist from './createAppleMusicPlaylist';
 import getAuthorizedMusicKitInstance from './musicKitAuth';
 import fetchLibraryPlaylists from './fetchLibraryPlaylists';
+import UnmatchedSongItem from './UnmatchedSongItem';
 
 // Our own code already crafts a friendly message for these specific cases (musicKitLoader.js,
 // musicKitAuth.js, fetchAppleMusicDeveloperToken.js) - pass those through as-is. Anything else
@@ -202,8 +203,14 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                             <>
                                 <p>These songs couldn't be matched on Apple Music:</p>
                                 <ul>
-                                    {result.unmatched.map(({ title, reason }) => (
-                                        <li key={title}>{title}{reason ? ` — ${reason}` : ''}</li>
+                                    {result.unmatched.map(({ title, reason, candidates }) => (
+                                        <UnmatchedSongItem
+                                            key={title}
+                                            title={title}
+                                            reason={reason}
+                                            candidates={candidates}
+                                            playlistId={result.targetPlaylistId}
+                                        />
                                     ))}
                                 </ul>
                             </>

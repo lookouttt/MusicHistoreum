@@ -125,11 +125,26 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
         duplicateCount,
         foundInLibraryCount,
         addedToLibraryCount,
-        unmatched: unmatched.map(({ song, reason }) => ({
+        unmatched: unmatched.map(({ song, reason, candidates }) => ({
             title: `${song.song_title} — ${song.artist_name}`,
             reason,
+            candidates: candidates || [],
         })),
     };
+}
+
+// Lets a person add a specific catalog track to an already-created playlist after the fact -
+// used for manually resolving an unmatched song from its list of candidates (see songMatcher.js's
+// "Found catalog results, but none matched this artist name" case) without rerunning the whole
+// batch.
+export async function addCandidateToPlaylist(playlistId, candidateId) {
+    const instance = await getAuthorizedMusicKitInstance();
+    await instance.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {}, {
+        fetchOptions: {
+            method: 'POST',
+            body: JSON.stringify({ data: [{ id: candidateId, type: 'songs' }] }),
+        },
+    });
 }
 
 export default createAppleMusicPlaylist;

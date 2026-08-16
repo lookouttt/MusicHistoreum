@@ -1,4 +1,12 @@
-const normalize = (str) => String(str || '')
+// Strips accents/diacritics via Unicode decomposition (e.g. "é" -> "e" + a combining accent
+// mark, then the mark is dropped) rather than deleting the accented character outright. Deleting
+// it instead of transliterating it is what broke "Céline Dion" -> "celine dion": losing the
+// accent from the middle of "Céline" leaves "cline", which isn't even a substring of "celine",
+// unlike an accent at the end of a word (e.g. "Beyoncé" -> "beyonc", still a clean prefix).
+// Character class below is the Unicode Combining Diacritical Marks block, codepoints 0x300-0x36f.
+const stripDiacritics = (str) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+const normalize = (str) => stripDiacritics(String(str || ''))
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, '')
     .replace(/\s+/g, ' ')
@@ -10,6 +18,20 @@ const normalize = (str) => String(str || '')
 const ARTIST_SEPARATOR_REGEX = /\s*(?:,|&|\/|\bx\b|\bvs\.?\b|\bfeaturing\b|\bfeat\.?\b|\bft\.?\b|\bwith\b|\band\b)\s*/i;
 
 const primaryArtist = (str) => String(str || '').split(ARTIST_SEPARATOR_REGEX)[0].trim();
+
+// Standalone digit tokens -> their spelled-out word, so "The 4 Seasons" lines up with Apple's
+// "The Four Seasons" without needing a per-artist alias for every numeral-styled name.
+const NUMBER_WORDS = {
+    0: 'zero', 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five',
+    6: 'six', 7: 'seven', 8: 'eight', 9: 'nine', 10: 'ten',
+    11: 'eleven', 12: 'twelve', 13: 'thirteen', 14: 'fourteen', 15: 'fifteen',
+    16: 'sixteen', 17: 'seventeen', 18: 'eighteen', 19: 'nineteen', 20: 'twenty',
+};
+
+const expandNumberWords = (normalized) => normalized
+    .split(' ')
+    .map((token) => NUMBER_WORDS[token] ?? token)
+    .join(' ');
 
 // Squashed (no-space) name -> squashed name, for the handful of legal/stylistic renames that no
 // generic normalization catches (Ke$ha dropped the stylization for "Kesha" on Apple Music; Dixie
@@ -23,11 +45,11 @@ const ARTIST_ALIASES = new Map([
 const squash = (normalized) => normalized.replace(/\s+/g, '');
 
 const canonicalArtist = (str) => {
-    const squashed = squash(normalize(str));
+    const squashed = squash(expandNumberWords(normalize(str)));
     return ARTIST_ALIASES.get(squashed) || squashed;
 };
 
-const tokenize = (normalized) => normalized.split(' ').filter(Boolean);
+const tokenize = (normalized) => expandNumberWords(normalized).split(' ').filter(Boolean);
 
 // True when every token of the shorter name shows up in the longer name, in order (extra tokens
 // in between are fine) - catches cases like the Billboard-era "Missy 'Misdemeanor' Elliott"
@@ -52,9 +74,9 @@ const namesLooselyMatch = (a, b) => {
     if (canonicalArtist(a) === canonicalArtist(b))
         return true;
 
-    // Loose substring check first - catches single-character spelling differences within a token
-    // (e.g. Apple's accented "Beyoncé" normalizes to "beyonc", one letter short of "beyonce")
-    // that the stricter whole-token comparison below would otherwise reject.
+    // Loose substring check first - catches minor spelling differences within a single token
+    // (extra/missing letter, abbreviation, etc.) that the stricter whole-token comparison below
+    // would otherwise reject.
     if (normA.includes(normB) || normB.includes(normA))
         return true;
 
@@ -148,11 +170,26 @@ async function findBestMatch(instance, song, { preferClean = true } = {}) {
         // A completely empty result set for a title search is often a symptom of Apple
         // throttling the request rather than a genuine "not on Apple Music" - worth an automatic
         // retry (see the retry pass in matchSongsToAppleMusic). Getting candidates back but none
-        // matching the artist means the search itself worked fine, so that's a real mismatch and
-        // retrying won't change the outcome.
-        return candidates.length === 0
-            ? { appleMusicId: null, type: null, reason: 'Apple Music search returned no results for this title.', retryable: true }
-            : { appleMusicId: null, type: null, reason: 'Found catalog results, but none matched this artist name.', retryable: false };
+        // matching the artist means the search itself worked fine, so that's a real mismatch - not
+        // worth auto-retrying, but worth surfacing the candidates Apple did return so a person can
+        // judge whether one of them is actually the right song under a spelling artistsLooselyMatch
+        // doesn't catch.
+        if (candidates.length === 0)
+            return { appleMusicId: null, type: null, reason: 'Apple Music search returned no results for this title.', retryable: true };
+
+        return {
+            appleMusicId: null,
+            type: null,
+            reason: 'Found catalog results, but none matched this artist name.',
+            retryable: false,
+            candidates: candidates.map((candidate) => ({
+                id: candidate.id,
+                name: candidate?.attributes?.name || '',
+                artistName: candidate?.attributes?.artistName || '',
+                albumName: candidate?.attributes?.albumName || '',
+                contentRating: candidate?.attributes?.contentRating || null,
+            })),
+        };
     }
 
     if (preferClean) {
@@ -209,7 +246,7 @@ export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5,
                 }
                 resultsByIndex[index] = outcome.appleMusicId
                     ? { song, appleMusicId: outcome.appleMusicId, type: outcome.type, catalogId: outcome.catalogId || null }
-                    : { song, reason: outcome.reason, retryable: !!outcome.retryable };
+                    : { song, reason: outcome.reason, retryable: !!outcome.retryable, candidates: outcome.candidates || [] };
 
                 completed += 1;
                 if (onProgress)
@@ -243,11 +280,20 @@ export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5,
 
     const matched = [];
     const unmatched = [];
+    // A song appearing on multiple chart weeks would otherwise show up once per occurrence in the
+    // "couldn't be matched" list - collapse those down to one entry per distinct song so a manual
+    // pick from the candidate list only needs to happen (and only shows up) once.
+    const seenUnmatchedKeys = new Set();
     resultsByIndex.forEach((result) => {
-        if (result.appleMusicId)
+        if (result.appleMusicId) {
             matched.push(result);
-        else
-            unmatched.push({ song: result.song, reason: result.reason });
+            return;
+        }
+        const key = cacheKey(result.song);
+        if (seenUnmatchedKeys.has(key))
+            return;
+        seenUnmatchedKeys.add(key);
+        unmatched.push({ song: result.song, reason: result.reason, candidates: result.candidates || [] });
     });
 
     return { matched, unmatched };
