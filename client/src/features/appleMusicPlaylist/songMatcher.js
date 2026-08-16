@@ -226,14 +226,19 @@ export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5,
                 const song = songs[index];
                 const key = cacheKey(song);
 
-                let outcome = matchCache.get(key);
-                if (!outcome) {
-                    try {
-                        outcome = await findBestMatch(instance, song, { preferClean });
-                    } catch (err) {
+                // Stores the in-flight promise itself, not just the resolved result - if two
+                // workers hit the same key before either finishes (the same song recurring across
+                // chart weeks, picked up by different workers), they need to share one search, not
+                // each independently race their own. Two independent searches for the same song
+                // aren't guaranteed to return the same candidate/edition, which would silently
+                // defeat the within-run dedupe in createAppleMusicPlaylist.js (different catalog
+                // ids for what's really the same song).
+                let outcomePromise = matchCache.get(key);
+                if (!outcomePromise) {
+                    outcomePromise = findBestMatch(instance, song, { preferClean }).catch((err) => {
                         if (process.env.NODE_ENV !== 'production')
                             console.warn(`Apple Music search failed for "${song.song_title}" by ${song.artist_name}:`, err);
-                        outcome = {
+                        return {
                             appleMusicId: null,
                             type: null,
                             reason: isRateLimitError(err)
@@ -241,9 +246,10 @@ export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5,
                                 : 'Apple Music search failed for this song.',
                             retryable: isRateLimitError(err),
                         };
-                    }
-                    matchCache.set(key, outcome);
+                    });
+                    matchCache.set(key, outcomePromise);
                 }
+                const outcome = await outcomePromise;
                 resultsByIndex[index] = outcome.appleMusicId
                     ? { song, appleMusicId: outcome.appleMusicId, type: outcome.type, catalogId: outcome.catalogId || null }
                     : { song, reason: outcome.reason, retryable: !!outcome.retryable, candidates: outcome.candidates || [] };

@@ -120,6 +120,7 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     return {
         playlistName: playlistName || null,
         targetPlaylistId: playlistId,
+        createdNewPlaylist: !targetPlaylistId,
         totalSelected: songs.length,
         addedCount: toAdd.length,
         duplicateCount,

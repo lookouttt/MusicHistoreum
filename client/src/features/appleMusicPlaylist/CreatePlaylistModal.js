@@ -14,6 +14,11 @@ const KNOWN_FRIENDLY_MESSAGES = [
     'Apple Music sign-in was cancelled or failed.',
 ];
 
+// Survives even if the modal closes unexpectedly mid-review (e.g. the tab was backgrounded long
+// enough for the browser to reclaim it) - the run's own summary is otherwise only ever held in
+// this component's local state, with nowhere else to see it afterward.
+const LAST_RESULT_KEY = 'appleMusicPlaylistLastResult';
+
 function getFriendlyErrorMessage(err) {
     const message = err?.message || '';
     if (KNOWN_FRIENDLY_MESSAGES.some((known) => message.includes(known)))
@@ -73,14 +78,35 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
             });
             setResult(summary);
             setStatus('done');
+            try {
+                sessionStorage.setItem(LAST_RESULT_KEY, JSON.stringify(summary));
+            } catch (err) {
+                // sessionStorage unavailable (private browsing, quota, etc.) - not critical, the
+                // result is still shown normally, it just won't survive an unexpected modal close.
+            }
         } catch (err) {
             setErrorMessage(getFriendlyErrorMessage(err));
             setStatus('error');
         }
     };
 
+    const handleViewLastResult = () => {
+        try {
+            const saved = sessionStorage.getItem(LAST_RESULT_KEY);
+            if (saved) {
+                setResult(JSON.parse(saved));
+                setStatus('done');
+            }
+        } catch (err) {
+            // Nothing to show if it's missing or corrupt - the button just won't do anything.
+        }
+    };
+
     const canSubmit = songs.length > 0 && (mode === 'new' ? !!playlistName : !!selectedPlaylistId);
-    const selectedPlaylistName = existingPlaylists.find((p) => p.id === selectedPlaylistId)?.name;
+    // Derived from the result itself, not from `mode`/`selectedPlaylistId` component state, so a
+    // result restored via "View last result" (see handleViewLastResult) displays correctly even
+    // though those selection-form fields have since reset back to their defaults.
+    const targetPlaylistName = existingPlaylists.find((p) => p.id === result?.targetPlaylistId)?.name;
 
     return (
         <Modal isOpen={isOpen} toggle={toggle} className='modalStyle'>
@@ -88,6 +114,13 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
             <ModalBody>
                 {status === 'idle' && (
                     <>
+                        {sessionStorage.getItem(LAST_RESULT_KEY) && (
+                            <p>
+                                <Button size='sm' color='link' className='p-0' onClick={handleViewLastResult}>
+                                    View results from your last completed run
+                                </Button>
+                            </p>
+                        )}
                         <FormGroup tag='fieldset'>
                             <FormGroup check>
                                 <Label check>
@@ -191,9 +224,9 @@ const CreatePlaylistModal = ({ isOpen, toggle, songs, defaultPlaylistName }) => 
                 {status === 'done' && result && (
                     <>
                         <p>
-                            {result.targetPlaylistId && mode === 'existing'
-                                ? `Added ${result.addedCount} of ${result.totalSelected} songs to "${selectedPlaylistName}".`
-                                : `Playlist "${result.playlistName}" created with ${result.addedCount} of ${result.totalSelected} songs.`}
+                            {result.createdNewPlaylist
+                                ? `Playlist "${result.playlistName}" created with ${result.addedCount} of ${result.totalSelected} songs.`
+                                : `Added ${result.addedCount} of ${result.totalSelected} songs to "${targetPlaylistName || 'your playlist'}".`}
                         </p>
                         <p>{result.foundInLibraryCount} song{result.foundInLibraryCount === 1 ? '' : 's'} found already in your Apple Music library, {result.addedToLibraryCount} newly added to it.</p>
                         {result.duplicateCount > 0 && (
