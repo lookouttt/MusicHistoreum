@@ -126,6 +126,26 @@ export async function createAppleMusicPlaylist({ playlistName, targetPlaylistId,
     // eslint-disable-next-line no-console
     console.log('[AppleMusicPlaylist] existingTextKeys:', [...existingTextKeys].sort());
 
+    // Temporary diagnostic - a fast (strict-match only, not the loose comparison used elsewhere)
+    // reconciliation between the full chart selection and the playlist's current contents, so a
+    // count mismatch (e.g. more tracks on the playlist than songs selected) can be traced to
+    // specific titles instead of just a number. Some entries here may be false positives from
+    // wording differences the strict check can't bridge (that's exactly what the loose checks
+    // elsewhere in this file are for) - treat this as a starting point for manual review, not a
+    // guaranteed-accurate diff.
+    if (targetPlaylistId) {
+        const selectedKeys = new Set(songs.map((song) => textKeyFor(song.song_title, song.artist_name)));
+        const playlistKeysFromTracks = new Set(existingTracks.map((track) => textKeyFor(track.name, track.artistName)));
+        const extraInPlaylist = existingTracks.filter((track) => !selectedKeys.has(textKeyFor(track.name, track.artistName)));
+        const missingFromPlaylist = songs.filter((song) => !playlistKeysFromTracks.has(textKeyFor(song.song_title, song.artist_name)));
+        // eslint-disable-next-line no-console
+        console.log('[AppleMusicPlaylist] on playlist but NOT in this selection:',
+            extraInPlaylist.map((t) => `${t.name} — ${t.artistName}`).sort());
+        // eslint-disable-next-line no-console
+        console.log('[AppleMusicPlaylist] in this selection but NOT found on playlist:',
+            missingFromPlaylist.map((s) => `${s.song_title} — ${s.artist_name}`).sort());
+    }
+
     let alreadyOnPlaylistCount = 0;
     const songsToMatch = [];
     let looseCheckCount = 0;
