@@ -275,10 +275,17 @@ async function findBestMatch(instance, song, { preferClean = true } = {}) {
 // stale for deduped lookups.
 const matchCache = new Map();
 
-// Exported so callers can compute the same normalized title::artist key for an Apple-side track
-// (name/artistName) as for one of our own songs (song_title/artist_name) - see
-// createAppleMusicPlaylist.js's dedupe-by-text fallback alongside its id-based comparison.
-export const cacheKey = (song) => `${normalize(song.song_title)}::${normalize(song.artist_name)}`;
+// Exported so callers can compute the same key for an Apple-side track (name/artistName) as for
+// one of our own songs (song_title/artist_name) - see createAppleMusicPlaylist.js's dedupe-by-text
+// checks. Title goes through searchTitle (strips trailing annotations like soundtrack credits or
+// "(feat. X)"); artist goes through primaryArtist + canonicalArtist (drops "Featuring X"/"feat. X"
+// collaborator credits and folds in the alias/numeral/spacing normalization used for matching).
+// Both were previously plain normalize() on the raw strings, which is why this key stayed stricter
+// than the actual matching logic and produced a different key for e.g. "Mariah Carey" vs "Mariah
+// Carey Featuring Miguel" - the single biggest source of false "not a duplicate" results found by
+// comparing a full playlist against its chart selection.
+export const cacheKey = (song) =>
+    `${normalize(searchTitle(song.song_title))}::${canonicalArtist(primaryArtist(song.artist_name))}`;
 
 export async function matchSongsToAppleMusic(instance, songs, { concurrency = 5, preferClean = true, onProgress, maxRateLimitRetries = 2 } = {}) {
     // Indexed by each song's original position so chart order survives concurrent,

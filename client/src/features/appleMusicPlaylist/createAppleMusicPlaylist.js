@@ -1,11 +1,9 @@
 import getAuthorizedMusicKitInstance from './musicKitAuth';
 import matchSongsToAppleMusic, { cacheKey, searchTitle, namesLooselyMatch, artistsLooselyMatch } from './songMatcher';
 
-// The search itself strips Billboard's `(From "Movie")` soundtrack suffix before querying Apple
-// (see songMatcher.js), but Apple's own title for the matched track may or may not carry an
-// equivalent suffix - stripping it from both sides here means a mismatch on that one detail alone
-// can't cause the text-based dedup check to miss what's really the same song.
-const textKeyFor = (title, artist) => cacheKey({ song_title: searchTitle(title), artist_name: artist });
+// cacheKey itself now handles title-annotation stripping and artist normalization/dealiasing (see
+// songMatcher.js) - this is just a positional-args convenience wrapper around it.
+const textKeyFor = (title, artist) => cacheKey({ song_title: title, artist_name: artist });
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
