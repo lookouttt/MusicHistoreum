@@ -105,12 +105,17 @@ const isRateLimitError = (err) => {
     return /\b429\b/.test(String(err?.message || ''));
 };
 
+// Apple's search API caps out at 25 results per type - asking for the max gives a title+artist
+// query the best chance of surfacing the right song even when it ranks well outside the top 10
+// (e.g. a cover/medley competing against a much more popular original for the same title words).
+const SEARCH_RESULT_LIMIT = 25;
+
 async function searchCatalog(instance, term, attempt = 0) {
     try {
         return await instance.api.music(`/v1/catalog/${instance.storefrontId}/search`, {
             term,
             types: 'songs',
-            limit: 10,
+            limit: SEARCH_RESULT_LIMIT,
         });
     } catch (err) {
         // Apple's catalog search occasionally rate-limits concurrent requests (429) or
@@ -127,7 +132,7 @@ async function searchLibrary(instance, term, attempt = 0) {
         return await instance.api.music('/v1/me/library/search', {
             term,
             types: 'library-songs',
-            limit: 10,
+            limit: SEARCH_RESULT_LIMIT,
         });
     } catch (err) {
         if (attempt >= 2)
@@ -184,12 +189,41 @@ async function findBestMatch(instance, song, { preferClean = true } = {}) {
         if (candidates.length === 0)
             return { appleMusicId: null, type: null, reason: 'Apple Music search returned no results for this title.', retryable: true };
 
+        // A title+artist search ranks by title relevance more than artist, so a cover, medley, or
+        // otherwise less-searched version can get crowded out of the results entirely by a more
+        // popular original/other artist sharing the same title words (e.g. Will to Power's "Baby
+        // I Love Your Way/Freebird Medley" losing out to Peter Frampton's and Lynyrd Skynyrd's much
+        // more searched originals). A second, artist-only search widens the net for manual review.
+        let artistOnlyMatches = [];
+        try {
+            const artistResults = await searchCatalog(instance, primaryArtist(song.artist_name));
+            const artistCandidates = artistResults?.data?.results?.songs?.data || [];
+            artistOnlyMatches = artistCandidates.filter((candidate) =>
+                namesLooselyMatch(searchTitle(song.song_title), candidate?.attributes?.name)
+            );
+        } catch (err) {
+            // Best-effort widening - fall back to just the title-search candidates if this fails.
+        }
+
+        // Apple's relevance ranking blends every word in the title+artist query together, so a
+        // strong artist-name match alone can pull in results whose title isn't related at all -
+        // filter the raw title-search results down to ones whose title is plausibly the same song
+        // too, otherwise the "possible matches" list ends up full of unrelated songs by someone
+        // with a similar-looking artist name.
+        const titleMatchedCandidates = candidates.filter((candidate) =>
+            namesLooselyMatch(searchTitle(song.song_title), candidate?.attributes?.name)
+        );
+
+        const combinedCandidates = [...titleMatchedCandidates, ...artistOnlyMatches].filter((candidate, index, all) =>
+            all.findIndex((c) => c.id === candidate.id) === index
+        );
+
         return {
             appleMusicId: null,
             type: null,
             reason: 'Found catalog results, but none matched this artist name.',
             retryable: false,
-            candidates: candidates.map((candidate) => ({
+            candidates: combinedCandidates.map((candidate) => ({
                 id: candidate.id,
                 name: candidate?.attributes?.name || '',
                 artistName: candidate?.attributes?.artistName || '',
